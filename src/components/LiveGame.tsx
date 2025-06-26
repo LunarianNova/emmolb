@@ -71,7 +71,7 @@ export default function LiveGame({ awayTeam, homeTeam, initialData, gameId }: { 
     playerStats[fullName] = player.Stats
     homePlayers.push(fullName);
   }
-
+  
   // Use ref to keep track of lastEvent index without triggering effect rerun
   const lastEventIndexRef = useRef(lastEvent.index);
 
@@ -80,41 +80,80 @@ export default function LiveGame({ awayTeam, homeTeam, initialData, gameId }: { 
     lastEventIndexRef.current = lastEvent.index;
   }, [lastEvent]);
   const failureCountRef = useRef(0);
+  const pollingRef = useRef<NodeJS.Timeout | null>(null);
+  const [isActive, setIsActive] = useState(true);
+
+  // Handle tab/window activity state
+  useEffect(() => {
+    const onVisibilityChange = () => {
+      setIsActive(!document.hidden);
+    };
+    const onFocus = () => setIsActive(true);
+    const onBlur = () => setIsActive(false);
+
+    document.addEventListener("visibilitychange", onVisibilityChange);
+    window.addEventListener("focus", onFocus);
+    window.addEventListener("blur", onBlur);
+
+    return () => {
+      document.removeEventListener("visibilitychange", onVisibilityChange);
+      window.removeEventListener("focus", onFocus);
+      window.removeEventListener("blur", onBlur);
+    };
+  }, []);
 
   useEffect(() => {
     let isMounted = true;
-    const interval = 6000;
 
     async function poll() {
-      if (!isMounted) return;
-      if (data.State == "Complete") return;
+      if (!isMounted || !isActive) return;
+      if (data.State === "Complete") {
+        if (pollingRef.current) {
+          clearInterval(pollingRef.current);
+          pollingRef.current = null;
+          console.log("Polling stopped: game complete.");
+        }
+        return;
+      }
 
       try {
         const res = await fetch(`/api/game/${gameId}/live?after=${lastEventIndexRef.current + 1}`);
         if (!res.ok) throw new Error('Failed to fetch live events');
+
         const newData = await res.json();
         failureCountRef.current = 0;
 
         if (newData.entries && newData.entries.length > 0) {
-          setEventLog((prev) => [...prev, ...newData.entries]);
+          setEventLog(prev => [...prev, ...newData.entries]);
           setLastEvent(newData.entries[newData.entries.length - 1]);
+        }
+
+        if (newData.State === "Complete") {
+          if (pollingRef.current) {
+            clearInterval(pollingRef.current);
+            pollingRef.current = null;
+          }
         }
       } catch (error) {
         console.error(error);
         failureCountRef.current++;
         if (failureCountRef.current >= 5) {
-            console.warn("Polling halted after repeated failures.");
-            clearInterval(id);
+          console.warn("Polling halted after repeated failures.");
+          if (pollingRef.current) {
+            clearInterval(pollingRef.current);
+            pollingRef.current = null;
+          }
         }
       }
     }
 
-    const id = setInterval(poll, interval);
+    pollingRef.current = setInterval(poll, 6000);
+
     return () => {
       isMounted = false;
-      clearInterval(id);
+      if (pollingRef.current) clearInterval(pollingRef.current);
     };
-  }, [gameId]);
+  }, [gameId, isActive]); // include isActive to react to focus/blur
 
 function getBlockMetadata(message: string): { emoji?: string; title?: string } | null {
   if (message.includes('Now batting')) {
