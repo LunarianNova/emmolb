@@ -7,7 +7,7 @@ export default function GameTestPage() {
   return (
     <main className="mt-16">
         <Navbar />
-        <div className="min-h-screen text-black bg-amber-50 dark:bg-[#0c111b] dark:text-white font-sans p-4 pt-20 max-w-3xl mx-auto">
+        <div className="min-h-screen bg-[#0c111b] text-white font-sans p-4 pt-20 max-w-3xl mx-auto">
             <GameHeader
                 homeTeam={{
                     name: 'Echo Cluster',
