@@ -16,6 +16,11 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
 
   // Check if last event indicates game over
   const entries = data.entries ?? [];
+
+  if (entries.length === 0){
+    return new Response(null, { status: 500, statusText: 'No new events!!'})
+  }
+
   const lastEvent = entries.length > 0 ? entries[entries.length - 1] : null;
 
   // Example condition - adjust to your actual data structure
