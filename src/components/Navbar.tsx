@@ -138,10 +138,10 @@ export function Navbar() {
                 }`}
             >
               <button className="block w-full text-left px-3 py-2 rounded hover:bg-[#2a3a4a] transition cursor-pointer">
-                Greater League
+                ~~ Greater League
               </button>
               <button className="block w-full text-left px-3 py-2 rounded hover:bg-[#2a3a4a] transition cursor-pointer">
-                Lesser League
+                ~~ Lesser League
               </button>
             </div>
           </div>
@@ -165,10 +165,10 @@ export function Navbar() {
                 }`}
             >
               <button className="block w-full text-left px-3 py-2 rounded hover:bg-[#2a3a4a] transition cursor-pointer">
-                What is MMOLB?
+                ~~ What is MMOLB?
               </button>
               <button className="block w-full text-left px-3 py-2 rounded hover:bg-[#2a3a4a] transition cursor-pointer">
-                Election History
+                ~~ Election History
               </button>
               <Link
                 href="https://www.patreon.com/MMOLB"
@@ -176,7 +176,7 @@ export function Navbar() {
                 rel="noopener noreferrer"
                 className="block w-full text-left px-3 py-2 rounded hover:bg-[#2a3a4a] transition cursor-pointer"
               >
-                Support us on Patreon
+                Support MMOLB on Patreon
               </Link>
               <Link
                 href="https://discord.gg/cr3tRG2xqq"
@@ -184,7 +184,7 @@ export function Navbar() {
                 rel="noopener noreferrer"
                 className="block w-full text-left px-3 py-2 rounded hover:bg-[#2a3a4a] transition cursor-pointer"
               >
-                Official Discord
+                MMOLB Discord
               </Link>
               <Link
                 href="https://reddit.com/r/MMOLB"
@@ -192,7 +192,7 @@ export function Navbar() {
                 rel="noopener noreferrer"
                 className="block w-full text-left px-3 py-2 rounded hover:bg-[#2a3a4a] transition cursor-pointer"
               >
-                Official Reddit
+                MMOLB Reddit
               </Link>
             </div>
           </div>

@@ -15,22 +15,6 @@ type EventBlockGroup = {
   messages: string[];
 };
 
-function getLuminance(hex: string): number {
-  const c = hex.charAt(0) === '#' ? hex.substring(1) : hex;
-  const r = parseInt(c.substring(0, 2), 16) / 255;
-  const g = parseInt(c.substring(2, 4), 16) / 255;
-  const b = parseInt(c.substring(4, 6), 16) / 255;
-  const [R, G, B] = [r, g, b].map((ch) =>
-    ch <= 0.03928 ? ch / 12.92 : Math.pow((ch + 0.055) / 1.055, 2.4)
-  );
-  return 0.2126 * R + 0.7152 * G + 0.0722 * B;
-}
-
-function getContrastTextColor(bgHex: string): 'black' | 'white' {
-  const luminance = getLuminance(bgHex);
-  return luminance > 0.179 ? 'black' : 'white';
-}
-
 function getERA(stats: any): string {
   const earnedRuns = stats.earned_runs ?? 0;
   const outs = stats.outs ?? 0;
@@ -234,7 +218,6 @@ const groupedEvents = groupEventLog(eventLog);
             losses: homeTeam.Record["Regular Season"].Losses,
             runDiff: homeTeam.Record["Regular Season"].RunDifferential,
             color: data.HomeTeamColor,
-            textColor: getContrastTextColor(data.HomeTeamColor),
           }}
           awayTeam={{
             name: data.AwayTeamName,
@@ -244,7 +227,6 @@ const groupedEvents = groupEventLog(eventLog);
             losses: awayTeam.Record["Regular Season"].Losses,
             runDiff: awayTeam.Record["Regular Season"].RunDifferential,
             color: data.AwayTeamColor,
-            textColor: getContrastTextColor(data.AwayTeamColor),
           }}
           center={{
             icon: data.Weather.Emoji,
