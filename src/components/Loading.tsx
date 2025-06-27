@@ -13,9 +13,8 @@ const messages = [
   'May contain nuts',
   "The E stands for 'Echo'",
   "The E stands for 'Enhanced'",
-  "The E stands for 'Epic'",
-  "The E stands for 'Exceptional'",
-  "The E stands for 'Egypt'"
+  "The E stands for 'Egypt'",
+  "The E stands for 'Ecological'"
 ];
 
 

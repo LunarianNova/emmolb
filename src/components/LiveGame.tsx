@@ -5,14 +5,22 @@ import { Navbar } from '@/components/Navbar';
 import { GameHeader } from '@/components/GameHeader';
 import { GameStateDisplay } from '@/components/GameStateDisplay';
 import { EventBlock } from './EventBlock';
+import { CopiedPopup } from './CopiedPopup';
 
 type Event = any; // ahhhh
+
+type EventMessage = {
+  index: number;
+  message: string;
+  pitchSpeed?: string | null;
+  pitchZone?: string | null;
+}
 
 type EventBlockGroup = {
   emoji?: string;
   title?: string;
   color?: string;
-  messages: string[];
+  messages: EventMessage[];
 };
 
 function getERA(stats: any): string {
@@ -245,27 +253,36 @@ function getBlockMetadata(message: string): { emoji?: string; title?: string } |
   return null; // Other events will be added to the latest group
 }
 
+function getEventMessageObject(event: any, index: number): EventMessage {
+  const message = event.message;
+  const pitchSpeed = event.pitch_info ?? null;
+  const pitchZone = event.zone ?? null;
+
+  return {index: index, message: message, pitchSpeed: pitchSpeed, pitchZone: pitchZone};
+}
+
 function groupEventLog(eventLog: { message: string }[]): EventBlockGroup[] {
   const blocks: EventBlockGroup[] = [];
   let currentBlock: EventBlockGroup | null = null;
 
-  for (const event of eventLog) {
+  eventLog.forEach((event, idx) => {
     const meta = getBlockMetadata(event.message);
+    const eventMessage = getEventMessageObject(event, idx);
 
     if (meta) {
       // Start new block
-      currentBlock = { ...meta, messages: [event.message] };
+      currentBlock = { ...meta, messages: [eventMessage] };
       blocks.unshift(currentBlock); // Most recent events at top
     } else if (currentBlock) {
       // Add to existing block
       if (event.message.includes("scores!")) currentBlock.color = "#1B5E20";
-      currentBlock.messages.unshift(event.message);
+      currentBlock.messages.unshift(eventMessage);
     } else {
       // No current block? Create a generic one
-      currentBlock = { messages: [event.message] };
+      currentBlock = { messages: [eventMessage] };
       blocks.unshift(currentBlock);
     }
-  }
+  });
 
   return blocks;
 }
@@ -281,6 +298,7 @@ const groupedEvents = groupEventLog(eventLog);
 
   return (
     <main className="mt-16">
+      <CopiedPopup />
       <Navbar />
       <div className="min-h-screen bg-[#0c111b] text-white font-sans p-4 pt-20 max-w-3xl mx-auto">
         <GameHeader
@@ -368,11 +386,7 @@ const groupedEvents = groupEventLog(eventLog);
 
         <div className="mt-6 space-y-4">
             {groupedEvents.map((block, idx) => (
-                <EventBlock key={idx} emoji={block.emoji} title={block.title} color={block.color}>
-                    {block.messages.map((msg, i) => (
-                    <div key={i} dangerouslySetInnerHTML={{__html: msg}} />
-                    ))}
-                </EventBlock>
+                <EventBlock key={idx} emoji={block.emoji} title={block.title} color={block.color} messages={block.messages}/>
             ))}
         </div>
 

@@ -24,3 +24,17 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+@keyframes highlightFade {
+  0% {
+    background-color: #fffb91; /* pale yellow */
+  }
+  100% {
+    background-color: transparent;
+  }
+}
+
+.highlighted-event {
+  animation: highlightFade 2s ease forwards;
+  scroll-margin-top: 70px; /* Adjust to your navbar height */
+}
