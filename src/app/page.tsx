@@ -54,7 +54,7 @@ export default function HomePage() {
 
   if (loading) return <p>Loading...</p>;
 
-  if (gameHeaders.length === 0) return <p>No favorite teams found.</p>;
+  if (gameHeaders.length === 0) return <Navbar />;
 
   return (
     <div>
