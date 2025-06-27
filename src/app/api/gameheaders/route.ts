@@ -4,7 +4,7 @@ export async function POST(req: NextRequest) {
   try {
     const { teamIds } = await req.json() as { teamIds: string[] };
 
-    const base = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
+    const base = process.env.VERCEL_URL || 'http://localhost:3000';
 
     if (!Array.isArray(teamIds)) {
       return new Response(JSON.stringify({ error: 'teamIds must be an array' }), { status: 400 });
