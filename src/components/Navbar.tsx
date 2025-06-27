@@ -105,11 +105,46 @@ export function Navbar() {
           </button>
         </div>
 
+        {mobileMenuOpen && (
+          <div className="sm:hidden px-6 pb-4 pt-2 space-y-2 text-left z-10">
+            <Link href="/" className="block py-2">Home</Link>
+            
+            <details className='group'>
+              <summary className='cursor-pointer py-2'>
+                Leagues
+              </summary>
+              <div className='ml-4 space-y-1'>
+                <Link href='' className='block'>~~ Greater League</Link>
+                <Link href='' className='block'>~~ Lesser League</Link>
+              </div>
+            </details>
+
+            <details className='group'>
+              <summary className='cursor-pointer py-2'>
+                Info
+              </summary>
+              <div className='ml-4 space-y-1'>
+                <Link href='' className='block'>~~ What is MMOLB?</Link>
+                <Link href='https://www.patreon.com/MMOLB' className='block'>MMOLB Patreon</Link>
+                <Link href='https://discord.gg/cr3tRG2xqq' className='block'>MMOLB Discord</Link>
+                <Link href='https://reddit.com/r/MMOLB' className='block'>MMOLB Reddit</Link>
+              </div>
+            </details>
+
+            <details className='group'>
+              <summary className='cursor-pointer py-2'>
+                Account
+              </summary>
+              <div className='ml-4 space-y-1'>
+                <Link href='/teams' className='block'>Favorite Teams</Link>
+              </div>
+            </details>
+          </div>
+        )}
+
         {/* Desktop / large screen menu */}
         <div
-          className={`hidden sm:flex sm:justify-center sm:gap-42 py-5 z-10 ${
-            mobileMenuOpen ? 'block' : 'hidden'
-          } sm:block`}
+          className={`sm:flex sm:justify-center sm:gap-42 py-5 z-10 hidden sm:block`}
         >
           {/* Home */}
           <Link
