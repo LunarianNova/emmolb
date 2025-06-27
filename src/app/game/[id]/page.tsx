@@ -9,7 +9,7 @@ export default async function GamePage({ params }: PageProps) {
 
   const base = process.env.VERCEL_URL ? 'https://shardsof.space' : 'http://localhost:3000';
 
-  const res = await fetch(`${base}/api/gameheader/${id}`, {
+  const res = await fetch(`https://lunanova.space/nextapi/gameheader/${id}`, {
     next: { revalidate: 0 },
   });
 

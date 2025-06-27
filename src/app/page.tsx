@@ -31,7 +31,7 @@ export default function HomePage() {
       }
 
       try {
-        const res = await fetch('/api/gameheaders', {
+        const res = await fetch('https://lunanova.space/nextapi/gameheaders', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ teamIds: favoriteTeamIDs }),

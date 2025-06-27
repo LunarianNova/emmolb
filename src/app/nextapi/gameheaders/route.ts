@@ -1,5 +1,16 @@
-import { Console } from 'console';
 import type { NextRequest } from 'next/server';
+
+// Handle CORS preflight OPTIONS requests
+export async function OPTIONS() {
+  return new Response(null, {
+    status: 204,
+    headers: {
+      'Access-Control-Allow-Origin': '*', // Or restrict to your frontend origin
+      'Access-Control-Allow-Methods': 'POST, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type',
+    },
+  });
+}
 
 export async function POST(req: NextRequest) {
   try {
@@ -8,18 +19,21 @@ export async function POST(req: NextRequest) {
     const base = process.env.VERCEL_URL ? `https://shardsof.space` : 'http://localhost:3000';
 
     if (!Array.isArray(teamIds)) {
-      return new Response(JSON.stringify({ error: 'teamIds must be an array' }), { status: 400 });
+      return new Response(JSON.stringify({ error: 'teamIds must be an array' }), {
+        status: 400,
+        headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*',
+        },
+      });
     }
 
-    // For each team, fetch latest game ID
     const gamesPromises = teamIds.map(async (teamId) => {
       let gameId = null;
       const gameRes = await fetch(`https://mmolb.com/api/game-by-team/${teamId}`);
-      console.log(`https://mmolb.com/api/game-by-team/${teamId}`);
+
       if (!gameRes.ok) {
-        console.log('game res failed');
-        const teamRes = await fetch(`https://mmolb.com/api/team/${teamId}`)
-        console.log('team res ' + teamRes.ok);
+        const teamRes = await fetch(`https://mmolb.com/api/team/${teamId}`);
         if (!teamRes.ok) return null;
         const teamData = await teamRes.json();
         gameId = teamData.Feed[teamData.Feed.length - 1].links[2].id;
@@ -28,10 +42,7 @@ export async function POST(req: NextRequest) {
         gameId = gameData.game_id;
       }
 
-      // Fetch game header from your API
-      const gameHeaderRes = await fetch(`${base}/api/gameheader/${gameId}`);
-      console.log(`${base}/api/gameheader/${gameId}`)
-      console.log('gameheader res', gameHeaderRes.status, gameHeaderRes.ok)
+      const gameHeaderRes = await fetch(`https://lunanova.space/nextapi/gameheader/${gameId}`);
       if (!gameHeaderRes.ok) return null;
 
       const gameHeader = await gameHeaderRes.json();
@@ -40,17 +51,24 @@ export async function POST(req: NextRequest) {
     });
 
     const results = await Promise.all(gamesPromises);
-
-    // Filter out nulls (teams with missing data)
     const filtered = results.filter(r => r !== null);
 
     return new Response(JSON.stringify(filtered), {
       status: 200,
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*', // This is crucial!
+      },
     });
 
   } catch (error) {
     console.error(error);
-    return new Response(JSON.stringify({ error: 'Internal Server Error' }), { status: 500 });
+    return new Response(JSON.stringify({ error: 'Internal Server Error' }), {
+      status: 500,
+      headers: {
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*',
+      },
+    });
   }
 }

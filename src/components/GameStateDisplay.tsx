@@ -5,6 +5,7 @@ import React from 'react'
 type PlayerInfo = {
   name: string
   stat: string // ERA or BA
+  onClick?: () => void;
 }
 
 type GameStateDisplayProps = {
@@ -49,7 +50,13 @@ export function GameStateDisplay({
     <div>
       <div className="text-xs font-semibold uppercase tracking-wide opacity-70">{label}</div>
       <div>
-        <span className="font-medium">{player.name}</span>
+        {player.onClick ? (
+          <button onClick={player.onClick} className="font-medium text-gray-400 hover:underline">
+            {player.name}
+          </button>
+        ) : (
+          <span className="font-medium">{player.name}</span>
+        )}
         <span className="text-gray-400 text-xs ml-1">{player.stat}</span>
       </div>
     </div>

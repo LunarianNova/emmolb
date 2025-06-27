@@ -14,7 +14,7 @@ export default function TeamSelector() {
         setTeamIDs(ids);
 
         Promise.all(ids.map(id =>
-        fetch(`/api/team/${id}`).then(res => res.ok ? res.json() : null)
+        fetch(`/nextapi/team/${id}`).then(res => res.ok ? res.json() : null)
         )).then(results => {
         const validTeams = results.filter(t => t !== null);
         setTeams(validTeams);
@@ -28,7 +28,7 @@ export default function TeamSelector() {
   if (!trimmed || teamIDs.includes(trimmed)) return;
 
   try {
-    const res = await fetch(`/api/team/${trimmed}`);
+    const res = await fetch(`/nextapi/team/${trimmed}`);
 
     if (!res.ok) {
       alert('Invalid team ID.');
