@@ -5,6 +5,7 @@ export async function GET(_: NextRequest, { params }: { params: Promise<{ id: st
 
   try {
     const gameRes = await fetch(`https://mmolb.com/api/game/${id}`);
+    console.log(`https://mmolb.com/api/game/${id}` + gameRes.ok);
     if (!gameRes.ok) return new Response('Failed to fetch game', { status: 502 });
 
     const gameData = await gameRes.json();

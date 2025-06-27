@@ -1,3 +1,4 @@
+import { Console } from 'console';
 import type { NextRequest } from 'next/server';
 
 export async function POST(req: NextRequest) {
@@ -14,6 +15,7 @@ export async function POST(req: NextRequest) {
     const gamesPromises = teamIds.map(async (teamId) => {
       let gameId = null;
       const gameRes = await fetch(`https://mmolb.com/api/game-by-team/${teamId}`);
+      console.log(`https://mmolb.com/api/game-by-team/${teamId}`);
       if (!gameRes.ok) {
         console.log('game res failed');
         const teamRes = await fetch(`https://mmolb.com/api/team/${teamId}`)
@@ -28,6 +30,7 @@ export async function POST(req: NextRequest) {
 
       // Fetch game header from your API
       const gameHeaderRes = await fetch(`${base}/api/gameheader/${gameId}`);
+      console.log(`${base}/api/gameheader/${gameId}`)
       console.log('gameheader res ' + gameHeaderRes.ok)
       if (!gameHeaderRes.ok) return null;
 
