@@ -216,7 +216,7 @@ export function Navbar() {
                 }`}
             >
               <button className="block w-full text-left px-3 py-2 rounded hover:bg-[#2a3a4a] transition cursor-pointer">
-                // My Profile
+                ~~ My Profile
               </button>
               <Link href="/teams">
                 <button className="block w-full text-left px-3 py-2 rounded hover:bg-[#2a3a4a] transition cursor-pointer">
@@ -224,13 +224,13 @@ export function Navbar() {
                 </button>
               </Link>
               <button className="block w-full text-left px-3 py-2 rounded hover:bg-[#2a3a4a] transition cursor-pointer">
-                // Sign Out
+                ~~ Sign Out
               </button>
               <button className="block w-full text-left px-3 py-2 rounded hover:bg-[#2a3a4a] transition cursor-pointer">
-                // Privacy Policy
+                ~~ Privacy Policy
               </button>
               <button className="block w-full text-left px-3 py-2 rounded hover:bg-[#2a3a4a] transition cursor-pointer">
-                // Terms of Service
+                ~~ Terms of Service
               </button>
             </div>
           </div>
