@@ -15,7 +15,9 @@ export async function POST(req: NextRequest) {
       let gameId = null;
       const gameRes = await fetch(`https://mmolb.com/api/game-by-team/${teamId}`);
       if (!gameRes.ok) {
+        console.log('game res failed');
         const teamRes = await fetch(`https://mmolb.com/api/team/${teamId}`)
+        console.log('team res ' + teamRes.ok);
         if (!teamRes.ok) return null;
         const teamData = await teamRes.json();
         gameId = teamData.Feed[teamData.Feed.length - 1].links[2].id;
@@ -26,6 +28,7 @@ export async function POST(req: NextRequest) {
 
       // Fetch game header from your API
       const gameHeaderRes = await fetch(`${base}/api/gameheader/${gameId}`);
+      console.log('gameheader res ' + gameHeaderRes.ok)
       if (!gameHeaderRes.ok) return null;
 
       const gameHeader = await gameHeaderRes.json();
