@@ -132,7 +132,6 @@ const failureCountRef = useRef(0);
 const repeatedAfterCountRef = useRef(0);
 const lastAfterRef = useRef<string | null>(null);
 const pollingRef = useRef<NodeJS.Timeout | null>(null);
-const [isActive, setIsActive] = useState(true);
 const [selectedPlayer, setSelectedPlayer] = useState<string | null>(null);
 const [playerType, setPlayerType] = useState<'pitcher' | 'batter' | null>(null);
 const [showDerived, setShowDerived] = useState(true);
@@ -143,28 +142,10 @@ useEffect(() => {
 }, [lastEvent]);
 
 useEffect(() => {
-  const onVisibilityChange = () => {
-    setIsActive(!document.hidden);
-  };
-  const onFocus = () => setIsActive(true);
-  const onBlur = () => setIsActive(false);
-
-  document.addEventListener("visibilitychange", onVisibilityChange);
-  window.addEventListener("focus", onFocus);
-  window.addEventListener("blur", onBlur);
-
-  return () => {
-    document.removeEventListener("visibilitychange", onVisibilityChange);
-    window.removeEventListener("focus", onFocus);
-    window.removeEventListener("blur", onBlur);
-  };
-}, []);
-
-useEffect(() => {
   let isMounted = true;
 
   async function poll() {
-    if (!isMounted || !isActive) return;
+    if (!isMounted) return;
     if (data.State === "Complete") {
       if (pollingRef.current) {
         clearInterval(pollingRef.current);
@@ -230,7 +211,7 @@ useEffect(() => {
     isMounted = false;
     if (pollingRef.current) clearInterval(pollingRef.current);
   };
-}, [gameId, isActive]);
+}, [gameId]);
 
 
 function getBlockMetadata(message: string): { emoji?: string; title?: string } | null {
