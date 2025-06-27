@@ -25,8 +25,8 @@ export function Navbar() {
   }
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 bg-[#0c111b] text-white font-sans shadow-lg">
-      <div ref={navRef} className="relative overflow-visible max-w-7xl mx-auto">
+    <nav className="fixed top-0 left-0 right-0 z-50 bg-[#0c111b] text-white font-sans">
+      <div ref={navRef} className="relative overflow-visible">
         {/* Background logo */}
         <div className="absolute inset-0 flex justify-center items-center pointer-events-none z-0">
           <div className="relative w-24 h-24 opacity-20">
@@ -107,14 +107,14 @@ export function Navbar() {
 
         {/* Desktop / large screen menu */}
         <div
-          className={`sm:flex sm:justify-center sm:gap-[10.5rem] py-5 z-10 ${
+          className={`hidden sm:flex sm:justify-center sm:gap-42 py-5 z-10 ${
             mobileMenuOpen ? 'block' : 'hidden'
           } sm:block`}
         >
           {/* Home */}
           <Link
             href="/"
-            className="text-lg font-bold tracking-wide px-3 py-2 hover:underline hover:underline-offset-4"
+            className="text-lg font-bold tracking-wide"
           >
             Home
           </Link>
@@ -123,7 +123,7 @@ export function Navbar() {
           <div className="relative">
             <button
               onClick={() => toggleDropdown('leagues')}
-              className="text-lg font-bold tracking-wide cursor-pointer px-3 py-2"
+              className="text-lg font-bold tracking-wide cursor-pointer"
               aria-expanded={openDropdown === 'leagues'}
               aria-haspopup="true"
             >
@@ -150,7 +150,7 @@ export function Navbar() {
           <div className="relative">
             <button
               onClick={() => toggleDropdown('info')}
-              className="text-lg font-bold tracking-wide cursor-pointer px-3 py-2"
+              className="text-lg font-bold tracking-wide cursor-pointer"
               aria-expanded={openDropdown === 'info'}
               aria-haspopup="true"
             >
@@ -167,16 +167,13 @@ export function Navbar() {
               <button className="block w-full text-left px-3 py-2 rounded hover:bg-[#2a3a4a] transition cursor-pointer">
                 ~~ What is MMOLB?
               </button>
-              <button className="block w-full text-left px-3 py-2 rounded hover:bg-[#2a3a4a] transition cursor-pointer">
-                ~~ Election History
-              </button>
               <Link
                 href="https://www.patreon.com/MMOLB"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="block w-full text-left px-3 py-2 rounded hover:bg-[#2a3a4a] transition cursor-pointer"
               >
-                Support MMOLB on Patreon
+                MMOLB Patreon
               </Link>
               <Link
                 href="https://discord.gg/cr3tRG2xqq"
@@ -201,7 +198,7 @@ export function Navbar() {
           <div className="relative">
             <button
               onClick={() => toggleDropdown('account')}
-              className="text-lg font-bold tracking-wide cursor-pointer px-3 py-2"
+              className="text-lg font-bold tracking-wide cursor-pointer"
               aria-expanded={openDropdown === 'account'}
               aria-haspopup="true"
             >
@@ -215,23 +212,11 @@ export function Navbar() {
                     : 'opacity-0 scale-95 -translate-y-2 pointer-events-none'
                 }`}
             >
-              <button className="block w-full text-left px-3 py-2 rounded hover:bg-[#2a3a4a] transition cursor-pointer">
-                ~~ My Profile
-              </button>
               <Link href="/teams">
                 <button className="block w-full text-left px-3 py-2 rounded hover:bg-[#2a3a4a] transition cursor-pointer">
                   Favorite Teams
                 </button>
               </Link>
-              <button className="block w-full text-left px-3 py-2 rounded hover:bg-[#2a3a4a] transition cursor-pointer">
-                ~~ Sign Out
-              </button>
-              <button className="block w-full text-left px-3 py-2 rounded hover:bg-[#2a3a4a] transition cursor-pointer">
-                ~~ Privacy Policy
-              </button>
-              <button className="block w-full text-left px-3 py-2 rounded hover:bg-[#2a3a4a] transition cursor-pointer">
-                ~~ Terms of Service
-              </button>
             </div>
           </div>
         </div>

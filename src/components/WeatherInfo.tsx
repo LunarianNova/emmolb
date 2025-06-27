@@ -10,7 +10,7 @@ export function WeatherInfo({ emoji, title, description }: WeatherInfoProps) {
   const [isOpen, setIsOpen] = useState(false)
 
   return (
-    <div className="flex flex-col items-center justify-center gap-1 relative">
+    <div className="text-xl">
       <button
         onClick={() => setIsOpen(!isOpen)}
         className="text-xl focus:outline-none"

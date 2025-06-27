@@ -246,7 +246,8 @@ function getBlockMetadata(message: string): { emoji?: string; title?: string } |
 
   if (message.includes('"')) return { emoji: '🤖', title: 'ROBO-UMP' };
   if (message.includes('mound visit')) return { emoji: '🚶', title: 'Mound Visit' };
-  if (message.includes('7.')) return { emoji: '🧾', title: 'Lineup (Will be teamed eventually...)' };
+  if (message.includes('7.') && message.includes(awayPlayers[0])) return { emoji: awayTeam.Emoji, title: 'Away Lineup' };
+  if (message.includes('7.') && message.includes(homePlayers[0])) return { emoji: homeTeam.Emoji, title: 'Home Lineup' };
   if (message.includes('End') || message.includes('@') || message.includes('Start of the top of the 1st') || message.includes('Final score:')) return { emoji: 'ℹ️', title: 'Game Info' };
 
 
@@ -297,9 +298,10 @@ const displayKeys = Object.keys(displayStats);
 const groupedEvents = groupEventLog(eventLog);
 
   return (
+    <>
+    <Navbar />
     <main className="mt-16">
       <CopiedPopup />
-      <Navbar />
       <div className="min-h-screen bg-[#0c111b] text-white font-sans p-4 pt-20 max-w-3xl mx-auto">
         <GameHeader
           homeTeam={{
@@ -336,17 +338,17 @@ const groupedEvents = groupEventLog(eventLog);
           pitcher={{
             name: lastEvent.pitcher,
             stat: lastEvent.pitcher !== "" ? `(${getERA(playerStats[lastEvent.pitcher])})` : "",
-            onClick: () => {setSelectedPlayer(lastEvent.pitcher); setPlayerType('pitcher');},
+            onClick: () => {setSelectedPlayer(lastEvent.pitcher); setPlayerType('pitcher'); setShowStats(true);},
           }}
           batter={{
             name: lastEvent.batter,
             stat: lastEvent.batter !== "" ? `(${getBA(playerStats[lastEvent.batter])})` : "",
-            onClick: () => {setSelectedPlayer(lastEvent.batter); setPlayerType('batter')},
+            onClick: () => {setSelectedPlayer(lastEvent.batter); setPlayerType('batter'); setShowStats(true);},
           }}
           onDeck={{
             name: lastEvent.on_deck,
             stat: lastEvent.on_deck !== "" ? `(${getBA(playerStats[lastEvent.on_deck])})` : "",
-            onClick: () => {setSelectedPlayer(lastEvent.on_deck); setPlayerType('batter')},
+            onClick: () => {setSelectedPlayer(lastEvent.on_deck); setPlayerType('batter'); setShowStats(true);},
           }}
         />
 
@@ -392,5 +394,6 @@ const groupedEvents = groupEventLog(eventLog);
 
       </div>
     </main>
+    </>
   );
 }
