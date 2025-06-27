@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { GameHeaderFromResponse } from '@/components/GameHeader';
 import { Navbar } from '@/components/Navbar';
 import Link from 'next/link';
+import Loading from '@/components/Loading';
 
 interface GameHeaderApiResponse {
   teamId: string;
@@ -52,7 +53,7 @@ export default function HomePage() {
     fetchGameHeaders();
   }, []);
 
-  if (loading) return <p>Loading...</p>;
+  if (loading) return <Loading />;
 
   if (gameHeaders.length === 0) return <Navbar />;
 

@@ -61,7 +61,7 @@ const removeTeamID = (id: string) => {
 
   return (
     <div className="p-4 max-w-md mx-auto">
-      <h1 className="text-xl font-bold mb-2">Select Your Teams</h1>
+      <h1 className="text-xl font-bold mb-2">⭐ Favorite Teams</h1>
       <input
         type="text"
         placeholder="Enter Team ID"
@@ -75,7 +75,7 @@ const removeTeamID = (id: string) => {
 
       <ul className="space-y-2">
         {teams.map((team) => (
-          <li key={team._id} className="flex justify-between items-center bg-gray-100 dark:bg-gray-800 p-2 rounded">
+          <li key={team._id} className="flex justify-between items-center bg-gray-800 p-2 rounded">
             <span>{team.Emoji} {team.Location} {team.Name}</span>
             <button
               onClick={() => removeTeamID(team._id)}
