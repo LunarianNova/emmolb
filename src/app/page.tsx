@@ -56,7 +56,7 @@ export default function HomePage() {
 
   if (loading) return <><Navbar /><Loading /></>;
 
-  if (gameHeaders.length === 0) return <Navbar />;
+  if (gameHeaders.length === 0) return <><Navbar /><div className='flex flex-col items-center justify-center h-[80vh] text-white select-none font-sans text-2xl text-[#fef4e5]'>You have no favorite teams<br></br><Link href="/teams" className='text-blue-100'>Go here to add some!</Link></div></>;
 
   return (
     <div>
