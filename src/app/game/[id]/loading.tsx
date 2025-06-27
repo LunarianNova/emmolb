@@ -1,5 +1,6 @@
 'use client';
 
+import { Navbar } from '@/components/Navbar';
 import React, { useEffect, useState } from 'react';
 
 const messages = [
@@ -33,9 +34,12 @@ export default function Loading() {
   const message = index !== null ? messages[index] : 'Loading...'
 
   return (
+    <>
+    <Navbar />
     <div className="flex flex-col items-center justify-center h-[80vh] text-white select-none">
       <div className="animate-spin text-4xl">⚾</div>
       <div className="mt-4 text-sm opacity-70">{message}</div>
     </div>
+    </>
   )
 }
