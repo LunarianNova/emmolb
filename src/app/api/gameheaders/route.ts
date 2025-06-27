@@ -29,7 +29,7 @@ export async function POST(req: NextRequest) {
       }
 
       // Fetch game header from your API
-      const gameHeaderRes = await fetch(`${base}/api/gameheader/${gameId}`);
+      const gameHeaderRes = await fetch(`https://shardsof.space/api/gameheader/${gameId}`);
       console.log(`${base}/api/gameheader/${gameId}`)
       console.log('gameheader res', gameHeaderRes.status, gameHeaderRes.ok)
       if (!gameHeaderRes.ok) return null;
