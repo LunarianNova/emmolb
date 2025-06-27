@@ -73,7 +73,7 @@ export function GameHeaderFromResponse({ homeTeam, awayTeam, game }: GameHeaderR
             {awayTeam.Location} {awayTeam.Name}
             <div className="text-[10px] md:text-sm font-normal mt-0.5 opacity-70">
               {awayTeam.Record["Regular Season"].Wins}–{awayTeam.Record["Regular Season"].Losses} (
-                {awayTeam.Record["Regular Season"].RunDifferential >= 0 ? '+' : '-'}
+                {awayTeam.Record["Regular Season"].RunDifferential >= 0 ? '+' : ''}
                 {awayTeam.Record["Regular Season"].RunDifferential}
               )
             </div>
@@ -104,7 +104,7 @@ export function GameHeaderFromResponse({ homeTeam, awayTeam, game }: GameHeaderR
             {homeTeam.Location} {homeTeam.Name}
             <div className="text-[10px] md:text-sm font-normal mt-0.5 opacity-70">
               {homeTeam.Record["Regular Season"].Wins}–{homeTeam.Record["Regular Season"].Losses} (
-                {homeTeam.Record["Regular Season"].RunDifferential >= 0 ? '+' : '-'}
+                {homeTeam.Record["Regular Season"].RunDifferential >= 0 ? '+' : ''}
                 {homeTeam.Record["Regular Season"].RunDifferential}
               )
             </div>
