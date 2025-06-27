@@ -1,35 +1,29 @@
 import { NextRequest } from 'next/server';
 
-export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params;
+export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+  const { id } = params;
   const after = req.nextUrl.searchParams.get('after') ?? '0';
 
   const response = await fetch(`https://mmolb.com/api/game/${id}/live?after=${after}`, {
-    headers: {
-      'Accept': 'application/json',
-    },
-    next: { revalidate: 0 },
+    headers: { 'Accept': 'application/json' },
   });
 
   if (!response.ok) {
-    // Forward error status as is
-    return new Response(null, { status: response.status });
+    return new Response(null, { status: response.status, statusText: response.statusText });
   }
 
   const data = await response.json();
 
-  if (data.State === 'Complete') {
-    // Game is complete: respond with 410 Gone to tell clients to stop polling
-    return new Response(JSON.stringify({ message: 'Game complete. Polling disabled.' }), {
-      status: 410,
-      headers: {
-        'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': '*',
-      },
-    });
+  // Check if last event indicates game over
+  const entries = data.entries ?? [];
+  const lastEvent = entries.length > 0 ? entries[entries.length - 1] : null;
+
+  // Example condition - adjust to your actual data structure
+  if (lastEvent?.event === "Recordkeeping" && lastEvent?.details?.gameComplete === true) {
+    return new Response(null, { status: 410, statusText: 'Game Over' });
   }
 
-  // Otherwise forward data as normal
+  // Otherwise return the data as usual
   return new Response(JSON.stringify(data), {
     status: 200,
     headers: {
