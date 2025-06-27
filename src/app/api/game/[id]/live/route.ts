@@ -19,7 +19,7 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
   const lastEvent = entries.length > 0 ? entries[entries.length - 1] : null;
 
   // Example condition - adjust to your actual data structure
-  if (lastEvent?.event === "Recordkeeping" && lastEvent?.details?.gameComplete === true) {
+  if (lastEvent?.event === "Recordkeeping") {
     return new Response(null, { status: 410, statusText: 'Game Over' });
   }
 
