@@ -174,7 +174,13 @@ export default function TeamPage({ id }: { id: string }) {
                     </select>
                 </div>
                 <div className="bg-[#1c2a3a] rounded-xl p-3 max-h-60 overflow-y-auto text-sm space-y-1">
-                    Recent Events go here...
+                    {team.Feed.slice().reverse().map((event: any, i: number) => {
+                        return (
+                            <div key={i}>
+                                {event.emoji} Season {event.season}, {event.status}, Day {event.day}: {event.text}
+                            </div>
+                        );
+                    })}
                 </div>
             </div>
         </div>
