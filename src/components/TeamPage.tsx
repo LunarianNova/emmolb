@@ -178,7 +178,18 @@ export default function TeamPage({ id }: { id: string }) {
             </div>
             <div className="flex justify-center">
                 <div className="w-128 space-y-2">
-                    Players go here...
+                    {team.Players.map((player: any, i: number) => {
+                        return (
+                            <div key={i} className="flex justify-between items-center p-1 rounded bg-[#1c2a3a] hover:bg-[#2a3a4a] cursor-pointer transition">
+                                <div className="flex items-center gap-3 overflow-hidden">
+                                    <span className="w-4 text-xl text-center">{player.Emoji}</span>
+                                    <span className="w-8 text-sm text-right">#{player.Number}</span>
+                                    <span className="w-6 text-sm font-bold text-gray-300 text-right">{player.Position}</span>
+                                    <span className="flex-1 font-semibold text-left overflow-hidden text-ellipsis whitespace-nowrap">{player.FirstName} {player.LastName}</span>
+                                </div>
+                            </div>
+                        );
+                    })}
                 </div>
             </div>
             <div className="mt-8">
