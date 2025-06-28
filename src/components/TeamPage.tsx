@@ -4,6 +4,7 @@ import Loading from "@/components/Loading";
 import { Navbar } from "@/components/Navbar";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { GameStateDisplayCompact, LiveGameCompact } from "./LiveGameCompact";
 
 function getLuminance(hex: string): number {
   const c = hex.charAt(0) === '#' ? hex.substring(1) : hex;
@@ -42,13 +43,21 @@ export default function TeamPage({ id }: { id: string }) {
 
   const [loading, setLoading] = useState(true);
   const [team, setTeam] = useState<any>(null);
+  const [game, setGame] = useState<any>(null);
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     async function APICalls() {
       try {
+        const currentGame = await fetch(`/nextapi/game-by-team/${id}`);
+        if (currentGame.ok) {
+            const currentHeader = await fetch(`/nextapi/gameheader/${await currentGame.json()}`)
+            if (currentHeader.ok) setGame(currentHeader);
+        }
+
         const stored = JSON.parse(localStorage.getItem('favoriteTeamIDs') || '[]');
         setFavorites(new Set(stored));
+
         const teamRes = await fetch(`/nextapi/team/${id}`);
         if (!teamRes.ok) throw new Error('Failed to load team data');
         setTeam(await teamRes.json());
