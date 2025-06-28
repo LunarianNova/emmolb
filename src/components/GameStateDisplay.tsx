@@ -47,20 +47,40 @@ export function GameStateDisplay({
     }`
 
   const PlayerDisplay = ({ label, player }: { label: string; player: PlayerInfo }) => (
-    <div>
-      <div className="text-xs font-semibold uppercase tracking-wide opacity-70">{label}</div>
-      <div>
+    <div className="max-w-full sm:max-w-none">
+      <div className="text-[10px] sm:text-xs font-semibold uppercase tracking-wide opacity-70 leading-tight">
+        {label}
+      </div>
+      <div className="text-[13px] sm:text-sm flex flex-wrap sm:flex-nowrap items-center gap-x-1 leading-snug">
         {player.onClick ? (
-          <button onClick={player.onClick} className="font-medium text-gray-400 hover:underline">
+          <button
+            onClick={player.onClick}
+            className="font-medium text-white-400 hover:underline text-left whitespace-normal sm:whitespace-nowrap"
+          >
             {player.name}
+            {player.stat && (
+              <span className="ml-1 text-xs text-gray-400">
+                {player.stat.replace(/\s/g, '\u00A0')}
+              </span>
+            )}
           </button>
         ) : (
-          <span className="font-medium">{player.name}</span>
+          <span className="font-medium text-left whitespace-normal sm:whitespace-nowrap">
+            {player.name}
+            {player.stat && (
+              <span className="ml-1 text-xs text-gray-400">
+                {player.stat.replace(/\s/g, '\u00A0')}
+              </span>
+            )}
+          </span>
         )}
-        <span className="text-gray-400 text-xs ml-1">{player.stat}</span>
       </div>
     </div>
-  )
+  );
+
+
+
+
 
   return (
     <div className="flex justify-center items-start gap-x-10 w-full max-w-md mx-auto px-2">

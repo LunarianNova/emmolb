@@ -6,6 +6,7 @@ import { Navbar } from '@/components/Navbar';
 import Loading from '@/components/Loading';
 import { LinkWithLoading } from '@/components/LinkWithLoading';
 import Link from 'next/link';
+import { LiveGameCompact } from '@/components/LiveGameCompact';
 
 interface GameHeaderApiResponse {
   teamId: string;
@@ -65,12 +66,7 @@ export default function HomePage() {
         <div className="min-h-screen bg-[#0c111b] text-white font-sans p-4 pt-20 max-w-3xl mx-auto">
           {gameHeaders.map(({ teamId, gameHeader }) => (
             <Link key={teamId + "link"} href={"/game/" + gameHeader.gameId}>
-              <GameHeaderFromResponse
-                key={teamId}
-                homeTeam={gameHeader.homeTeam}
-                awayTeam={gameHeader.awayTeam}
-                game={gameHeader.game}
-              />
+              <LiveGameCompact key={teamId} gameId={gameHeader.gameId} homeTeam={gameHeader.homeTeam} awayTeam={gameHeader.awayTeam} game={gameHeader.game} />
             </Link>
           ))}
         </div>

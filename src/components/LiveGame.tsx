@@ -257,7 +257,7 @@ function groupEventLog(eventLog: { message: string }[]): EventBlockGroup[] {
       blocks.unshift(currentBlock); // Most recent events at top
     } else if (currentBlock) {
       // Add to existing block
-      if (event.message.includes("scores!")) currentBlock.color = "#1B5E20";
+      if (event.message.includes("scores!") || event.message.includes("homers")) currentBlock.color = "#1B5E20";
       currentBlock.messages.unshift(eventMessage);
     } else {
       // No current block? Create a generic one
