@@ -114,8 +114,8 @@ export function Navbar() {
                 Leagues
               </summary>
               <div className='ml-4 space-y-1'>
-                <Link href='' className='block'>~~ Greater League</Link>
-                <Link href='' className='block'>~~ Lesser League</Link>
+                <Link href='/greater-league' className='block'>Greater League</Link>
+                <Link href='/lesser-league' className='block'>Lesser League</Link>
               </div>
             </details>
 
@@ -172,12 +172,12 @@ export function Navbar() {
                     : 'opacity-0 scale-95 -translate-y-2 pointer-events-none'
                 }`}
             >
-              <button className="block w-full text-left px-3 py-2 rounded hover:bg-[#2a3a4a] transition cursor-pointer">
-                ~~ Greater League
-              </button>
-              <button className="block w-full text-left px-3 py-2 rounded hover:bg-[#2a3a4a] transition cursor-pointer">
-                ~~ Lesser League
-              </button>
+              <Link href='/greater-league' className="block w-full text-left px-3 py-2 rounded hover:bg-[#2a3a4a] transition cursor-pointer">
+                Greater League
+              </Link>
+              <Link href='/lesser-league' className="block w-full text-left px-3 py-2 rounded hover:bg-[#2a3a4a] transition cursor-pointer">
+                Lesser League
+              </Link>
             </div>
           </div>
 
