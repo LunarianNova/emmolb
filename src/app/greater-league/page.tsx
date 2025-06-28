@@ -59,10 +59,10 @@ export default function TwoLeaguesTeamsPage() {
             <h1 className="text-2xl font-bold text-center mb-6">Greater League Standings</h1>
             <div className='flex flex-col md:flex-row gap-6'>
                 {leagueTeams.map((entry, i) => (
-                    <div id={entry.leagueId} className="w-full md:w-1/2 px-2">
+                    <div key={entry.leagueId} className="w-full md:w-1/2 px-2">
                         <h2 className="text-xl font-bold text-center mb-4">{leagueNames[i]} Division</h2>
                         {entry.teams.map((team, idx) => (
-                            <div className="rounded-xl shadow-md mb-4 overflow-hidden max-w-md mx-auto border border-[#1c2a3a]">
+                            <div key={idx} className="rounded-xl shadow-md mb-4 overflow-hidden max-w-md mx-auto border border-[#1c2a3a]">
                                 <MiniTeamHeader team={team} />
                             </div>
                         ))}

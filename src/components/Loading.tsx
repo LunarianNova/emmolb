@@ -13,7 +13,7 @@ const messages = [
   'May contain nuts',
   "The E stands for 'Echo'",
   "The E stands for 'Enhanced'",
-  "The E stands for 'Egypt'",
+  "The E stands for 'Egyptian'",
   "The E stands for 'Ecological'"
 ];
 
@@ -24,7 +24,7 @@ export default function Loading() {
   useEffect(() => {
     const interval = setInterval(() => {
       setIndex(Math.floor(Math.random() * messages.length))
-    }, 2500)
+    }, 5000)
 
     return () => clearInterval(interval)
   }, [])

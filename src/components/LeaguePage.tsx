@@ -52,12 +52,12 @@ export default function LeaguePage({ id }: { id: string }) {
     <>
       <Navbar />
       <main className="mt-16">
-        <div className='min-h-screen bg-[#0c111b] text-white font-sans p-4 pt-24 max-w-2xl mx-auto'>
-            <div className='mb-8'>
+        <div className="min-h-screen bg-[#0c111b] text-white font-sans p-4 pt-24 max-w-2xl mx-auto">
+            <div className="mb-8">
                 <div>
                     <LeagueHeader league={league} />
-                    <div className='flex justify-center'>
-                        <div className='w-full max-w-[32rem] space-y-2'>
+                    <div className="flex justify-center">
+                        <div className="w-full max-w-[32rem] space-y-2">
                             {teams.map((team: any, index) => (
                                 <MiniTeamHeader key={index} team={team} index={index+1} />
                             ))}

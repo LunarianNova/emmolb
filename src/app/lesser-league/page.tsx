@@ -64,8 +64,8 @@ export default function LesserLeaguePage() {
                 <div>
                     <div className="space-y-3">
                         {leagues.map((league, index) => (
-                            <Link href={`/league/${league._id}`}>
-                                <LeagueHeader key={index} league={league} />
+                            <Link key={index} href={`/league/${league._id}`}>
+                                <LeagueHeader league={league} />
                             </Link>
                         ))}
                     </div>
