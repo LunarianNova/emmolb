@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useEffect, useState } from 'react';
 
 export default function TeamSelector() {
@@ -76,7 +77,9 @@ const removeTeamID = (id: string) => {
       <ul className="space-y-2">
         {teams.map((team) => (
           <li key={team._id} className="flex justify-between items-center bg-gray-800 p-2 rounded">
-            <span>{team.Emoji} {team.Location} {team.Name}</span>
+            <Link href={`/team/${team._id}`}>
+                <span>{team.Emoji} {team.Location} {team.Name}</span>
+            </Link>
             <button
               onClick={() => removeTeamID(team._id)}
               className="text-red-500 hover:underline text-sm"

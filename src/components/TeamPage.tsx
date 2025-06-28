@@ -42,10 +42,13 @@ export default function TeamPage({ id }: { id: string }) {
 
   const [loading, setLoading] = useState(true);
   const [team, setTeam] = useState<any>(null);
+  const [favorites, setFavorites] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     async function APICalls() {
       try {
+        const stored = JSON.parse(localStorage.getItem('favoriteTeamIDs') || '[]');
+        setFavorites(new Set(stored));
         const teamRes = await fetch(`/nextapi/team/${id}`);
         if (!teamRes.ok) throw new Error('Failed to load team data');
         setTeam(await teamRes.json());
@@ -58,6 +61,16 @@ export default function TeamPage({ id }: { id: string }) {
 
     APICalls();
   }, [id]);
+
+  function toggleFavorite(teamId: string) {
+    setFavorites(prev => {
+        const updated = new Set(prev);
+        updated.has(teamId) ? updated.delete(teamId) : updated.add(teamId);
+
+        localStorage.setItem('favoriteTeamIDs', JSON.stringify([...updated]));
+        return updated;
+    });
+  }
 
   if (loading) return (
     <>
@@ -79,6 +92,9 @@ export default function TeamPage({ id }: { id: string }) {
       <main className="mt-16">
         <div className="min-h-screen bg-[#0c111b] text-white font-sans p-4 pt-24 max-w-2xl mx-auto">
             <div className="relative w-full h-28 px-6 py-4 border-2 rounded-2xl shadow-xl overflow-hidden mb-4 flex items-center" style={{background: `#${team.Color}`, color: getContrastTextColor(team.Color)}}>
+                <button onClick={(e) => {e.stopPropagation(); toggleFavorite(team._id);}} className="absolute top-2 left-2 text-2xl z-10 hover:scale-110 transition-transform">
+                    {favorites.has(team._id) ? '★' : '☆'}
+                </button>
                 <span className="text-7xl flex-shrink-0">
                     {team.Emoji}
                 </span>
