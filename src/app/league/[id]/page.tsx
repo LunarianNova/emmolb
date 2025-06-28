@@ -1,11 +1,10 @@
-// src/app/league/[id]/page.tsx
-
 import LeaguePage from "@/components/LeaguePage";
 
 interface PageProps {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
-export default function LeagueServer({ params }: PageProps) {
-  return <LeaguePage id={params.id} />;
+export default async function LeagueServer({ params }: PageProps) {
+  const {id} = await params;
+  return <LeaguePage id={id} />;
 }
