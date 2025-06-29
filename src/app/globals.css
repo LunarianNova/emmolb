@@ -34,6 +34,20 @@ body {
   }
 }
 
+@font-face {
+  font-family: 'Scoreboard';
+  src: url('/fonts/scoreboard.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Impact';
+  src: url('/fonts/impact.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
 .highlighted-event {
   animation: highlightFade 2s ease forwards;
   scroll-margin-top: 70px; /* Adjust to your navbar height */

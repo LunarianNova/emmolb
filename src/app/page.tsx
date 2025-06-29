@@ -1,12 +1,13 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { GameHeaderFromResponse } from '@/components/GameHeader';
 import { Navbar } from '@/components/Navbar';
 import Loading from '@/components/Loading';
-import { LinkWithLoading } from '@/components/LinkWithLoading';
 import Link from 'next/link';
 import { LiveGameCompact } from '@/components/LiveGameCompact';
+import BlobileDiamond, { BlobileScoreboard, FullBlobileDisplay } from '@/components/BlobileLayout';
+import MiniTeamHeader from '@/components/MiniTeamHeader';
+import { useSettings } from '@/components/Settings';
 
 interface GameHeaderApiResponse {
   teamId: string;
@@ -23,6 +24,7 @@ interface GameHeaderResponse {
 export default function HomePage() {
   const [gameHeaders, setGameHeaders] = useState<GameHeaderApiResponse[]>([]);
   const [loading, setLoading] = useState(true);
+  const {settings} = useSettings();
 
   useEffect(() => {
     async function fetchGameHeaders() {
@@ -63,13 +65,17 @@ export default function HomePage() {
     <div>
       <Navbar />
       <main className="mt-16">
-        <div className="min-h-screen bg-[#0c111b] text-white font-sans p-4 pt-20 max-w-3xl mx-auto">
-          {gameHeaders.map(({ teamId, gameHeader }) => (
+        {settings.useBlasesloaded ? gameHeaders.map(({ teamId, gameHeader }) => (
             <Link key={teamId + "link"} href={"/game/" + gameHeader.gameId}>
-              <LiveGameCompact key={teamId} gameId={gameHeader.gameId} homeTeam={gameHeader.homeTeam} awayTeam={gameHeader.awayTeam} game={gameHeader.game} killLinks={true} />
+              <FullBlobileDisplay key={teamId} gameId={gameHeader.gameId} homeTeam={gameHeader.homeTeam} awayTeam={gameHeader.awayTeam} game={gameHeader.game} />
             </Link>
-          ))}
-        </div>
+          )) : 
+          (<div className="min-h-screen bg-[#0c111b] text-white font-sans p-4 pt-20 max-w-3xl mx-auto">
+            {gameHeaders.map(({ teamId, gameHeader }) => (
+              <Link key={teamId + "link"} href={"/game/" + gameHeader.gameId}>
+                <LiveGameCompact key={teamId} gameId={gameHeader.gameId} homeTeam={gameHeader.homeTeam} awayTeam={gameHeader.awayTeam} game={gameHeader.game} killLinks={true} />
+              </Link>
+          ))}</div>)}        
       </main>
     </div>
   );

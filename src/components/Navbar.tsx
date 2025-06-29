@@ -137,6 +137,7 @@ export function Navbar() {
               </summary>
               <div className='ml-4 space-y-1'>
                 <Link href='/teams' className='block'>Favorite Teams</Link>
+                <Link href='/options' className='block'>Options</Link>
               </div>
             </details>
           </div>
@@ -250,6 +251,11 @@ export function Navbar() {
               <Link href="/teams">
                 <button className="block w-full text-left px-3 py-2 rounded hover:bg-[#2a3a4a] transition cursor-pointer">
                   Favorite Teams
+                </button>
+              </Link>
+              <Link href="/options">
+                <button className="block w-full text-left px-3 py-2 rounded hover:bg-[#2a3a4a] transition cursor-pointer">
+                  Options
                 </button>
               </Link>
             </div>

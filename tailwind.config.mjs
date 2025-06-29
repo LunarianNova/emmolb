@@ -6,7 +6,12 @@ export default {
     './src/components/**/*.{js,ts,jsx,tsx}',
   ],
   theme: {
-    extend: {},
+    extend: {
+      fontFamily: {
+        scoreboard: ['Scoreboard', 'Geist'],
+        impact: ['Impact', 'Geist']
+      }
+    },
   },
   plugins: [],
 }
