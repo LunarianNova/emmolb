@@ -6,7 +6,7 @@ export function SeasonSchedule({feed}: { feed: any }) {
                 {feed.map((event: any, index: number) => {
                     if (event.season === season)
                         return (
-                            <div className="relative rounded-md p-1 text-xs min-h-[100px] flex flex-col items-center justify-center cursor-pointer hover:opacity-80">
+                            <div key={index} className="relative rounded-md p-1 text-xs min-h-[100px] flex flex-col items-center justify-center cursor-pointer hover:opacity-80">
                                 <div className="absolute top-1 left-1/2 -translate-x-1/2 text-[10px] font-bold">{event.day}</div>
                                 <div className="absolute top-1 right-1 text-xs"></div>
                             </div>

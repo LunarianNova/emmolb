@@ -5,7 +5,7 @@ import { GameStateDisplay } from '@/components/GameStateDisplay';
 import LastUpdatedCounter from './LastUpdatedCounter';
 import { GameHeader, GameHeaderFromResponse } from './GameHeader';
 
-export function LiveGameCompact({ gameId, homeTeam, awayTeam, game }: { gameId: string, homeTeam: any, awayTeam: any, game: any }){
+export function LiveGameCompact({ gameId, homeTeam, awayTeam, game, killLinks = false }: { gameId: string, homeTeam: any, awayTeam: any, game: any , killLinks?: boolean}){
     const [event, setEvent] = useState<any | null>(null);
     const [hasError, setHasError] = useState(false);
     const pollingRef = useRef<NodeJS.Timeout | null>(null);
@@ -50,12 +50,13 @@ export function LiveGameCompact({ gameId, homeTeam, awayTeam, game }: { gameId: 
         };
     }, [gameId]);
 
-    if (hasError || !event) return <GameHeaderFromResponse homeTeam={homeTeam} awayTeam={awayTeam} game={game} />;
+    if (hasError || !event) return <GameHeaderFromResponse homeTeam={homeTeam} awayTeam={awayTeam} game={game} killLinks={killLinks} />;
   
     return (
         <>
             <GameHeader
             homeTeam={{
+                id : homeTeam._id,
                 name: game.HomeTeamName,
                 emoji: game.HomeTeamEmoji,
                 score: event.home_score,
@@ -65,6 +66,7 @@ export function LiveGameCompact({ gameId, homeTeam, awayTeam, game }: { gameId: 
                 color: game.HomeTeamColor,
             }}
             awayTeam={{
+                id: homeTeam._id,
                 name: game.AwayTeamName,
                 emoji: game.AwayTeamEmoji,
                 score: event.away_score,
@@ -79,6 +81,7 @@ export function LiveGameCompact({ gameId, homeTeam, awayTeam, game }: { gameId: 
                 subtitle: game.Weather.Tooltip,
             }}
             inning={game.State != "Complete" ? (event.inning_side === 1 ? 'BOT' : 'TOP') + ' ' + event.inning : "FINAL"}
+            killLinks={killLinks}
             />
             <GameStateDisplayCompact event={event} lastUpdated={lastUpdated}/>
         </>

@@ -38,7 +38,7 @@ export default function PlayerStats({ player }: {player: any}) {
     const batting_average = (hits/at_bats).toFixed(3);
     const obp = ((hits + walked + hbp) / (at_bats + walked + hbp + sac_flies)).toFixed(3);
     const slg = ((singles + 2 * doubles + 3 * triples + 4 * home_runs)/(at_bats)).toFixed(3);
-    const ops = String(Number(obp) + Number(slg));
+    const ops = (Number(obp) + Number(slg)).toFixed(3);
     const ip = (Math.floor(outs / 3) + (outs % 3) / 10).toFixed(3);
     const era = ((earned_runs / (outs / 3)) * 9).toFixed(3);
     const whip = ((walks + hits_allowed) / (outs/3)).toFixed(3);

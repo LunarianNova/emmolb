@@ -2,9 +2,10 @@
 
 import React from 'react'
 import { WeatherInfo } from './WeatherInfo'
-import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 
 interface Team {
+  id: string
   name: string
   score: number
   emoji: string
@@ -25,12 +26,14 @@ interface GameHeaderProps {
   awayTeam: Team
   center: CenterInfo
   inning: string
+  killLinks?: boolean
 }
 
 interface GameHeaderResponse {
   homeTeam: any
   awayTeam: any
   game: any
+  killLinks?: boolean
 }
 
 function getLuminance(hex: string): number {
@@ -49,9 +52,10 @@ function getContrastTextColor(bgHex: string): 'black' | 'white' {
   return luminance > 0.179 ? 'black' : 'white';
 }
 
-export function GameHeaderFromResponse({ homeTeam, awayTeam, game }: GameHeaderResponse) {
+export function GameHeaderFromResponse({ homeTeam, awayTeam, game, killLinks = false}: GameHeaderResponse) {
   const lastEvent = game.EventLog[game.EventLog.length - 1];
   const homeTeamParam = {
+    id : homeTeam._id,
     name: `${homeTeam.Location} ${homeTeam.Name}`,
     score: lastEvent.home_score,
     emoji: homeTeam.Emoji,
@@ -61,6 +65,7 @@ export function GameHeaderFromResponse({ homeTeam, awayTeam, game }: GameHeaderR
     color: homeTeam.Color
   };
   const awayTeamParam = {
+    id: awayTeam._id,
     name: `${awayTeam.Location} ${awayTeam.Name}`,
     score: lastEvent.away_score,
     emoji: awayTeam.Emoji,
@@ -76,10 +81,11 @@ export function GameHeaderFromResponse({ homeTeam, awayTeam, game }: GameHeaderR
   };
   const inningParam = game.State != "Complete" ? (lastEvent.inning_side === 1 ? 'BOT' : 'TOP') + ' ' + lastEvent.inning : "FINAL"
 
-  return GameHeader({homeTeam: homeTeamParam, awayTeam: awayTeamParam, center: centerParam, inning: inningParam})
+  return GameHeader({homeTeam: homeTeamParam, awayTeam: awayTeamParam, center: centerParam, inning: inningParam, killLinks: killLinks})
 }
 
-export function GameHeader({ homeTeam, awayTeam, center, inning }: GameHeaderProps) {
+export function GameHeader({ homeTeam, awayTeam, center, inning, killLinks = false }: GameHeaderProps) {
+  const router = useRouter();
   return (
     <div
       className="rounded-xl shadow-xl overflow-visible mb-6 border-3 border-[#0c111b]"
@@ -98,7 +104,11 @@ export function GameHeader({ homeTeam, awayTeam, center, inning }: GameHeaderPro
             {awayTeam.score}
           </div>
           <div className="text-xl md:text-4xl">{awayTeam.emoji}</div>
-          <div className="text-xs md:text-xl font-semibold whitespace-normal leading-snug text-center cursor-pointer">
+          <div className="text-xs md:text-xl font-semibold whitespace-normal leading-snug text-center cursor-pointer"
+          onClick={(e) => {
+            e.stopPropagation();
+            if (!killLinks) router.push(`/team/${awayTeam.id}`);
+          }}>
             {awayTeam.name}
             <div className="text-[10px] md:text-sm font-normal mt-0.5 opacity-70">
               {awayTeam.wins}–{awayTeam.losses} (
@@ -129,7 +139,11 @@ export function GameHeader({ homeTeam, awayTeam, center, inning }: GameHeaderPro
           className="flex items-center justify-end px-1 py-2 min-h-[54px] md:min-h-[88px]"
           style={{ color: getContrastTextColor(awayTeam.color) || 'rgb(0,0,0)' }}
         >
-          <div className="text-xs md:text-xl font-semibold whitespace-normal leading-snug text-center cursor-pointer">
+          <div className="text-xs md:text-xl font-semibold whitespace-normal leading-snug text-center cursor-pointer"
+          onClick={(e) => {
+            e.stopPropagation();
+            if (!killLinks) router.push(`/team/${homeTeam.id}`);
+          }}>
             {homeTeam.name}
             <div className="text-[10px] md:text-sm font-normal mt-0.5 opacity-70">
               {homeTeam.wins}–{homeTeam.losses} (

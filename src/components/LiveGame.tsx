@@ -286,6 +286,7 @@ const groupedEvents = groupEventLog(eventLog);
       <div className="min-h-screen bg-[#0c111b] text-white font-sans p-4 pt-20 max-w-3xl mx-auto">
         <GameHeader
           homeTeam={{
+            id: data.HomeTeamID,
             name: data.HomeTeamName,
             emoji: data.HomeTeamEmoji,
             score: lastEvent.home_score,
@@ -295,6 +296,7 @@ const groupedEvents = groupEventLog(eventLog);
             color: data.HomeTeamColor,
           }}
           awayTeam={{
+            id: data.AwayTeamID,
             name: data.AwayTeamName,
             emoji: data.AwayTeamEmoji,
             score: lastEvent.away_score,
