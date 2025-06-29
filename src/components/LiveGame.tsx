@@ -22,6 +22,7 @@ type EventBlockGroup = {
   title?: string;
   color?: string;
   messages: EventMessage[];
+  onClick?: any;
 };
 
 function getERA(stats: any): string {
@@ -152,7 +153,7 @@ useEffect(() => {
 }, [gameId]);
 
 
-function getBlockMetadata(message: string): { emoji?: string; title?: string } | null {
+function getBlockMetadata(message: string): { emoji?: string; title?: string, onClick?: () => void } | null {
   if (message.includes('Now batting')) {
     const match = message.match(/Now batting: (.+)/);
     const player = match ? match[1].split("(")[0].trim() : null;
@@ -160,7 +161,7 @@ function getBlockMetadata(message: string): { emoji?: string; title?: string } |
     if (player) {
         emoji = awayPlayers.includes(player) ? data.AwayTeamEmoji : data.HomeTeamEmoji;
     }
-    return player && emoji ? { emoji: emoji, title: player } : null;
+    return player && emoji ? { emoji: emoji, title: player, onClick: () => {setSelectedPlayer(player); setShowStats(true);} } : null;
   }
 
   if (message.includes('"')) return { emoji: '🤖', title: 'ROBO-UMP' };
@@ -294,7 +295,7 @@ const groupedEvents = groupEventLog(eventLog);
 
         <div className="mt-6 space-y-4">
             {groupedEvents.map((block, idx) => (
-                <EventBlock key={idx} emoji={block.emoji} title={block.title} color={block.color} messages={block.messages}/>
+                <EventBlock key={idx} emoji={block.emoji} title={block.title} color={block.color} messages={block.messages} onClick={block.onClick ? block.onClick : undefined}/>
             ))}
         </div>
 

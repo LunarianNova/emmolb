@@ -33,6 +33,7 @@ interface EventBlockProps {
   title?: string;
   color?: string,
   messages: EventMessage[];
+  onClick?: () => void;
 }
 
 type EventMessage = {
@@ -42,13 +43,13 @@ type EventMessage = {
   pitchZone?: string | null;
 }
 
-export function EventBlock({ emoji, title, color, messages }: EventBlockProps) {
+export function EventBlock({ emoji, title, color, messages, onClick }: EventBlockProps) {
   useHighlightEventOnHash();
   const bgColor = color ?? '#1e2a36';
   return (
     <div className="relative mt-6">
       {(emoji || title) && (
-        <div className="absolute -top-3 left-3 z-10 inline-block rounded-full px-3 py-1 text-base font-bold text-[#fef4e5] bg-[#0f1a2b] border border-[#1e2a36] shadow-md">
+        <div className={`absolute -top-3 left-3 z-10 inline-block rounded-full px-3 py-1 text-base font-bold text-[#fef4e5] bg-[#0f1a2b] border border-[#1e2a36] shadow-md ${onClick?'cursor-pointer':''}`} onClick={onClick}>
           {emoji && <span className="mr-1">{emoji}</span>}
           {title}
         </div>
