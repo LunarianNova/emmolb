@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
+import MiniTeamHeader from './MiniTeamHeader';
 
 export default function TeamSelector() {
   const [input, setInput] = useState('');
@@ -76,10 +77,8 @@ const removeTeamID = (id: string) => {
 
       <ul className="space-y-2">
         {teams.map((team) => (
-          <li key={team._id} className="flex justify-between items-center bg-gray-800 p-2 rounded">
-            <Link href={`/team/${team._id}`}>
-                <span>{team.Emoji} {team.Location} {team.Name}</span>
-            </Link>
+          <li key={team._id} className="p-2">
+            <MiniTeamHeader team={team} />
             <button
               onClick={() => removeTeamID(team._id)}
               className="text-red-500 hover:underline text-sm"

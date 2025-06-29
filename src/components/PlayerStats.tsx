@@ -1,5 +1,6 @@
-export default function PlayerStats({ player }: {player: any}) {
-    const stats = player.Stats;
+export default function PlayerStats({ player, category }: {player: any, category?: any}) {
+    console.log(category);
+    const stats = player.Stats ?? player;
     const singles = stats.singles ?? 0;
     const doubles = stats.doubles ?? 0;
     const triples = stats.triples ?? 0;
@@ -39,7 +40,7 @@ export default function PlayerStats({ player }: {player: any}) {
     const obp = ((hits + walked + hbp) / (at_bats + walked + hbp + sac_flies)).toFixed(3);
     const slg = ((singles + 2 * doubles + 3 * triples + 4 * home_runs)/(at_bats)).toFixed(3);
     const ops = (Number(obp) + Number(slg)).toFixed(3);
-    const ip = (Math.floor(outs / 3) + (outs % 3) / 10).toFixed(3);
+    const ip = (Math.floor(outs / 3) + (outs % 3) / 10).toFixed(1);
     const era = ((earned_runs / (outs / 3)) * 9).toFixed(3);
     const whip = ((walks + hits_allowed) / (outs/3)).toFixed(3);
     const kbb = (strikeouts/walks).toFixed(3);
@@ -53,11 +54,12 @@ export default function PlayerStats({ player }: {player: any}) {
 
     return (
         <div>
-            <div className="bg-[#1c2a3a] py-2 px-4 rounded-xl mt-1">
-                <div className="text-lg font-bold mb-2 pt-2 text-center">Season Stats</div>
-                <div className="mb-4">
+            <div className="bg-[#1c2a3a] py-2 px-4 rounded-xl mt-1 h-full">
+                <div className="text-lg font-bold pt-2 text-center">Season Stats</div>
+                <div className="text-lg mb-2 text-center">{player.Emoji} {player.FirstName} {player.LastName}</div>
+                {((category && category == 'batting') || !category) ? (<div className="mb-4">
                     <div className="text-base font-semibold mb-1 text-center">Batting</div>
-                    <div className="grid grid-cols-6 gap-1">
+                    <div className="grid grid-cols-4 md:grid-cols-6 gap-1">
                         <div className="relative group bg-[#161d29] border border-[#2a3a4a] rounded-md p-2 flex flex-col items-center">
                             <div className="text-xs font-bold cursor-pointer text-white">AVG</div>
                             <div className="text-sm font-normal">{batting_average != 'NaN' ? batting_average : '-'}</div>
@@ -134,10 +136,10 @@ export default function PlayerStats({ player }: {player: any}) {
                             <div className="absolute bottom-full mb-2 px-2 py-1 bg-black text-white text-xs rounded opacity-0 group-hover:opacity-100 transition text-center whitespace-pre z-50">Grounded Into Double Plays</div>
                         </div>
                     </div>
-                </div>
-                <div className="mb-4">
+                </div>) : ('')}
+                {((category && category == 'pitching') || !category) ? (<div className="mb-4">
                     <div className="text-base font-semibold mb-1 text-center">Pitching</div>
-                    <div className="grid grid-cols-6 gap-1">
+                    <div className="grid grid-cols-4 md:grid-cols-6 gap-1">
                         <div className="relative group bg-[#161d29] border border-[#2a3a4a] rounded-md p-2 flex flex-col items-center">
                             <div className="text-xs font-bold cursor-pointer text-white">ERA</div>
                             <div className="text-sm font-normal">{era != 'NaN' ? era : '-'}</div>
@@ -254,10 +256,10 @@ export default function PlayerStats({ player }: {player: any}) {
                             <div className="absolute bottom-full mb-2 px-2 py-1 bg-black text-white text-xs rounded opacity-0 group-hover:opacity-100 transition text-center whitespace-pre z-50">No Hitters</div>
                         </div>
                     </div>
-                </div>
-                <div className="mb-6">
+                </div>) : ''}
+                {((category && category == 'defense') || !category) ? (<div className="mb-6">
                     <div className="text-base font-semibold mb-1 text-center">Defense</div>
-                    <div className="grid grid-cols-6 gap-1">
+                    <div className="grid grid-cols-4 md:grid-cols-6 gap-1">
                         <div className="relative group bg-[#161d29] border border-[#2a3a4a] rounded-md p-2 flex flex-col items-center">
                             <div className="text-xs font-bold cursor-pointer text-white">E</div>
                             <div className="text-sm font-normal">{errors}</div>
@@ -279,7 +281,7 @@ export default function PlayerStats({ player }: {player: any}) {
                             <div className="absolute bottom-full mb-2 px-2 py-1 bg-black text-white text-xs rounded opacity-0 group-hover:opacity-100 transition text-center whitespace-pre z-50">Double Plays</div>
                         </div>
                     </div>
-                </div>
+                </div>) : ''}
             </div>
         </div>
     );

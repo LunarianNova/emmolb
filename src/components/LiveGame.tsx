@@ -6,6 +6,7 @@ import { GameHeader } from '@/components/GameHeader';
 import { GameStateDisplay } from '@/components/GameStateDisplay';
 import { EventBlock } from './EventBlock';
 import { CopiedPopup } from './CopiedPopup';
+import PlayerStats from './PlayerStats';
 
 type Event = any; // ahhhh
 
@@ -44,86 +45,23 @@ function getBA(stats: any): string {
   return at_bats == 0 ? "N/A BA" : `${(hits/at_bats).toFixed(3)} BA`;
 }
 
-function formatBatterStats(stats: any) {
-  const singles = stats.singles ?? 0;
-  const doubles = stats.doubles ?? 0;
-  const triples = stats.triples ?? 0;
-  const home_runs = stats.home_runs ?? 0;
-  const hits = singles + doubles + triples + home_runs;
-  const at_bats = stats.at_bats ?? 0;
-  const walks = stats.walks ?? 0;
-  const hit_by_pitch = stats.hit_by_pitch ?? 0;
-  const sacrifice_flies = stats.sacrifice_flies ?? 0;
-  const sacrifice_hits = stats.sacrifice_hits ?? 0;
-  const stolen_bases = stats.stolen_bases ?? 0;
-  const caught_stealing = stats.caught_stealing ?? 0;
-
-  const PA = at_bats + walks + hit_by_pitch + sacrifice_flies + sacrifice_hits;
-  const OBP = PA ? ((hits + walks + hit_by_pitch) / (PA - sacrifice_hits)).toFixed(3) : "N/A";
-  const SLG = at_bats ? ((singles + 2 * doubles + 3 * triples + 4 * home_runs) / at_bats).toFixed(3) : "N/A";
-  const OPS = (parseFloat(OBP) + parseFloat(SLG)).toFixed(3);
-  const BA = at_bats ? (hits / at_bats).toFixed(3) : "N/A";
-  const SBpct = (stolen_bases + caught_stealing) > 0
-    ? `${Math.round((stolen_bases / (stolen_bases + caught_stealing)) * 100)}%`
-    : "N/A";
-
-  return {
-    "PA": PA,
-    "BA": BA,
-    "OBP": OBP,
-    "SLG": SLG,
-    "OPS": OPS,
-    "SB%": SBpct,
-  };
-}
-
-function formatPitcherStats(stats: any) {
-  const outs = stats.outs ?? 0;
-  const earned_runs = stats.earned_runs ?? 0;
-  const walks = stats.walks ?? 0;
-  const hits = stats.hits_allowed ?? 0;
-  const home_runs = stats.home_runs_allowed ?? 0;
-  const strikeouts = stats.strikeouts ?? 0;
-
-  const IP = outs / 3;
-  if (IP === 0) return {
-    "IP": "0.0",
-    "ERA": "∞",
-    "WHIP": "∞",
-    "H/9": "∞",
-    "HR/9": "∞",
-    "K/9": "∞",
-    "BB/9": "∞",
-  };
-
-  return {
-    "IP": IP.toFixed(1),
-    "ERA": ((earned_runs / IP) * 9).toFixed(2),
-    "WHIP": ((walks + hits) / IP).toFixed(2),
-    "H/9": ((hits / IP) * 9).toFixed(2),
-    "HR/9": ((home_runs / IP) * 9).toFixed(2),
-    "K/9": ((strikeouts / IP) * 9).toFixed(2),
-    "BB/9": ((walks / IP) * 9).toFixed(2),
-  };
-}
-
 export default function LiveGame({ awayTeam, homeTeam, initialData, gameId }: { awayTeam: any, homeTeam: any, initialData: any; gameId: string }) {
   const [eventLog, setEventLog] = useState<Event[]>(initialData.EventLog);
   const [lastEvent, setLastEvent] = useState(initialData.EventLog[initialData.EventLog.length - 1]);
   const [data, setData] = useState(initialData);
-  const playerStats: Record<string, any> = {};
+  const players: Record<string, any> = {};
   const homePlayers: string[] = [];
   const awayPlayers: string[] = [];
 
   for (const player of awayTeam.Players) {
     const fullName = `${player.FirstName} ${player.LastName}`
-    playerStats[fullName] = player.Stats
+    players[fullName] = player;
     awayPlayers.push(fullName);
   }
 
   for (const player of homeTeam.Players) {
     const fullName = `${player.FirstName} ${player.LastName}`
-    playerStats[fullName] = player.Stats
+    players[fullName] = player;
     homePlayers.push(fullName);
   }
   
@@ -133,9 +71,9 @@ const repeatedAfterCountRef = useRef(0);
 const lastAfterRef = useRef<string | null>(null);
 const pollingRef = useRef<NodeJS.Timeout | null>(null);
 const [selectedPlayer, setSelectedPlayer] = useState<string | null>(null);
-const [playerType, setPlayerType] = useState<'pitcher' | 'batter' | null>(null);
-const [showDerived, setShowDerived] = useState(true);
+const [playerType, setPlayerType] = useState<'pitching' | 'batting' | null>(null);
 const [showStats, setShowStats] = useState(false);
+const [followLive, setFollowLive] = useState(false);
 
 useEffect(() => {
   lastEventIndexRef.current = lastEvent.index;
@@ -269,13 +207,6 @@ function groupEventLog(eventLog: { message: string }[]): EventBlockGroup[] {
   return blocks;
 }
 
-const rawStats = selectedPlayer ? playerStats[selectedPlayer] : [];
-const derivedStats = playerType === 'pitcher'
-  ? formatPitcherStats(rawStats)
-  : formatBatterStats(rawStats);
-
-const displayStats = showDerived ? derivedStats : rawStats;
-const displayKeys = Object.keys(displayStats);
 const groupedEvents = groupEventLog(eventLog);
 
   return (
@@ -283,7 +214,7 @@ const groupedEvents = groupEventLog(eventLog);
     <Navbar />
     <main className="mt-16">
       <CopiedPopup />
-      <div className="min-h-screen bg-[#0c111b] text-white font-sans p-4 pt-20 max-w-3xl mx-auto">
+      <div className="min-h-screen bg-[#0c111b] text-white font-sans p-4 pt-20 max-w-3xl mx-auto h-full">
         <GameHeader
           homeTeam={{
             id: data.HomeTeamID,
@@ -320,18 +251,18 @@ const groupedEvents = groupEventLog(eventLog);
           bases={{ first: lastEvent.on_1b, second: lastEvent.on_2b, third: lastEvent.on_3b }}
           pitcher={{
             name: lastEvent.pitcher,
-            stat: lastEvent.pitcher !== "" ? `(${getERA(playerStats[lastEvent.pitcher])})` : "",
-            onClick: () => {setSelectedPlayer(lastEvent.pitcher); setPlayerType('pitcher'); setShowStats(true);},
+            stat: lastEvent.pitcher !== "" ? `(${getERA(players[lastEvent.pitcher].Stats)})` : "",
+            onClick: () => {setSelectedPlayer(lastEvent.pitcher); setPlayerType('pitching'); setShowStats(true);},
           }}
           batter={{
             name: lastEvent.batter,
-            stat: lastEvent.batter !== "" ? `(${getBA(playerStats[lastEvent.batter])})` : "",
-            onClick: () => {setSelectedPlayer(lastEvent.batter); setPlayerType('batter'); setShowStats(true);},
+            stat: lastEvent.batter !== "" ? `(${getBA(players[lastEvent.batter].Stats)})` : "",
+            onClick: () => {setSelectedPlayer(lastEvent.batter); setPlayerType('batting'); setShowStats(true);},
           }}
           onDeck={{
             name: lastEvent.on_deck,
-            stat: lastEvent.on_deck !== "" ? `(${getBA(playerStats[lastEvent.on_deck])})` : "",
-            onClick: () => {setSelectedPlayer(lastEvent.on_deck); setPlayerType('batter'); setShowStats(true);},
+            stat: lastEvent.on_deck !== "" ? `(${getBA(players[lastEvent.on_deck].Stats)})` : "",
+            onClick: () => {setSelectedPlayer(lastEvent.on_deck); setPlayerType('batting'); setShowStats(true);},
           }}
         />
 
@@ -345,28 +276,18 @@ const groupedEvents = groupEventLog(eventLog);
             </button>
 
             <button
-              onClick={() => setShowDerived(prev => !prev)}
+              onClick={() => setFollowLive(prev => !prev)}
               className="px-3 py-1 text-xs bg-gray-800 hover:bg-gray-700 rounded-md"
             >
-              {showDerived ? 'Show Raw Stats' : 'Show Derived Stats'}
+              {followLive ? 'Unfollow Live' : 'Follow Live'}
             </button>
           </div>
 
-
-          {showStats ? (<>
-            <h2>{selectedPlayer ? awayPlayers.includes(selectedPlayer) ? awayTeam.Emoji : homeTeam.Emoji : ''} {selectedPlayer}</h2>
-            <div className="grid grid-cols-2 gap-x-4 text-sm">
-            {displayStats ? (
-              displayKeys.map((stat) => (
-                <div key={stat} className="flex justify-between py-0.5">
-                  <span className="text-gray-400">{stat}</span>
-                  <span>{displayStats[stat] ?? '—'}</span>
-                </div>
-              ))
-            ) : (
-              <p>No stats available.</p>
-            )}
-          </div></>) : ''}
+          {(showStats && followLive) ? (<div className='grid grid-cols-2 gap-2 items-stretch h-full'>
+              <PlayerStats player={lastEvent.pitcher ? players[lastEvent.pitcher] : ''} category='pitching' />
+              <PlayerStats player={lastEvent.batter ? players[lastEvent.batter] : ''} category='batting' />
+            </div>) : ''}
+          {(showStats && !followLive) ? (<PlayerStats player={selectedPlayer ? players[selectedPlayer] : ''} category={playerType} />) : ''}
         </>
 
         <div className="mt-6 space-y-4">

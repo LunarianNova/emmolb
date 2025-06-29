@@ -57,6 +57,15 @@ export function EventBlock({ emoji, title, color, messages }: EventBlockProps) {
         <div className="text-sm whitespace-pre-line space-y-1">
           {messages.map(({index, message, pitchSpeed, pitchZone}, i) => (
             <div key={i} className="flex justify-between items-start gap-2">
+              <button
+                  onClick={() => {
+                    const url = `${window.location.origin}${window.location.pathname}#event-${index}`;
+                    navigator.clipboard.writeText(url);
+                    (window as any).showCopiedPopup?.();
+                  }}
+                  className="cursor-pointer no-underline">
+                    🔗
+              </button>
               <div id={`event-${index}`} className="flex-1 text-left leading-[1.3] [&>*]:inline [&>*]:whitespace-normal" style={{ scrollMarginTop: '15rem' }} dangerouslySetInnerHTML={{__html: message}} />
               {(pitchSpeed && pitchZone) ? (
                 <div className="flex items-center gap-1 ml-2 text-[10px] opacity-80 w-fit shrink-0">
@@ -64,29 +73,8 @@ export function EventBlock({ emoji, title, color, messages }: EventBlockProps) {
                     {pitchSpeed}
                   </span>
                   <PitchZone zone={Number(pitchZone)} />
-                  <button
-                  onClick={() => {
-                    const url = `${window.location.origin}${window.location.pathname}#event-${index}`;
-                    navigator.clipboard.writeText(url);
-                    (window as any).showCopiedPopup?.();
-                  }}
-                  className="cursor-pointer no-underline">
-                    🔗
-                  </button>
                 </div>
-              ) : (
-                <div className="flex items-center gap-1 ml-2 text-[10px] opacity-80 w-fit shrink-0">
-                  <button
-                  onClick={() => {
-                    const url = `${window.location.origin}${window.location.pathname}#event-${index}`;
-                    navigator.clipboard.writeText(url);
-                    (window as any).showCopiedPopup?.();
-                  }}
-                  className="cursor-pointer no-underline">
-                    🔗
-                  </button>
-                </div>
-              )}
+              ) : ('')}
             </div>
           ))}
         </div>
