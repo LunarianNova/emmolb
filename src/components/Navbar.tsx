@@ -128,6 +128,7 @@ export function Navbar() {
                 <Link href='https://www.patreon.com/MMOLB' className='block'>MMOLB Patreon</Link>
                 <Link href='https://discord.gg/cr3tRG2xqq' className='block'>MMOLB Discord</Link>
                 <Link href='https://reddit.com/r/MMOLB' className='block'>MMOLB Reddit</Link>
+                <Link href='https://ko-fi.com/echoviax' className='block'>Buy us a Coffee</Link>
               </div>
             </details>
 
@@ -226,6 +227,14 @@ export function Navbar() {
                 className="block w-full text-left px-3 py-2 rounded hover:bg-[#2a3a4a] transition cursor-pointer"
               >
                 MMOLB Reddit
+              </Link>
+              <Link
+                href="https://ko-fi.com/echoviax"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block w-full text-left px-3 py-2 rounded hover:bg-[#2a3a4a] transition cursor-pointer"
+              >
+                Buy us a Coffee
               </Link>
             </div>
           </div>
