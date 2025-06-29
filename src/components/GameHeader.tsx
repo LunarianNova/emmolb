@@ -137,7 +137,7 @@ export function GameHeader({ homeTeam, awayTeam, center, inning, killLinks = fal
         {/* Home Team */}
         <div
           className="flex items-center justify-end px-1 py-2 min-h-[54px] md:min-h-[88px]"
-          style={{ color: getContrastTextColor(awayTeam.color) || 'rgb(0,0,0)' }}
+          style={{ color: getContrastTextColor(homeTeam.color) || 'rgb(0,0,0)' }}
         >
           <div className="text-xs md:text-xl font-semibold whitespace-normal leading-snug text-center cursor-pointer"
           onClick={(e) => {

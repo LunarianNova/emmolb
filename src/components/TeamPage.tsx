@@ -45,6 +45,7 @@ export default function TeamPage({ id }: { id: string }) {
   const [loading, setLoading] = useState(true);
   const [team, setTeam] = useState<any>(null);
   const [game, setGame] = useState<any>(null);
+  const [gameID, setGameID] = useState<any>(null);
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
   const [expandedPlayers, setExpandedPlayers] = useState<Record<string, boolean>>({});
 
@@ -53,8 +54,11 @@ export default function TeamPage({ id }: { id: string }) {
       try {
         const currentGame = await fetch(`/nextapi/game-by-team/${id}`);
         if (currentGame.ok) {
-            const currentHeader = await fetch(`/nextapi/gameheader/${await currentGame.json()}`)
-            if (currentHeader.ok) setGame(currentHeader);
+            const res = await currentGame.json();
+            const gameId = res.game_id;
+            setGameID(gameId);
+            const currentHeader = await fetch(`/nextapi/gameheader/${gameId}`)
+            if (currentHeader.ok) setGame(await currentHeader.json());
         }
 
         const stored = JSON.parse(localStorage.getItem('favoriteTeamIDs') || '[]');
@@ -124,6 +128,7 @@ export default function TeamPage({ id }: { id: string }) {
                 </span>
                 <span className="absolute top-1 right-2 text-base font-semibold opacity-80 pointer-events-none">{team.Record["Regular Season"].RunDifferential > 0 ? '+' : ''}{team.Record["Regular Season"].RunDifferential}</span>
             </div>
+            {game && game.game.State != "Complete" && (<><Link href={`/game/${gameID}`}><LiveGameCompact homeTeam={game.homeTeam} awayTeam={game.awayTeam} game={game.game} gameId={gameID} killLinks={true} /></Link></>)}
             <div className="mb-4 flex justify-center gap-4">
                 <button className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded transition">
                     Season Schedule
