@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { GameStateDisplayCompact, LiveGameCompact } from "./LiveGameCompact";
 import PlayerStats from "./PlayerStats";
+import CheckboxDropdown from "./CheckboxDropdown";
 
 function getLuminance(hex: string): number {
   const c = hex.charAt(0) === '#' ? hex.substring(1) : hex;
@@ -48,6 +49,9 @@ export default function TeamPage({ id }: { id: string }) {
   const [gameID, setGameID] = useState<any>(null);
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
   const [expandedPlayers, setExpandedPlayers] = useState<Record<string, boolean>>({});
+  const [selectedSeasons, setSelectedSeasons] = useState<string[]>(["2"]);
+  const [feedFilters, setFeedFilters] = useState<string[]>(["game", "augment"]);
+  const [dropdownOpen, setDropdownOpen] = useState<{ season: boolean; type: boolean }>({season: false, type: false});
 
   useEffect(() => {
     async function APICalls() {
@@ -68,6 +72,9 @@ export default function TeamPage({ id }: { id: string }) {
         if (!teamRes.ok) throw new Error('Failed to load team data');
         setTeam(await teamRes.json());
         setExpandedPlayers(Object.fromEntries(team.Players.map((player: any) => [player.PlayerID, false])))
+        const uniqueTypes: string[] = Array.from(new Set(team.Feed.map((event: any) => event.type)));
+        setFeedFilters(uniqueTypes);
+
 
       } catch (err) {
         console.error(err);
@@ -102,6 +109,8 @@ export default function TeamPage({ id }: { id: string }) {
       <div className="text-white text-center mt-10">Can't find that team</div>
     </>
   );
+
+  const uniqueTypes: string[] = Array.from(new Set(team.Feed.map((event: any) => event.type)));
 
   return (
     <>
@@ -219,16 +228,59 @@ export default function TeamPage({ id }: { id: string }) {
             <div className="mt-8">
                 <div className="flex items-center justify-between mb-2">
                     <span className="text-xl font-bold">Recent Events</span>
-                    <select className="bg-[#1c2a3a] text-white px-2 py-1 rounded text-sm">
-                        <option value="2">Season 2</option>
-                        <option value="1">Season 1</option>
-                    </select>
+                    <div className="flex gap-3 mb-2">
+                    <CheckboxDropdown
+                        label="Seasons"
+                        options={["1", "2"]}
+                        selected={selectedSeasons}
+                        setSelected={setSelectedSeasons}
+                        isOpen={dropdownOpen.season}
+                        toggleOpen={() =>
+                        setDropdownOpen((prev) => ({ ...prev, season: !prev.season }))
+                        }
+                    />
+                    <CheckboxDropdown
+                        label="Types"
+                        options={uniqueTypes}
+                        selected={feedFilters}
+                        setSelected={setFeedFilters}
+                        isOpen={dropdownOpen.type}
+                        toggleOpen={() =>
+                        setDropdownOpen((prev) => ({ ...prev, type: !prev.type }))
+                        }
+                    />
+                    </div>
                 </div>
                 <div className="bg-[#1c2a3a] rounded-xl p-3 max-h-60 overflow-y-auto text-sm space-y-1">
-                    {team.Feed.slice().reverse().map((event: any, i: number) => {
+                    {team.Feed.filter((event: any) => 
+                        selectedSeasons.includes(event.season?.toString()) && feedFilters.includes(event.type)).slice().reverse().map((event: any, i: number) => {
+                        const parts = event.text.split(/( vs\. | - )/); // split and keep separators
+                        console.log(event.links);
+                        
                         return (
                             <div key={i}>
-                                {event.emoji} Season {event.season}, {event.status}, Day {event.day}: {event.text}
+                                {event.emoji} Season {event.season}, {event.status}, Day {event.day}:{' '}
+                                {event.type === 'game' ? (() => {
+                                    let linkIndex = 0;
+                                    return parts.map((part: string, index: number) => {
+                                        if (/^\s*vs\.\s*$|^\s*-\s*$/.test(part)) {return <span key={`sep-${index}`}>{part}</span>;}
+
+                                        const link = event.links?.[linkIndex];
+                                        linkIndex++;
+
+                                        if (!link) {
+                                        return <span key={`text-${index}`}>{part}</span>;
+                                        }
+
+                                        const href = link.type === 'game' ? `/watch/${link.id}` : `/${link.type}/${link.id}`;
+
+                                        return (
+                                        <Link key={`link-${index}`} href={href}>
+                                            <span className="underline cursor-pointer">{part}</span>
+                                        </Link>
+                                        );
+                                    });
+                                })() : event.text}
                             </div>
                         );
                     })}
