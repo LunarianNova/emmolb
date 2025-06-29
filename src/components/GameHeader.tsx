@@ -2,6 +2,7 @@
 
 import React from 'react'
 import { WeatherInfo } from './WeatherInfo'
+import Link from 'next/link'
 
 interface Team {
   name: string
