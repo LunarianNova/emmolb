@@ -76,7 +76,7 @@ export function EventBlock({ emoji, title, color, messages }: EventBlockProps) {
                 </div>
               ) : ('')}
             </div>
-          ))}
+        ))}
         </div>
       </div>
     </div>

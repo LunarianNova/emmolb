@@ -174,6 +174,8 @@ function getBlockMetadata(message: string): { emoji?: string; title?: string } |
 }
 
 function getEventMessageObject(event: any, index: number): EventMessage {
+  if (event.message.includes("homers") && !event.message.includes(`<strong>${event.batter} scores!`)) event.message += ` <strong>${event.batter} scores!</strong>`;
+  if (event.message.includes("scores") && !event.message.includes('Score is now ')) event.message += `<strong> Score is now ${event.away_score}-${event.home_score}</strong>`
   const message = event.message;
   const pitchSpeed = event.pitch_info ?? null;
   const pitchZone = event.zone ?? null;
@@ -181,7 +183,7 @@ function getEventMessageObject(event: any, index: number): EventMessage {
   return {index: index, message: message, pitchSpeed: pitchSpeed, pitchZone: pitchZone};
 }
 
-function groupEventLog(eventLog: { message: string }[]): EventBlockGroup[] {
+function groupEventLog(eventLog: { away_score: string, home_score: string, batter: string, message: string }[]): EventBlockGroup[] {
   const blocks: EventBlockGroup[] = [];
   let currentBlock: EventBlockGroup | null = null;
 
