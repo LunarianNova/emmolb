@@ -124,7 +124,7 @@ export function Navbar() {
                 Info
               </summary>
               <div className='ml-4 space-y-1'>
-                <Link href='' className='block'>~~ What is MMOLB?</Link>
+                <Link href='/what' className='block'>What is EMMOLB?</Link>
                 <Link href='https://www.patreon.com/MMOLB' className='block'>MMOLB Patreon</Link>
                 <Link href='https://discord.gg/cr3tRG2xqq' className='block'>MMOLB Discord</Link>
                 <Link href='https://reddit.com/r/MMOLB' className='block'>MMOLB Reddit</Link>
@@ -201,9 +201,12 @@ export function Navbar() {
                     : 'opacity-0 scale-95 -translate-y-2 pointer-events-none'
                 }`}
             >
-              <button className="block w-full text-left px-3 py-2 rounded link-hover transition cursor-pointer">
-                ~~ What is MMOLB?
-              </button>
+              <Link
+                href="/what"
+                className="block w-full text-left px-3 py-2 rounded link-hover transition cursor-pointer"
+              >
+                What is EMMOLB?
+              </Link>
               <Link
                 href="https://www.patreon.com/MMOLB"
                 target="_blank"
