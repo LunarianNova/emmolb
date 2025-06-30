@@ -1,8 +1,6 @@
 import type { Metadata } from "next";
 import { GeistSans } from 'geist/font/sans';
-import { GeistMono } from 'geist/font/mono';
 import "./globals.css";
-import { ThemeProvider } from "@/hooks/ThemeContext";
 import { Analytics } from "@vercel/analytics/next"
 import { SettingsProvider } from "@/components/Settings";
 import { ThemeUpdater } from "@/components/ThemeUpdater";
@@ -23,7 +21,7 @@ export default function RootLayout({
         className={`${GeistSans.className} min-h-screen`}
       >
         <SettingsProvider>
-          <ThemeUpdater />
+        <ThemeUpdater />
         {children}
         </SettingsProvider>
         <Analytics />

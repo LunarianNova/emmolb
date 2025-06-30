@@ -50,7 +50,7 @@
 }
 
 .border-theme-accent {
-  border: var(--theme-accent);
+  border-color: var(--theme-accent);
 }
 
 .link-hover {

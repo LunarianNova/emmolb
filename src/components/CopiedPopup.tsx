@@ -18,7 +18,7 @@ export function CopiedPopup() {
 
   return (
     <div
-      className="fixed top-32 left-1/2 transform -translate-x-1/2 z-50 inline-block rounded-full px-3 py-1 text-base font-bold text-theme-secondary bg-theme-primary border  shadow-md select-none"
+      className="fixed top-32 left-1/2 transform -translate-x-1/2 z-50 inline-block rounded-full px-3 py-1 text-base font-bold text-theme-secondary bg-theme-primary border border-theme-accent shadow-md select-none"
       style={{ userSelect: 'none', top: '6rem'}}
     >
       Copied!
