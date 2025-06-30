@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Loading from "@/components/Loading";
 import { Navbar } from "@/components/Navbar";
 import MiniTeamHeader from "@/components/MiniTeamHeader";
+import { useSettings } from "@/components/Settings";
 
 export default function TwoLeaguesTeamsPage() {
   const [loading, setLoading] = useState(true);
@@ -55,7 +56,7 @@ export default function TwoLeaguesTeamsPage() {
     <>
       <Navbar />
       <main className="mt-16">
-        <div className='min-h-screen bg-[#0c111b] text-white font-sans p-4 pt-20 max-w-3xl mx-auto'>
+        <div className='min-h-screen bg-theme-background text-theme-text font-sans p-4 pt-20 max-w-3xl mx-auto'>
             <h1 className="text-2xl font-bold text-center mb-6">Greater League Standings</h1>
             <div className='flex flex-col md:flex-row gap-6'>
                 {leagueTeams.map((entry, i) => (

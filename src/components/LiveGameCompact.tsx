@@ -89,12 +89,12 @@ export function LiveGameCompact({ gameId, homeTeam, awayTeam, game, killLinks = 
 }
 
 export function GameStateDisplayCompact({ event, lastUpdated }: { event: any, lastUpdated: any }) {
-    const bgClasses = {scored: 'bg-[#1b5e20]', normal: 'bg-[#121a28]',};
+    const bgClasses = {scored: 'bg-theme-score', normal: 'bg-theme-secondary',};
     const bgClass = (event.message.includes('scores!') || event.message.includes('homers')) ? bgClasses.scored : bgClasses.normal;
 
 
     return (
-        <div className={`${bgClass} p-4 rounded-lg shadow-lg border border-[#1e2a36] mb-16`}>
+        <div className={`${bgClass} p-4 rounded-lg shadow-lg border border-theme-accent mb-16`}>
         <GameStateDisplay
             balls={event.balls ?? 0}
             strikes={event.strikes ?? 0}

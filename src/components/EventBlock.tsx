@@ -45,16 +45,16 @@ type EventMessage = {
 
 export function EventBlock({ emoji, title, color, messages, onClick }: EventBlockProps) {
   useHighlightEventOnHash();
-  const bgColor = color ?? '#1e2a36';
+  const bgColor = color ?? '--bg-theme-secondary';
   return (
     <div className="relative mt-6">
       {(emoji || title) && (
-        <div className={`absolute -top-3 left-3 z-10 inline-block rounded-full px-3 py-1 text-base font-bold text-[#fef4e5] bg-[#0f1a2b] border border-[#1e2a36] shadow-md ${onClick?'cursor-pointer':''}`} onClick={onClick}>
+        <div className={`absolute -top-3 left-3 z-10 inline-block rounded-full px-3 py-1 text-base font-bold text-theme-secondary bg-theme-secondary border border-theme-accent shadow-md ${onClick?'cursor-pointer':''}`} onClick={onClick}>
           {emoji && <span className="mr-1">{emoji}</span>}
           {title}
         </div>
       )}
-      <div className="rounded-md pt-6 p-3 mt-4 bg-[#1e2a36]" style={{backgroundColor: bgColor}}>
+      <div className={`rounded-md pt-6 p-3 mt-4 bg-theme-primary ${color}`}>
         <div className="text-sm whitespace-pre-line space-y-1">
           {messages.map(({index, message, pitchSpeed, pitchZone}, i) => (
             <div key={i} className="flex justify-between items-start gap-2">

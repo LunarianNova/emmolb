@@ -54,231 +54,231 @@ export default function PlayerStats({ player, category }: {player: any, category
 
     return (
         <div>
-            <div className="bg-[#1c2a3a] py-2 px-4 rounded-xl mt-1 h-full">
+            <div className="bg-theme-primary py-2 px-4 rounded-xl mt-1 h-full">
                 <div className="text-lg font-bold pt-2 text-center">Season Stats</div>
                 <div className="text-lg mb-2 text-center">{player.Emoji} {player.FirstName} {player.LastName}</div>
                 {((category && category == 'batting') || !category) ? (<div className="mb-4">
                     <div className="text-base font-semibold mb-1 text-center">Batting</div>
                     <div className="grid grid-cols-4 md:grid-cols-6 gap-1">
-                        <div className="relative group bg-[#161d29] border border-[#2a3a4a] rounded-md p-2 flex flex-col items-center">
-                            <div className="text-xs font-bold cursor-pointer text-white">AVG</div>
-                            <div className="text-sm font-normal">{batting_average != 'NaN' ? batting_average : '-'}</div>
-                            <div className="absolute bottom-full mb-2 px-2 py-1 bg-black text-white text-xs rounded opacity-0 group-hover:opacity-100 transition text-center whitespace-pre z-50">Batting Average</div>
+                        <div className="relative group bg-theme-secondary border border-theme-accent rounded-md p-2 flex flex-col items-center">
+                            <div className="text-xs font-bold cursor-pointer text-theme-text">AVG</div>
+                            <div className="text-sm font-normal text-theme-secondary">{batting_average != 'NaN' ? batting_average : '-'}</div>
+                            <div className="absolute bottom-full mb-2 px-2 py-1 bg-theme-primary text-theme-text text-xs rounded opacity-0 group-hover:opacity-100 transition text-center whitespace-pre z-50">Batting Average</div>
                         </div>
-                        <div className="relative group bg-[#161d29] border border-[#2a3a4a] rounded-md p-2 flex flex-col items-center">
-                            <div className="text-xs font-bold cursor-pointer text-white">OBP</div>
-                            <div className="text-sm font-normal">{obp != 'NaN' ? obp : '-'}</div>
-                            <div className="absolute bottom-full mb-2 px-2 py-1 bg-black text-white text-xs rounded opacity-0 group-hover:opacity-100 transition text-center whitespace-pre z-50">On-Base Percentage</div>
+                        <div className="relative group bg-theme-secondary border border-theme-accent rounded-md p-2 flex flex-col items-center">
+                            <div className="text-xs font-bold cursor-pointer text-theme-text">OBP</div>
+                            <div className="text-sm font-normal text-theme-secondary">{obp != 'NaN' ? obp : '-'}</div>
+                            <div className="absolute bottom-full mb-2 px-2 py-1 bg-theme-primary text-theme-text text-xs rounded opacity-0 group-hover:opacity-100 transition text-center whitespace-pre z-50">On-Base Percentage</div>
                         </div>
-                        <div className="relative group bg-[#161d29] border border-[#2a3a4a] rounded-md p-2 flex flex-col items-center">
-                            <div className="text-xs font-bold cursor-pointer text-white">SLG</div>
-                            <div className="text-sm font-normal">{slg != 'NaN' ? slg : '-'}</div>
-                            <div className="absolute bottom-full mb-2 px-2 py-1 bg-black text-white text-xs rounded opacity-0 group-hover:opacity-100 transition text-center whitespace-pre z-50">Slugging Percentage</div>
+                        <div className="relative group bg-theme-secondary border border-theme-accent rounded-md p-2 flex flex-col items-center">
+                            <div className="text-xs font-bold cursor-pointer text-theme-text">SLG</div>
+                            <div className="text-sm font-normal text-theme-secondary">{slg != 'NaN' ? slg : '-'}</div>
+                            <div className="absolute bottom-full mb-2 px-2 py-1 bg-theme-primary text-theme-text text-xs rounded opacity-0 group-hover:opacity-100 transition text-center whitespace-pre z-50">Slugging Percentage</div>
                         </div>
-                        <div className="relative group bg-[#161d29] border border-[#2a3a4a] rounded-md p-2 flex flex-col items-center">
-                            <div className="text-xs font-bold cursor-pointer text-white">OPS</div>
-                            <div className="text-sm font-normal">{ops != 'NaN' ? ops : '-'}</div>
-                            <div className="absolute bottom-full mb-2 px-2 py-1 bg-black text-white text-xs rounded opacity-0 group-hover:opacity-100 transition text-center whitespace-pre z-50">On-Base Plus Slugging</div>
+                        <div className="relative group bg-theme-secondary border border-theme-accent rounded-md p-2 flex flex-col items-center">
+                            <div className="text-xs font-bold cursor-pointer text-theme-text">OPS</div>
+                            <div className="text-sm font-normal text-theme-secondary">{ops != 'NaN' ? ops : '-'}</div>
+                            <div className="absolute bottom-full mb-2 px-2 py-1 bg-theme-primary text-theme-text text-xs rounded opacity-0 group-hover:opacity-100 transition text-center whitespace-pre z-50">On-Base Plus Slugging</div>
                         </div>
-                        <div className="relative group bg-[#161d29] border border-[#2a3a4a] rounded-md p-2 flex flex-col items-center">
-                            <div className="text-xs font-bold cursor-pointer text-white">H</div>
-                            <div className="text-sm font-normal">{hits}</div>
-                            <div className="absolute bottom-full mb-2 px-2 py-1 bg-black text-white text-xs rounded opacity-0 group-hover:opacity-100 transition text-center whitespace-pre z-50">Hits</div>
+                        <div className="relative group bg-theme-secondary border border-theme-accent rounded-md p-2 flex flex-col items-center">
+                            <div className="text-xs font-bold cursor-pointer text-theme-text">H</div>
+                            <div className="text-sm font-normal text-theme-secondary">{hits}</div>
+                            <div className="absolute bottom-full mb-2 px-2 py-1 bg-theme-primary text-theme-text text-xs rounded opacity-0 group-hover:opacity-100 transition text-center whitespace-pre z-50">Hits</div>
                         </div>
-                        <div className="relative group bg-[#161d29] border border-[#2a3a4a] rounded-md p-2 flex flex-col items-center">
-                            <div className="text-xs font-bold cursor-pointer text-white">1B</div>
-                            <div className="text-sm font-normal">{singles}</div>
-                            <div className="absolute bottom-full mb-2 px-2 py-1 bg-black text-white text-xs rounded opacity-0 group-hover:opacity-100 transition text-center whitespace-pre z-50">Singles</div>
+                        <div className="relative group bg-theme-secondary border border-theme-accent rounded-md p-2 flex flex-col items-center">
+                            <div className="text-xs font-bold cursor-pointer text-theme-text">1B</div>
+                            <div className="text-sm font-normal text-theme-secondary">{singles}</div>
+                            <div className="absolute bottom-full mb-2 px-2 py-1 bg-theme-primary text-theme-text text-xs rounded opacity-0 group-hover:opacity-100 transition text-center whitespace-pre z-50">Singles</div>
                         </div>
-                        <div className="relative group bg-[#161d29] border border-[#2a3a4a] rounded-md p-2 flex flex-col items-center">
-                            <div className="text-xs font-bold cursor-pointer text-white">2B</div>
-                            <div className="text-sm font-normal">{doubles}</div>
-                            <div className="absolute bottom-full mb-2 px-2 py-1 bg-black text-white text-xs rounded opacity-0 group-hover:opacity-100 transition text-center whitespace-pre z-50">Doubles</div>
+                        <div className="relative group bg-theme-secondary border border-theme-accent rounded-md p-2 flex flex-col items-center">
+                            <div className="text-xs font-bold cursor-pointer text-theme-text">2B</div>
+                            <div className="text-sm font-normal text-theme-secondary">{doubles}</div>
+                            <div className="absolute bottom-full mb-2 px-2 py-1 bg-theme-primary text-theme-text text-xs rounded opacity-0 group-hover:opacity-100 transition text-center whitespace-pre z-50">Doubles</div>
                         </div>
-                        <div className="relative group bg-[#161d29] border border-[#2a3a4a] rounded-md p-2 flex flex-col items-center">
-                            <div className="text-xs font-bold cursor-pointer text-white">3B</div>
-                            <div className="text-sm font-normal">{triples}</div>
-                            <div className="absolute bottom-full mb-2 px-2 py-1 bg-black text-white text-xs rounded opacity-0 group-hover:opacity-100 transition text-center whitespace-pre z-50">Triples</div>
+                        <div className="relative group bg-theme-secondary border border-theme-accent rounded-md p-2 flex flex-col items-center">
+                            <div className="text-xs font-bold cursor-pointer text-theme-text">3B</div>
+                            <div className="text-sm font-normal text-theme-secondary">{triples}</div>
+                            <div className="absolute bottom-full mb-2 px-2 py-1 bg-theme-primary text-theme-text text-xs rounded opacity-0 group-hover:opacity-100 transition text-center whitespace-pre z-50">Triples</div>
                         </div>
-                        <div className="relative group bg-[#161d29] border border-[#2a3a4a] rounded-md p-2 flex flex-col items-center">
-                            <div className="text-xs font-bold cursor-pointer text-white">HR</div>
-                            <div className="text-sm font-normal">{home_runs}</div>
-                            <div className="absolute bottom-full mb-2 px-2 py-1 bg-black text-white text-xs rounded opacity-0 group-hover:opacity-100 transition text-center whitespace-pre z-50">Home Runs</div>
+                        <div className="relative group bg-theme-secondary border border-theme-accent rounded-md p-2 flex flex-col items-center">
+                            <div className="text-xs font-bold cursor-pointer text-theme-text">HR</div>
+                            <div className="text-sm font-normal text-theme-secondary">{home_runs}</div>
+                            <div className="absolute bottom-full mb-2 px-2 py-1 bg-theme-primary text-theme-text text-xs rounded opacity-0 group-hover:opacity-100 transition text-center whitespace-pre z-50">Home Runs</div>
                         </div>
-                        <div className="relative group bg-[#161d29] border border-[#2a3a4a] rounded-md p-2 flex flex-col items-center">
-                            <div className="text-xs font-bold cursor-pointer text-white">BB</div>
-                            <div className="text-sm font-normal">{walked}</div>
-                            <div className="absolute bottom-full mb-2 px-2 py-1 bg-black text-white text-xs rounded opacity-0 group-hover:opacity-100 transition text-center whitespace-pre z-50">Walks</div>
+                        <div className="relative group bg-theme-secondary border border-theme-accent rounded-md p-2 flex flex-col items-center">
+                            <div className="text-xs font-bold cursor-pointer text-theme-text">BB</div>
+                            <div className="text-sm font-normal text-theme-secondary">{walked}</div>
+                            <div className="absolute bottom-full mb-2 px-2 py-1 bg-theme-primary text-theme-text text-xs rounded opacity-0 group-hover:opacity-100 transition text-center whitespace-pre z-50">Walks</div>
                         </div>
-                        <div className="relative group bg-[#161d29] border border-[#2a3a4a] rounded-md p-2 flex flex-col items-center">
-                            <div className="text-xs font-bold cursor-pointer text-white">PA</div>
-                            <div className="text-sm font-normal">{pa}</div>
-                            <div className="absolute bottom-full mb-2 px-2 py-1 bg-black text-white text-xs rounded opacity-0 group-hover:opacity-100 transition text-center whitespace-pre z-50">Plate Appearances</div>
+                        <div className="relative group bg-theme-secondary border border-theme-accent rounded-md p-2 flex flex-col items-center">
+                            <div className="text-xs font-bold cursor-pointer text-theme-text">PA</div>
+                            <div className="text-sm font-normal text-theme-secondary">{pa}</div>
+                            <div className="absolute bottom-full mb-2 px-2 py-1 bg-theme-primary text-theme-text text-xs rounded opacity-0 group-hover:opacity-100 transition text-center whitespace-pre z-50">Plate Appearances</div>
                         </div>
-                        <div className="relative group bg-[#161d29] border border-[#2a3a4a] rounded-md p-2 flex flex-col items-center">
-                            <div className="text-xs font-bold cursor-pointer text-white">AB</div>
-                            <div className="text-sm font-normal">{at_bats}</div>
-                            <div className="absolute bottom-full mb-2 px-2 py-1 bg-black text-white text-xs rounded opacity-0 group-hover:opacity-100 transition text-center whitespace-pre z-50">At Bats</div>
+                        <div className="relative group bg-theme-secondary border border-theme-accent rounded-md p-2 flex flex-col items-center">
+                            <div className="text-xs font-bold cursor-pointer text-theme-text">AB</div>
+                            <div className="text-sm font-normal text-theme-secondary">{at_bats}</div>
+                            <div className="absolute bottom-full mb-2 px-2 py-1 bg-theme-primary text-theme-text text-xs rounded opacity-0 group-hover:opacity-100 transition text-center whitespace-pre z-50">At Bats</div>
                         </div>
-                        <div className="relative group bg-[#161d29] border border-[#2a3a4a] rounded-md p-2 flex flex-col items-center">
-                            <div className="text-xs font-bold cursor-pointer text-white">SB</div>
-                            <div className="text-sm font-normal">{sb}</div>
-                            <div className="absolute bottom-full mb-2 px-2 py-1 bg-black text-white text-xs rounded opacity-0 group-hover:opacity-100 transition text-center whitespace-pre z-50">Stolen Bases</div>
+                        <div className="relative group bg-theme-secondary border border-theme-accent rounded-md p-2 flex flex-col items-center">
+                            <div className="text-xs font-bold cursor-pointer text-theme-text">SB</div>
+                            <div className="text-sm font-normal text-theme-secondary">{sb}</div>
+                            <div className="absolute bottom-full mb-2 px-2 py-1 bg-theme-primary text-theme-text text-xs rounded opacity-0 group-hover:opacity-100 transition text-center whitespace-pre z-50">Stolen Bases</div>
                         </div>
-                        <div className="relative group bg-[#161d29] border border-[#2a3a4a] rounded-md p-2 flex flex-col items-center">
-                            <div className="text-xs font-bold cursor-pointer text-white">CS</div>
-                            <div className="text-sm font-normal">{cs}</div>
-                            <div className="absolute bottom-full mb-2 px-2 py-1 bg-black text-white text-xs rounded opacity-0 group-hover:opacity-100 transition text-center whitespace-pre z-50">Caught Stealing</div>
+                        <div className="relative group bg-theme-secondary border border-theme-accent rounded-md p-2 flex flex-col items-center">
+                            <div className="text-xs font-bold cursor-pointer text-theme-text">CS</div>
+                            <div className="text-sm font-normal text-theme-secondary">{cs}</div>
+                            <div className="absolute bottom-full mb-2 px-2 py-1 bg-theme-primary text-theme-text text-xs rounded opacity-0 group-hover:opacity-100 transition text-center whitespace-pre z-50">Caught Stealing</div>
                         </div>
-                        <div className="relative group bg-[#161d29] border border-[#2a3a4a] rounded-md p-2 flex flex-col items-center">
-                            <div className="text-xs font-bold cursor-pointer text-white">GIDP</div>
-                            <div className="text-sm font-normal">{gidp}</div>
-                            <div className="absolute bottom-full mb-2 px-2 py-1 bg-black text-white text-xs rounded opacity-0 group-hover:opacity-100 transition text-center whitespace-pre z-50">Grounded Into Double Plays</div>
+                        <div className="relative group bg-theme-secondary border border-theme-accent rounded-md p-2 flex flex-col items-center">
+                            <div className="text-xs font-bold cursor-pointer text-theme-text">GIDP</div>
+                            <div className="text-sm font-normal text-theme-secondary">{gidp}</div>
+                            <div className="absolute bottom-full mb-2 px-2 py-1 bg-theme-primary text-theme-text text-xs rounded opacity-0 group-hover:opacity-100 transition text-center whitespace-pre z-50">Grounded Into Double Plays</div>
                         </div>
                     </div>
                 </div>) : ('')}
                 {((category && category == 'pitching') || !category) ? (<div className="mb-4">
                     <div className="text-base font-semibold mb-1 text-center">Pitching</div>
                     <div className="grid grid-cols-4 md:grid-cols-6 gap-1">
-                        <div className="relative group bg-[#161d29] border border-[#2a3a4a] rounded-md p-2 flex flex-col items-center">
-                            <div className="text-xs font-bold cursor-pointer text-white">ERA</div>
-                            <div className="text-sm font-normal">{era != 'NaN' ? era : '-'}</div>
-                            <div className="absolute bottom-full mb-2 px-2 py-1 bg-black text-white text-xs rounded opacity-0 group-hover:opacity-100 transition text-center whitespace-pre z-50">Earned Run Average</div>
+                        <div className="relative group bg-theme-secondary border border-theme-accent rounded-md p-2 flex flex-col items-center">
+                            <div className="text-xs font-bold cursor-pointer text-theme-text">ERA</div>
+                            <div className="text-sm font-normal text-theme-secondary">{era != 'NaN' ? era : '-'}</div>
+                            <div className="absolute bottom-full mb-2 px-2 py-1 bg-theme-primary text-theme-text text-xs rounded opacity-0 group-hover:opacity-100 transition text-center whitespace-pre z-50">Earned Run Average</div>
                         </div>
-                        <div className="relative group bg-[#161d29] border border-[#2a3a4a] rounded-md p-2 flex flex-col items-center">
-                            <div className="text-xs font-bold cursor-pointer text-white">WHIP</div>
-                            <div className="text-sm font-normal">{whip != 'NaN' ? whip : '-'}</div>
-                            <div className="absolute bottom-full mb-2 px-2 py-1 bg-black text-white text-xs rounded opacity-0 group-hover:opacity-100 transition text-center whitespace-pre z-50">Walks and Hits Per Inning</div>
+                        <div className="relative group bg-theme-secondary border border-theme-accent rounded-md p-2 flex flex-col items-center">
+                            <div className="text-xs font-bold cursor-pointer text-theme-text">WHIP</div>
+                            <div className="text-sm font-normal text-theme-secondary">{whip != 'NaN' ? whip : '-'}</div>
+                            <div className="absolute bottom-full mb-2 px-2 py-1 bg-theme-primary text-theme-text text-xs rounded opacity-0 group-hover:opacity-100 transition text-center whitespace-pre z-50">Walks and Hits Per Inning</div>
                         </div>
-                        <div className="relative group bg-[#161d29] border border-[#2a3a4a] rounded-md p-2 flex flex-col items-center">
-                            <div className="text-xs font-bold cursor-pointer text-white">K/BB</div>
-                            <div className="text-sm font-normal">{kbb != 'NaN' ? kbb : '-'}</div>
-                            <div className="absolute bottom-full mb-2 px-2 py-1 bg-black text-white text-xs rounded opacity-0 group-hover:opacity-100 transition text-center whitespace-pre z-50">Strikeout to Walk Ratio</div>
+                        <div className="relative group bg-theme-secondary border border-theme-accent rounded-md p-2 flex flex-col items-center">
+                            <div className="text-xs font-bold cursor-pointer text-theme-text">K/BB</div>
+                            <div className="text-sm font-normal text-theme-secondary">{kbb != 'NaN' ? kbb : '-'}</div>
+                            <div className="absolute bottom-full mb-2 px-2 py-1 bg-theme-primary text-theme-text text-xs rounded opacity-0 group-hover:opacity-100 transition text-center whitespace-pre z-50">Strikeout to Walk Ratio</div>
                         </div>
-                        <div className="relative group bg-[#161d29] border border-[#2a3a4a] rounded-md p-2 flex flex-col items-center">
-                            <div className="text-xs font-bold cursor-pointer text-white">K/9</div>
-                            <div className="text-sm font-normal">{k9 != 'NaN' ? k9 : '-'}</div>
-                            <div className="absolute bottom-full mb-2 px-2 py-1 bg-black text-white text-xs rounded opacity-0 group-hover:opacity-100 transition text-center whitespace-pre z-50">Strikeouts Per 9 Innings</div>
+                        <div className="relative group bg-theme-secondary border border-theme-accent rounded-md p-2 flex flex-col items-center">
+                            <div className="text-xs font-bold cursor-pointer text-theme-text">K/9</div>
+                            <div className="text-sm font-normal text-theme-secondary">{k9 != 'NaN' ? k9 : '-'}</div>
+                            <div className="absolute bottom-full mb-2 px-2 py-1 bg-theme-primary text-theme-text text-xs rounded opacity-0 group-hover:opacity-100 transition text-center whitespace-pre z-50">Strikeouts Per 9 Innings</div>
                         </div>
-                        <div className="relative group bg-[#161d29] border border-[#2a3a4a] rounded-md p-2 flex flex-col items-center">
-                            <div className="text-xs font-bold cursor-pointer text-white">H/9</div>
-                            <div className="text-sm font-normal">{h9 != 'NaN' ? h9 : '-'}</div>
-                            <div className="absolute bottom-full mb-2 px-2 py-1 bg-black text-white text-xs rounded opacity-0 group-hover:opacity-100 transition text-center whitespace-pre z-50">Hits Per 9 Innings</div>
+                        <div className="relative group bg-theme-secondary border border-theme-accent rounded-md p-2 flex flex-col items-center">
+                            <div className="text-xs font-bold cursor-pointer text-theme-text">H/9</div>
+                            <div className="text-sm font-normal text-theme-secondary">{h9 != 'NaN' ? h9 : '-'}</div>
+                            <div className="absolute bottom-full mb-2 px-2 py-1 bg-theme-primary text-theme-text text-xs rounded opacity-0 group-hover:opacity-100 transition text-center whitespace-pre z-50">Hits Per 9 Innings</div>
                         </div>
-                        <div className="relative group bg-[#161d29] border border-[#2a3a4a] rounded-md p-2 flex flex-col items-center">
-                            <div className="text-xs font-bold cursor-pointer text-white">BB/9</div>
-                            <div className="text-sm font-normal">{bb9 != 'NaN' ? bb9 : '-'}</div>
-                            <div className="absolute bottom-full mb-2 px-2 py-1 bg-black text-white text-xs rounded opacity-0 group-hover:opacity-100 transition text-center whitespace-pre z-50">Walks Per 9 Innings</div>
+                        <div className="relative group bg-theme-secondary border border-theme-accent rounded-md p-2 flex flex-col items-center">
+                            <div className="text-xs font-bold cursor-pointer text-theme-text">BB/9</div>
+                            <div className="text-sm font-normal text-theme-secondary">{bb9 != 'NaN' ? bb9 : '-'}</div>
+                            <div className="absolute bottom-full mb-2 px-2 py-1 bg-theme-primary text-theme-text text-xs rounded opacity-0 group-hover:opacity-100 transition text-center whitespace-pre z-50">Walks Per 9 Innings</div>
                         </div>
-                        <div className="relative group bg-[#161d29] border border-[#2a3a4a] rounded-md p-2 flex flex-col items-center">
-                            <div className="text-xs font-bold cursor-pointer text-white">HR/9</div>
-                            <div className="text-sm font-normal">{hr9 != 'NaN' ? hr9 : '-'}</div>
-                            <div className="absolute bottom-full mb-2 px-2 py-1 bg-black text-white text-xs rounded opacity-0 group-hover:opacity-100 transition text-center whitespace-pre z-50">Homers Per 9 Innings</div>
+                        <div className="relative group bg-theme-secondary border border-theme-accent rounded-md p-2 flex flex-col items-center">
+                            <div className="text-xs font-bold cursor-pointer text-theme-text">HR/9</div>
+                            <div className="text-sm font-normal text-theme-secondary">{hr9 != 'NaN' ? hr9 : '-'}</div>
+                            <div className="absolute bottom-full mb-2 px-2 py-1 bg-theme-primary text-theme-text text-xs rounded opacity-0 group-hover:opacity-100 transition text-center whitespace-pre z-50">Homers Per 9 Innings</div>
                         </div>
-                        <div className="relative group bg-[#161d29] border border-[#2a3a4a] rounded-md p-2 flex flex-col items-center">
-                            <div className="text-xs font-bold cursor-pointer text-white">IP</div>
-                            <div className="text-sm font-normal">{ip != '0.000' ? ip : '-'}</div>
-                            <div className="absolute bottom-full mb-2 px-2 py-1 bg-black text-white text-xs rounded opacity-0 group-hover:opacity-100 transition text-center whitespace-pre z-50">Innings Played</div>
+                        <div className="relative group bg-theme-secondary border border-theme-accent rounded-md p-2 flex flex-col items-center">
+                            <div className="text-xs font-bold cursor-pointer text-theme-text">IP</div>
+                            <div className="text-sm font-normal text-theme-secondary">{ip != '0.000' ? ip : '-'}</div>
+                            <div className="absolute bottom-full mb-2 px-2 py-1 bg-theme-primary text-theme-text text-xs rounded opacity-0 group-hover:opacity-100 transition text-center whitespace-pre z-50">Innings Played</div>
                         </div>
-                        <div className="relative group bg-[#161d29] border border-[#2a3a4a] rounded-md p-2 flex flex-col items-center">
-                            <div className="text-xs font-bold cursor-pointer text-white">K</div>
-                            <div className="text-sm font-normal">{strikeouts}</div>
-                            <div className="absolute bottom-full mb-2 px-2 py-1 bg-black text-white text-xs rounded opacity-0 group-hover:opacity-100 transition text-center whitespace-pre z-50">Strikeouts</div>
+                        <div className="relative group bg-theme-secondary border border-theme-accent rounded-md p-2 flex flex-col items-center">
+                            <div className="text-xs font-bold cursor-pointer text-theme-text">K</div>
+                            <div className="text-sm font-normal text-theme-secondary">{strikeouts}</div>
+                            <div className="absolute bottom-full mb-2 px-2 py-1 bg-theme-primary text-theme-text text-xs rounded opacity-0 group-hover:opacity-100 transition text-center whitespace-pre z-50">Strikeouts</div>
                         </div>
-                        <div className="relative group bg-[#161d29] border border-[#2a3a4a] rounded-md p-2 flex flex-col items-center">
-                            <div className="text-xs font-bold cursor-pointer text-white">BBP</div>
-                            <div className="text-sm font-normal">{walks}</div>
-                            <div className="absolute bottom-full mb-2 px-2 py-1 bg-black text-white text-xs rounded opacity-0 group-hover:opacity-100 transition text-center whitespace-pre z-50">Walks Allowed (Pitching)</div>
+                        <div className="relative group bg-theme-secondary border border-theme-accent rounded-md p-2 flex flex-col items-center">
+                            <div className="text-xs font-bold cursor-pointer text-theme-text">BBP</div>
+                            <div className="text-sm font-normal text-theme-secondary">{walks}</div>
+                            <div className="absolute bottom-full mb-2 px-2 py-1 bg-theme-primary text-theme-text text-xs rounded opacity-0 group-hover:opacity-100 transition text-center whitespace-pre z-50">Walks Allowed (Pitching)</div>
                         </div>
-                        <div className="relative group bg-[#161d29] border border-[#2a3a4a] rounded-md p-2 flex flex-col items-center">
-                            <div className="text-xs font-bold cursor-pointer text-white">HA</div>
-                            <div className="text-sm font-normal">{hits_allowed}</div>
-                            <div className="absolute bottom-full mb-2 px-2 py-1 bg-black text-white text-xs rounded opacity-0 group-hover:opacity-100 transition text-center whitespace-pre z-50">Hits Allowed (Pitching)</div>
+                        <div className="relative group bg-theme-secondary border border-theme-accent rounded-md p-2 flex flex-col items-center">
+                            <div className="text-xs font-bold cursor-pointer text-theme-text">HA</div>
+                            <div className="text-sm font-normal text-theme-secondary">{hits_allowed}</div>
+                            <div className="absolute bottom-full mb-2 px-2 py-1 bg-theme-primary text-theme-text text-xs rounded opacity-0 group-hover:opacity-100 transition text-center whitespace-pre z-50">Hits Allowed (Pitching)</div>
                         </div>
-                        <div className="relative group bg-[#161d29] border border-[#2a3a4a] rounded-md p-2 flex flex-col items-center">
-                            <div className="text-xs font-bold cursor-pointer text-white">HB</div>
-                            <div className="text-sm font-normal">{hit_batters}</div>
-                            <div className="absolute bottom-full mb-2 px-2 py-1 bg-black text-white text-xs rounded opacity-0 group-hover:opacity-100 transition text-center whitespace-pre z-50">Hit Batters</div>
+                        <div className="relative group bg-theme-secondary border border-theme-accent rounded-md p-2 flex flex-col items-center">
+                            <div className="text-xs font-bold cursor-pointer text-theme-text">HB</div>
+                            <div className="text-sm font-normal text-theme-secondary">{hit_batters}</div>
+                            <div className="absolute bottom-full mb-2 px-2 py-1 bg-theme-primary text-theme-text text-xs rounded opacity-0 group-hover:opacity-100 transition text-center whitespace-pre z-50">Hit Batters</div>
                         </div>
-                        <div className="relative group bg-[#161d29] border border-[#2a3a4a] rounded-md p-2 flex flex-col items-center">
-                            <div className="text-xs font-bold cursor-pointer text-white">ER</div>
-                            <div className="text-sm font-normal">{earned_runs}</div>
-                            <div className="absolute bottom-full mb-2 px-2 py-1 bg-black text-white text-xs rounded opacity-0 group-hover:opacity-100 transition text-center whitespace-pre z-50">Earned Runs</div>
+                        <div className="relative group bg-theme-secondary border border-theme-accent rounded-md p-2 flex flex-col items-center">
+                            <div className="text-xs font-bold cursor-pointer text-theme-text">ER</div>
+                            <div className="text-sm font-normal text-theme-secondary">{earned_runs}</div>
+                            <div className="absolute bottom-full mb-2 px-2 py-1 bg-theme-primary text-theme-text text-xs rounded opacity-0 group-hover:opacity-100 transition text-center whitespace-pre z-50">Earned Runs</div>
                         </div>
-                        <div className="relative group bg-[#161d29] border border-[#2a3a4a] rounded-md p-2 flex flex-col items-center">
-                            <div className="text-xs font-bold cursor-pointer text-white">W</div>
-                            <div className="text-sm font-normal">{wins}</div>
-                            <div className="absolute bottom-full mb-2 px-2 py-1 bg-black text-white text-xs rounded opacity-0 group-hover:opacity-100 transition text-center whitespace-pre z-50">Wins</div>
+                        <div className="relative group bg-theme-secondary border border-theme-accent rounded-md p-2 flex flex-col items-center">
+                            <div className="text-xs font-bold cursor-pointer text-theme-text">W</div>
+                            <div className="text-sm font-normal text-theme-secondary">{wins}</div>
+                            <div className="absolute bottom-full mb-2 px-2 py-1 bg-theme-primary text-theme-text text-xs rounded opacity-0 group-hover:opacity-100 transition text-center whitespace-pre z-50">Wins</div>
                         </div>
-                        <div className="relative group bg-[#161d29] border border-[#2a3a4a] rounded-md p-2 flex flex-col items-center">
-                            <div className="text-xs font-bold cursor-pointer text-white">L</div>
-                            <div className="text-sm font-normal">{losses}</div>
-                            <div className="absolute bottom-full mb-2 px-2 py-1 bg-black text-white text-xs rounded opacity-0 group-hover:opacity-100 transition text-center whitespace-pre z-50">Losses</div>
+                        <div className="relative group bg-theme-secondary border border-theme-accent rounded-md p-2 flex flex-col items-center">
+                            <div className="text-xs font-bold cursor-pointer text-theme-text">L</div>
+                            <div className="text-sm font-normal text-theme-secondary">{losses}</div>
+                            <div className="absolute bottom-full mb-2 px-2 py-1 bg-theme-primary text-theme-text text-xs rounded opacity-0 group-hover:opacity-100 transition text-center whitespace-pre z-50">Losses</div>
                         </div>
-                        <div className="relative group bg-[#161d29] border border-[#2a3a4a] rounded-md p-2 flex flex-col items-center">
-                            <div className="text-xs font-bold cursor-pointer text-white">QS</div>
-                            <div className="text-sm font-normal">{quality_starts}</div>
-                            <div className="absolute bottom-full mb-2 px-2 py-1 bg-black text-white text-xs rounded opacity-0 group-hover:opacity-100 transition text-center whitespace-pre z-50">Quality Starts</div>
+                        <div className="relative group bg-theme-secondary border border-theme-accent rounded-md p-2 flex flex-col items-center">
+                            <div className="text-xs font-bold cursor-pointer text-theme-text">QS</div>
+                            <div className="text-sm font-normal text-theme-secondary">{quality_starts}</div>
+                            <div className="absolute bottom-full mb-2 px-2 py-1 bg-theme-primary text-theme-text text-xs rounded opacity-0 group-hover:opacity-100 transition text-center whitespace-pre z-50">Quality Starts</div>
                         </div>
-                        <div className="relative group bg-[#161d29] border border-[#2a3a4a] rounded-md p-2 flex flex-col items-center">
-                            <div className="text-xs font-bold cursor-pointer text-white">SV</div>
-                            <div className="text-sm font-normal">{saves}</div>
-                            <div className="absolute bottom-full mb-2 px-2 py-1 bg-black text-white text-xs rounded opacity-0 group-hover:opacity-100 transition text-center whitespace-pre z-50">Saves</div>
+                        <div className="relative group bg-theme-secondary border border-theme-accent rounded-md p-2 flex flex-col items-center">
+                            <div className="text-xs font-bold cursor-pointer text-theme-text">SV</div>
+                            <div className="text-sm font-normal text-theme-secondary">{saves}</div>
+                            <div className="absolute bottom-full mb-2 px-2 py-1 bg-theme-primary text-theme-text text-xs rounded opacity-0 group-hover:opacity-100 transition text-center whitespace-pre z-50">Saves</div>
                         </div>
-                        <div className="relative group bg-[#161d29] border border-[#2a3a4a] rounded-md p-2 flex flex-col items-center">
-                            <div className="text-xs font-bold cursor-pointer text-white">BS</div>
-                            <div className="text-sm font-normal">{blown_saves}</div>
-                            <div className="absolute bottom-full mb-2 px-2 py-1 bg-black text-white text-xs rounded opacity-0 group-hover:opacity-100 transition text-center whitespace-pre z-50">Blown Saves</div>
+                        <div className="relative group bg-theme-secondary border border-theme-accent rounded-md p-2 flex flex-col items-center">
+                            <div className="text-xs font-bold cursor-pointer text-theme-text">BS</div>
+                            <div className="text-sm font-normal text-theme-secondary">{blown_saves}</div>
+                            <div className="absolute bottom-full mb-2 px-2 py-1 bg-theme-primary text-theme-text text-xs rounded opacity-0 group-hover:opacity-100 transition text-center whitespace-pre z-50">Blown Saves</div>
                         </div>
-                        <div className="relative group bg-[#161d29] border border-[#2a3a4a] rounded-md p-2 flex flex-col items-center">
-                            <div className="text-xs font-bold cursor-pointer text-white">G</div>
-                            <div className="text-sm font-normal">{appearances}</div>
-                            <div className="absolute bottom-full mb-2 px-2 py-1 bg-black text-white text-xs rounded opacity-0 group-hover:opacity-100 transition text-center whitespace-pre z-50">Games Pitched</div>
+                        <div className="relative group bg-theme-secondary border border-theme-accent rounded-md p-2 flex flex-col items-center">
+                            <div className="text-xs font-bold cursor-pointer text-theme-text">G</div>
+                            <div className="text-sm font-normal text-theme-secondary">{appearances}</div>
+                            <div className="absolute bottom-full mb-2 px-2 py-1 bg-theme-primary text-theme-text text-xs rounded opacity-0 group-hover:opacity-100 transition text-center whitespace-pre z-50">Games Pitched</div>
                         </div>
-                        <div className="relative group bg-[#161d29] border border-[#2a3a4a] rounded-md p-2 flex flex-col items-center">
-                            <div className="text-xs font-bold cursor-pointer text-white">GF</div>
-                            <div className="text-sm font-normal">{finished_games}</div>
-                            <div className="absolute bottom-full mb-2 px-2 py-1 bg-black text-white text-xs rounded opacity-0 group-hover:opacity-100 transition text-center whitespace-pre z-50">Games Finished</div>
+                        <div className="relative group bg-theme-secondary border border-theme-accent rounded-md p-2 flex flex-col items-center">
+                            <div className="text-xs font-bold cursor-pointer text-theme-text">GF</div>
+                            <div className="text-sm font-normal text-theme-secondary">{finished_games}</div>
+                            <div className="absolute bottom-full mb-2 px-2 py-1 bg-theme-primary text-theme-text text-xs rounded opacity-0 group-hover:opacity-100 transition text-center whitespace-pre z-50">Games Finished</div>
                         </div>
-                        <div className="relative group bg-[#161d29] border border-[#2a3a4a] rounded-md p-2 flex flex-col items-center">
-                            <div className="text-xs font-bold cursor-pointer text-white">CG</div>
-                            <div className="text-sm font-normal">{complete_games}</div>
-                            <div className="absolute bottom-full mb-2 px-2 py-1 bg-black text-white text-xs rounded opacity-0 group-hover:opacity-100 transition text-center whitespace-pre z-50">Complete Games</div>
+                        <div className="relative group bg-theme-secondary border border-theme-accent rounded-md p-2 flex flex-col items-center">
+                            <div className="text-xs font-bold cursor-pointer text-theme-text">CG</div>
+                            <div className="text-sm font-normal text-theme-secondary">{complete_games}</div>
+                            <div className="absolute bottom-full mb-2 px-2 py-1 bg-theme-primary text-theme-text text-xs rounded opacity-0 group-hover:opacity-100 transition text-center whitespace-pre z-50">Complete Games</div>
                         </div>
-                        <div className="relative group bg-[#161d29] border border-[#2a3a4a] rounded-md p-2 flex flex-col items-center">
-                            <div className="text-xs font-bold cursor-pointer text-white">SHO</div>
-                            <div className="text-sm font-normal">{shutouts}</div>
-                            <div className="absolute bottom-full mb-2 px-2 py-1 bg-black text-white text-xs rounded opacity-0 group-hover:opacity-100 transition text-center whitespace-pre z-50">Shutouts</div>
+                        <div className="relative group bg-theme-secondary border border-theme-accent rounded-md p-2 flex flex-col items-center">
+                            <div className="text-xs font-bold cursor-pointer text-theme-text">SHO</div>
+                            <div className="text-sm font-normal text-theme-secondary">{shutouts}</div>
+                            <div className="absolute bottom-full mb-2 px-2 py-1 bg-theme-primary text-theme-text text-xs rounded opacity-0 group-hover:opacity-100 transition text-center whitespace-pre z-50">Shutouts</div>
                         </div>
-                        <div className="relative group bg-[#161d29] border border-[#2a3a4a] rounded-md p-2 flex flex-col items-center">
-                            <div className="text-xs font-bold cursor-pointer text-white">NH</div>
-                            <div className="text-sm font-normal">{no_hitters}</div>
-                            <div className="absolute bottom-full mb-2 px-2 py-1 bg-black text-white text-xs rounded opacity-0 group-hover:opacity-100 transition text-center whitespace-pre z-50">No Hitters</div>
+                        <div className="relative group bg-theme-secondary border border-theme-accent rounded-md p-2 flex flex-col items-center">
+                            <div className="text-xs font-bold cursor-pointer text-theme-text">NH</div>
+                            <div className="text-sm font-normal text-theme-secondary">{no_hitters}</div>
+                            <div className="absolute bottom-full mb-2 px-2 py-1 bg-theme-primary text-theme-text text-xs rounded opacity-0 group-hover:opacity-100 transition text-center whitespace-pre z-50">No Hitters</div>
                         </div>
                     </div>
                 </div>) : ''}
                 {((category && category == 'defense') || !category) ? (<div className="mb-6">
                     <div className="text-base font-semibold mb-1 text-center">Defense</div>
                     <div className="grid grid-cols-4 md:grid-cols-6 gap-1">
-                        <div className="relative group bg-[#161d29] border border-[#2a3a4a] rounded-md p-2 flex flex-col items-center">
-                            <div className="text-xs font-bold cursor-pointer text-white">E</div>
-                            <div className="text-sm font-normal">{errors}</div>
-                            <div className="absolute bottom-full mb-2 px-2 py-1 bg-black text-white text-xs rounded opacity-0 group-hover:opacity-100 transition text-center whitespace-pre z-50">Errors</div>
+                        <div className="relative group bg-theme-secondary border border-theme-accent rounded-md p-2 flex flex-col items-center">
+                            <div className="text-xs font-bold cursor-pointer text-theme-text">E</div>
+                            <div className="text-sm font-normal text-theme-secondary">{errors}</div>
+                            <div className="absolute bottom-full mb-2 px-2 py-1 bg-theme-primary text-theme-text text-xs rounded opacity-0 group-hover:opacity-100 transition text-center whitespace-pre z-50">Errors</div>
                         </div>
-                        <div className="relative group bg-[#161d29] border border-[#2a3a4a] rounded-md p-2 flex flex-col items-center">
-                            <div className="text-xs font-bold cursor-pointer text-white">A</div>
-                            <div className="text-sm font-normal">{assists}</div>
-                            <div className="absolute bottom-full mb-2 px-2 py-1 bg-black text-white text-xs rounded opacity-0 group-hover:opacity-100 transition text-center whitespace-pre z-50">Assists</div>
+                        <div className="relative group bg-theme-secondary border border-theme-accent rounded-md p-2 flex flex-col items-center">
+                            <div className="text-xs font-bold cursor-pointer text-theme-text">A</div>
+                            <div className="text-sm font-normal text-theme-secondary">{assists}</div>
+                            <div className="absolute bottom-full mb-2 px-2 py-1 bg-theme-primary text-theme-text text-xs rounded opacity-0 group-hover:opacity-100 transition text-center whitespace-pre z-50">Assists</div>
                         </div>
-                        <div className="relative group bg-[#161d29] border border-[#2a3a4a] rounded-md p-2 flex flex-col items-center">
-                            <div className="text-xs font-bold cursor-pointer text-white">PO</div>
-                            <div className="text-sm font-normal">{putouts}</div>
-                            <div className="absolute bottom-full mb-2 px-2 py-1 bg-black text-white text-xs rounded opacity-0 group-hover:opacity-100 transition text-center whitespace-pre z-50">Putouts</div>
+                        <div className="relative group bg-theme-secondary border border-theme-accent rounded-md p-2 flex flex-col items-center">
+                            <div className="text-xs font-bold cursor-pointer text-theme-text">PO</div>
+                            <div className="text-sm font-normal text-theme-secondary">{putouts}</div>
+                            <div className="absolute bottom-full mb-2 px-2 py-1 bg-theme-primary text-theme-text text-xs rounded opacity-0 group-hover:opacity-100 transition text-center whitespace-pre z-50">Putouts</div>
                         </div>
-                        <div className="relative group bg-[#161d29] border border-[#2a3a4a] rounded-md p-2 flex flex-col items-center">
-                            <div className="text-xs font-bold cursor-pointer text-white">DP</div>
-                            <div className="text-sm font-normal">{double_plays}</div>
-                            <div className="absolute bottom-full mb-2 px-2 py-1 bg-black text-white text-xs rounded opacity-0 group-hover:opacity-100 transition text-center whitespace-pre z-50">Double Plays</div>
+                        <div className="relative group bg-theme-secondary border border-theme-accent rounded-md p-2 flex flex-col items-center">
+                            <div className="text-xs font-bold cursor-pointer text-theme-text">DP</div>
+                            <div className="text-sm font-normal text-theme-secondary">{double_plays}</div>
+                            <div className="absolute bottom-full mb-2 px-2 py-1 bg-theme-primary text-theme-text text-xs rounded opacity-0 group-hover:opacity-100 transition text-center whitespace-pre z-50">Double Plays</div>
                         </div>
                     </div>
                 </div>) : ''}

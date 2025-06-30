@@ -88,7 +88,7 @@ export function GameHeader({ homeTeam, awayTeam, center, inning, killLinks = fal
   const router = useRouter();
   return (
     <div
-      className="rounded-xl shadow-xl overflow-visible mb-6 border-3 border-[#0c111b]"
+      className="rounded-xl shadow-xl overflow-visible mb-6 border-3 border-theme-accent"
       style={{
         background:
           `linear-gradient(60deg, #${awayTeam.color} 36%, rgb(12, 17, 27) 50%, rgb(12, 17, 27) 50%, #${homeTeam.color} 64%)`,
@@ -128,7 +128,7 @@ export function GameHeader({ homeTeam, awayTeam, center, inning, killLinks = fal
                     description={center.subtitle}
                     />
                 {/* Inning info below weather */}
-                <div className="text-base md:text-lg font-bold leading-tight">
+                <div className="text-base text-theme-text md:text-lg font-bold leading-tight">
                     {inning}
                 </div>
             </div>

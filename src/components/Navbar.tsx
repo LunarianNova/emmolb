@@ -25,7 +25,7 @@ export function Navbar() {
   }
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 bg-[#0c111b] text-white font-sans">
+    <nav className="fixed top-0 left-0 right-0 z-50 bg-theme-background text-theme-text font-sans">
       <div ref={navRef} className="relative overflow-visible">
         {/* Background logo */}
         <div className="absolute inset-0 flex justify-center items-center pointer-events-none z-0">
@@ -50,7 +50,7 @@ export function Navbar() {
                   fontFamily="sans-serif"
                   fontWeight="bold"
                   fontSize="26"
-                  fill="#ffffff"
+                  fill="var(--theme-secondaryText)"
                   stroke="#1c2a3a"
                   strokeWidth="8"
                   paintOrder="stroke"
@@ -67,7 +67,7 @@ export function Navbar() {
           <button
             aria-label="Toggle menu"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="text-white focus:outline-none"
+            className="text-theme-text focus:outline-none"
           >
             {mobileMenuOpen ? (
               // Close icon
@@ -167,17 +167,17 @@ export function Navbar() {
               Leagues
             </button>
             <div
-              className={`absolute top-12 left-1/2 -translate-x-1/2 w-44 bg-[#202c3d] border border-[#2e3c50] rounded-xl p-2 shadow-xl transition-all duration-200 ease-out transform z-50
+              className={`absolute top-12 left-1/2 -translate-x-1/2 w-44 bg-theme-primary border border-theme-accent rounded-xl p-2 shadow-xl transition-all duration-200 ease-out transform z-50
                 ${
                   openDropdown === 'leagues'
                     ? 'opacity-100 scale-100 translate-y-0 pointer-events-auto'
                     : 'opacity-0 scale-95 -translate-y-2 pointer-events-none'
                 }`}
             >
-              <Link href='/greater-league' className="block w-full text-left px-3 py-2 rounded hover:bg-[#2a3a4a] transition cursor-pointer">
+              <Link href='/greater-league' className="block w-full text-left px-3 py-2 rounded link-hover transition cursor-pointer">
                 Greater League
               </Link>
-              <Link href='/lesser-league' className="block w-full text-left px-3 py-2 rounded hover:bg-[#2a3a4a] transition cursor-pointer">
+              <Link href='/lesser-league' className="block w-full text-left px-3 py-2 rounded link-hover transition cursor-pointer">
                 Lesser League
               </Link>
             </div>
@@ -194,21 +194,21 @@ export function Navbar() {
               Info
             </button>
             <div
-              className={`absolute top-12 left-1/2 -translate-x-1/2 w-44 bg-[#202c3d] border border-[#2e3c50] rounded-xl p-2 shadow-xl transition-all duration-200 ease-out transform z-50
+              className={`absolute top-12 left-1/2 -translate-x-1/2 w-44 bg-theme-primary border border-theme-accent rounded-xl p-2 shadow-xl transition-all duration-200 ease-out transform z-50
                 ${
                   openDropdown === 'info'
                     ? 'opacity-100 scale-100 translate-y-0 pointer-events-auto'
                     : 'opacity-0 scale-95 -translate-y-2 pointer-events-none'
                 }`}
             >
-              <button className="block w-full text-left px-3 py-2 rounded hover:bg-[#2a3a4a] transition cursor-pointer">
+              <button className="block w-full text-left px-3 py-2 rounded link-hover transition cursor-pointer">
                 ~~ What is MMOLB?
               </button>
               <Link
                 href="https://www.patreon.com/MMOLB"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="block w-full text-left px-3 py-2 rounded hover:bg-[#2a3a4a] transition cursor-pointer"
+                className="block w-full text-left px-3 py-2 rounded link-hover transition cursor-pointer"
               >
                 MMOLB Patreon
               </Link>
@@ -216,7 +216,7 @@ export function Navbar() {
                 href="https://discord.gg/cr3tRG2xqq"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="block w-full text-left px-3 py-2 rounded hover:bg-[#2a3a4a] transition cursor-pointer"
+                className="block w-full text-left px-3 py-2 rounded link-hover transition cursor-pointer"
               >
                 MMOLB Discord
               </Link>
@@ -224,7 +224,7 @@ export function Navbar() {
                 href="https://reddit.com/r/MMOLB"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="block w-full text-left px-3 py-2 rounded hover:bg-[#2a3a4a] transition cursor-pointer"
+                className="block w-full text-left px-3 py-2 rounded link-hover transition cursor-pointer"
               >
                 MMOLB Reddit
               </Link>
@@ -232,7 +232,7 @@ export function Navbar() {
                 href="https://ko-fi.com/echoviax"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="block w-full text-left px-3 py-2 rounded hover:bg-[#2a3a4a] transition cursor-pointer"
+                className="block w-full text-left px-3 py-2 rounded link-hover transition cursor-pointer"
               >
                 Buy us a Coffee
               </Link>
@@ -250,7 +250,7 @@ export function Navbar() {
               Account
             </button>
             <div
-              className={`absolute top-12 left-1/2 -translate-x-1/2 w-52 bg-[#202c3d] border border-[#2e3c50] rounded-xl p-2 shadow-xl transition-all duration-200 ease-out transform z-50
+              className={`absolute top-12 left-1/2 -translate-x-1/2 w-52 bg-theme-primary border border-theme-accent rounded-xl p-2 shadow-xl transition-all duration-200 ease-out transform z-50
                 ${
                   openDropdown === 'account'
                     ? 'opacity-100 scale-100 translate-y-0 pointer-events-auto'
@@ -258,12 +258,12 @@ export function Navbar() {
                 }`}
             >
               <Link href="/teams">
-                <button className="block w-full text-left px-3 py-2 rounded hover:bg-[#2a3a4a] transition cursor-pointer">
+                <button className="block w-full text-left px-3 py-2 rounded link-hover transition cursor-pointer">
                   Favorite Teams
                 </button>
               </Link>
               <Link href="/options">
-                <button className="block w-full text-left px-3 py-2 rounded hover:bg-[#2a3a4a] transition cursor-pointer">
+                <button className="block w-full text-left px-3 py-2 rounded link-hover transition cursor-pointer">
                   Options
                 </button>
               </Link>

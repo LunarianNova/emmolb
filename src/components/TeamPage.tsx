@@ -116,7 +116,7 @@ export default function TeamPage({ id }: { id: string }) {
     <>
       <Navbar />
       <main className="mt-16">
-        <div className="min-h-screen bg-[#0c111b] text-white font-sans p-4 pt-24 max-w-2xl mx-auto">
+        <div className="min-h-screen bg-theme-background text-theme-text font-sans p-4 pt-24 max-w-2xl mx-auto">
             <div className="relative w-full h-28 px-6 py-4 border-2 rounded-2xl shadow-xl overflow-hidden mb-4 flex items-center" style={{background: `#${team.Color}`, color: getContrastTextColor(team.Color)}}>
                 <button onClick={(e) => {e.stopPropagation(); toggleFavorite(team._id);}} className="absolute top-2 left-2 text-2xl z-10 hover:scale-110 transition-transform">
                     {favorites.has(team._id) ? '★' : '☆'}
@@ -139,14 +139,14 @@ export default function TeamPage({ id }: { id: string }) {
             </div>
             {game && game.game.State != "Complete" && (<><Link href={`/game/${gameID}`}><LiveGameCompact homeTeam={game.homeTeam} awayTeam={game.awayTeam} game={game.game} gameId={gameID} killLinks={true} /></Link></>)}
             <div className="mb-4 flex justify-center gap-4">
-                <button className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded transition">
+                <button className="px-4 py-2 link-hover text-theme-secondary rounded mb-4">
                     Season Schedule
                 </button>
             </div>
             <h2 className="text-xl font-bold mb-4 text-center">Roster</h2>
             <div className="mb-4 text-center">
                 <label className="mr-2 font-semibold">Sort by:</label>
-                <select className="bg-[#1c2a3a] text-white px-2 py-1 rounded">
+                <select className="bg-theme-primary text-theme-text px-2 py-1 rounded">
                     <option value="">Default</option>
                     <optgroup label="Batting">
                         <option value="AVG">AVG</option>
@@ -208,12 +208,12 @@ export default function TeamPage({ id }: { id: string }) {
                     {team.Players.map((player: any, i: number) => {
                         return (
                             <div key={i}>
-                                <div className="flex justify-between items-center p-1 rounded bg-[#1c2a3a] hover:bg-[#2a3a4a] cursor-pointer transition"
+                                <div className="flex justify-between items-center p-1 rounded link-hover cursor-pointer transition"
                                 onClick={()=>{setExpandedPlayers(prev => ({...prev, [player.PlayerID]: !prev[player.PlayerID],}))}}>
                                     <div className="flex items-center gap-3 overflow-hidden">
                                         <span className="w-4 text-xl text-center">{player.Emoji}</span>
                                         <span className="w-8 text-sm text-right">#{player.Number}</span>
-                                        <span className="w-6 text-sm font-bold text-gray-300 text-right">{player.Position}</span>
+                                        <span className="w-6 text-sm font-bold text-theme-text opacity-80 text-right">{player.Position}</span>
                                         <span className="flex-1 font-semibold text-left overflow-hidden text-ellipsis whitespace-nowrap">{player.FirstName} {player.LastName}</span>
                                     </div>
                                 </div>
@@ -251,7 +251,7 @@ export default function TeamPage({ id }: { id: string }) {
                     />
                     </div>
                 </div>
-                <div className="bg-[#1c2a3a] rounded-xl p-3 max-h-60 overflow-y-auto text-sm space-y-1">
+                <div className="bg-theme-primary rounded-xl p-3 max-h-60 overflow-y-auto text-sm space-y-1">
                     {team.Feed.filter((event: any) => 
                         selectedSeasons.includes(event.season?.toString()) && feedFilters.includes(event.type)).slice().reverse().map((event: any, i: number) => {
                         const parts = event.text.split(/( vs\. | - )/); // split and keep separators

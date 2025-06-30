@@ -7,6 +7,15 @@ export default {
   ],
   theme: {
     extend: {
+      colors: {
+        theme: {
+          primary: 'var(--theme-primary)',
+          secondary: 'var(--theme-secondary)',
+          background: 'var(--theme-background)',
+          text: 'var(--theme-text)',
+          secondarytext: 'var(--theme-secondary-text)'
+        }
+      },
       fontFamily: {
         scoreboard: ['Scoreboard', 'Geist'],
         impact: ['Impact', 'Geist']

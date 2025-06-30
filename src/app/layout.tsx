@@ -5,6 +5,7 @@ import "./globals.css";
 import { ThemeProvider } from "@/hooks/ThemeContext";
 import { Analytics } from "@vercel/analytics/next"
 import { SettingsProvider } from "@/components/Settings";
+import { ThemeUpdater } from "@/components/ThemeUpdater";
 
 export const metadata: Metadata = {
   title: "Shards of Space",
@@ -22,6 +23,7 @@ export default function RootLayout({
         className={`${GeistSans.className} min-h-screen`}
       >
         <SettingsProvider>
+          <ThemeUpdater />
         {children}
         </SettingsProvider>
         <Analytics />

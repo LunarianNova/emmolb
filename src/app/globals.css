@@ -3,24 +3,73 @@
 :root {
   --background: #0c111b;
   --foreground: #ededed;
+  --theme-background: #0c111b;
+  --theme-primary: #0f1a2b;
+  --theme-secondary: #1e2a36;
+  --theme-score: #14532D;
+  --theme-accent: #17212b;
+  --theme-text: #ffffff;
+  --theme-secondaryText: #fef4e5;
+}
+
+
+.bg-theme-background {
+  background-color: var(--theme-background);
+}
+
+.text-theme-text {
+  color: var(--theme-text);
+}
+
+.text-theme-secondary {
+  color: var(--theme-secondaryText)
+}
+
+.bg-theme-primary {
+  background-color: var(--theme-primary);
+}
+
+.border-theme-primary {
+  border: var(--theme-primary);
+}
+
+.bg-theme-secondary {
+  background-color: var(--theme-secondary);
+}
+
+.bg-theme-score {
+  background-color: var(--theme-score);
+}
+
+.bg-theme-accent {
+  background-color: var(--theme-accent);
+}
+
+.bg-theme-text {
+  background-color: var(--theme-text);
+}
+
+.border-theme-accent {
+  border: var(--theme-accent);
+}
+
+.link-hover {
+  background-color: var(--theme-primary);
+}
+
+.link-hover:hover {
+  background-color: var(--theme-secondary);
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+  --color-background: var(--theme-primary);
+  --color-foreground: var(--theme-foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0c111b;
-    --foreground: #ededed;
-  }
-}
-
 body {
-  background: var(--background);
+  background: var(--theme-background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }

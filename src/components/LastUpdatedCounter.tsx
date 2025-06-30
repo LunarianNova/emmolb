@@ -19,5 +19,5 @@ export default function LastUpdatedCounter({ lastUpdatedTimestamp }: LastUpdated
     return () => clearInterval(interval);
   }, [lastUpdatedTimestamp]);
 
-  return <div className='text-xs text-gray-400'>{secondsAgo} second{secondsAgo !== 1 ? 's' : ''} old</div>;
+  return <div className='text-xs text-theme-text opacity-70'>{secondsAgo} second{secondsAgo !== 1 ? 's' : ''} old</div>;
 }

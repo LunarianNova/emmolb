@@ -36,7 +36,7 @@ export function GameStateDisplay({
       <div
         key={i}
         className={`w-4 h-4 rounded-full border ${
-          i < count ? 'bg-white' : 'bg-transparent'
+          i < count ? 'bg-theme-text' : 'bg-transparent'
         }`}
       />
     ))
@@ -59,7 +59,7 @@ export function GameStateDisplay({
           >
             {player.name}
             {player.stat && (
-              <span className="ml-1 text-xs text-gray-400">
+              <span className="ml-1 text-xs text-theme-primary opacity-70">
                 {player.stat.replace(/\s/g, '\u00A0')}
               </span>
             )}

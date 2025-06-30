@@ -63,15 +63,15 @@ const removeTeamID = (id: string) => {
 
   return (
     <div className="p-4 max-w-md mx-auto">
-      <h1 className="text-xl font-bold mb-2">⭐ Favorite Teams</h1>
+      <h1 className="text-xl font-bold mb-2 text-theme-text">⭐ Favorite Teams</h1>
       <input
         type="text"
         placeholder="Enter Team ID"
         value={input}
         onChange={(e) => setInput(e.target.value)}
-        className="w-full p-2 border rounded mb-2"
+        className="w-full p-2 border rounded mb-2 text-theme-secondary opacity-80"
       />
-      <button onClick={addTeamID} className="px-4 py-2 bg-blue-600 text-white rounded mb-4">
+      <button onClick={addTeamID} className="px-4 py-2 bg-theme-accent text-theme-secondary rounded mb-4">
         Add Team
       </button>
 

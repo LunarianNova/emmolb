@@ -198,7 +198,7 @@ function groupEventLog(eventLog: { away_score: string, home_score: string, batte
       blocks.unshift(currentBlock); // Most recent events at top
     } else if (currentBlock) {
       // Add to existing block
-      if (event.message.includes("scores!") || event.message.includes("homers")) currentBlock.color = "#1B5E20";
+      if (event.message.includes("scores!") || event.message.includes("homers")) currentBlock.color = "bg-theme-score";
       currentBlock.messages.unshift(eventMessage);
     } else {
       // No current block? Create a generic one
@@ -217,7 +217,7 @@ const groupedEvents = groupEventLog(eventLog);
     <Navbar />
     <main className="mt-16">
       <CopiedPopup />
-      <div className="min-h-screen bg-[#0c111b] text-white font-sans p-4 pt-20 max-w-3xl mx-auto h-full">
+      <div className="min-h-screen bg-theme-background text-theme-text font-sans p-4 pt-20 max-w-3xl mx-auto h-full">
         <GameHeader
           homeTeam={{
             id: data.HomeTeamID,
@@ -273,14 +273,14 @@ const groupedEvents = groupEventLog(eventLog);
           <div className="flex justify-between items-center mb-2 gap-2 mt-4">
             <button
               onClick={() => setShowStats(!showStats)}
-              className="px-3 py-1 text-xs bg-gray-800 hover:bg-gray-700 rounded-md"
+              className="px-3 py-1 text-xs bg-theme-primary hover:opacity-80 rounded-md"
             >
               {showStats ? 'Hide Stats' : 'Show Stats'}
             </button>
 
             <button
               onClick={() => setFollowLive(prev => !prev)}
-              className="px-3 py-1 text-xs bg-gray-800 hover:bg-gray-700 rounded-md"
+              className="px-3 py-1 text-xs bg-theme-primary hover:opacity-80 rounded-md"
             >
               {followLive ? 'Unfollow Live' : 'Follow Live'}
             </button>

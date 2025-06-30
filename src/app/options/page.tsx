@@ -1,18 +1,29 @@
 'use client'
+import { EventBlock } from "@/components/EventBlock";
 import { Navbar } from "@/components/Navbar";
-import { useSettings } from "@/components/Settings";
+import { ThemeColors, useSettings } from "@/components/Settings";
+import Link from "next/link";
+import { useEffect } from "react";
 
 export default function OptionsPage() {
-  const { settings, updateSetting } = useSettings();
+    const { settings, updateSetting, resetTheme } = useSettings();
+
+    useEffect(() => {
+    if (!settings.theme) return;
+
+    for (const [key, value] of Object.entries(settings.theme)) {
+        document.documentElement.style.setProperty(`--theme-${key}`, value);
+    }
+    }, [JSON.stringify(settings.theme)]); // <-- force effect to re-run when theme changes
 
   return (
     <>
     <Navbar />
     <main className="mt-12">
-        <div className="min-h-screen bg-[#0c111b] text-white font-sans p-4 pt-20 max-w-3xl mx-auto">
+        <div className="min-h-screen bg-theme-background text-theme-text font-sans p-4 pt-20 max-w-3xl mx-auto">
             <div className="text-2xl font-bold text-center mb-6">Options</div>
             <label className="flex items-center space-x-3 cursor-pointer select-none">
-                <span className="text-sm font-medium text-gray-200">Use Blasesloaded UI</span>
+                <span className="text-sm font-medium text-theme-secondary opacity-80">Use Blasesloaded UI</span>
                 <div className="relative">
                     <input
                     type="checkbox"
@@ -20,11 +31,30 @@ export default function OptionsPage() {
                     onChange={(e) => updateSetting('useBlasesloaded', e.target.checked)}
                     className="sr-only peer"
                     />
-                    <div className="w-11 h-6 bg-[#121a28] rounded-full peer peer-checked:bg-blue-500 transition-colors" />
+                    <div className="w-11 h-6 rounded-full transition-colors" style={{ backgroundColor: settings.useBlasesloaded ? 'var(--theme-primary)' : 'var(--theme-secondary)'}} />
                     <div className="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full transition-transform peer-checked:translate-x-5" />
                 </div>
             </label>
-
+            <Link href='https://github.com/RangerRick/blobile' className="text-theme-secondary opacity-70 text-xs text-bottom hover:underline">Credit to Ranger Rick's Blobile GitHub for most the code</Link>
+            <div className="mt-6 space-y-4">
+                <h2 className="text-lg font-semibold mb-0">Customize Theme</h2>
+                <p className="text-xs text-color-secondary opacity-70">Enjoy Your Eldritch Horrors...</p>
+                {(['primary', 'secondary', 'accent', 'background', 'score', 'text', 'secondaryText'] as (keyof ThemeColors)[]).map((key) => (                    
+                    <div key={key} className="flex items-center justify-between">
+                        <label className="capitalize text-md text-theme-secondary opacity-80">{key} color</label>
+                        <input
+                            type="color"
+                            value={settings.theme?.[key] || '#ffffff'}
+                            onChange={(e) => updateSetting(`theme.${key}`, e.target.value)}
+                            className="w-10 h-6 p-0 border-0 bg-transparent"
+                        />
+                    </div>
+                ))}
+                <EventBlock emoji='🧩' title='Secondary Text/Color' messages={[{index: 1, message: "Primary Text/Color"}, {index: 0, message: "Accent is used for very slightly noticeable outlines on most things"}]}/>
+                <button onClick={resetTheme} className="link-hover px-4 py-2 bg-theme-accent text-theme-secondary rounded mb-4">
+                    Reset Theme
+                </button>
+                </div>
         </div>
     </main>
     </>
