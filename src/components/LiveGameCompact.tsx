@@ -80,7 +80,7 @@ export function LiveGameCompact({ gameId, homeTeam, awayTeam, game, killLinks = 
                 title: game.Weather.Name,
                 subtitle: game.Weather.Tooltip,
             }}
-            inning={game.State != "Complete" ? (event.inning_side === 1 ? `BOT ${event.inning} 🞂` : `🞀 TOP ${event.inning}`) : "FINAL"}
+            inning={game.State != "Complete" ? (event.inning_side === 1 ? `BOT ${event.inning}` : `TOP ${event.inning}`) : "FINAL"}
             killLinks={killLinks}
             />
             <GameStateDisplayCompact event={event} lastUpdated={lastUpdated}/>

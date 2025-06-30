@@ -128,7 +128,7 @@ export function GameHeader({ homeTeam, awayTeam, center, inning, killLinks = fal
                     description={center.subtitle}
                     />
                 {/* Inning info below weather */}
-                <div className="text-base text-theme-text md:text-lg font-bold leading-tight">
+                <div className="text-base text-white md:text-lg font-bold leading-tight">
                     {inning}
                 </div>
             </div>

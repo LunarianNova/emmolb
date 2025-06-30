@@ -34,8 +34,8 @@ type SettingsContextType = {
 const defaultSettings: Settings = {
   useBlasesloaded: false,
   theme: {
-    primary: '#0f1a2b',
-    secondary: '#1e2a36',
+    primary: '#1e2a36',
+    secondary: '#0f1a2b',
     score: '#14532D',
     accent: '#17212b',
     background: '#0c111b',

@@ -30,35 +30,37 @@ export function Navbar() {
         {/* Background logo */}
         <div className="absolute inset-0 flex justify-center items-center pointer-events-none z-0">
           <div className="relative w-24 h-24 opacity-20">
-            <img
-              src="/logo.svg"
-              alt="Star Emoji"
-              className="w-full h-full object-contain"
-              draggable={false}
-            />
-            <div className="absolute inset-0 flex items-center justify-center">
-              <svg
-                viewBox="0 0 120 30"
-                className="w-full h-full opacity-80 select-none"
-                aria-hidden="true"
-              >
-                <text
-                  x="50%"
-                  y="50%"
-                  textAnchor="middle"
-                  dominantBaseline="middle"
-                  fontFamily="sans-serif"
-                  fontWeight="bold"
-                  fontSize="26"
-                  fill="var(--theme-secondaryText)"
-                  stroke="#1c2a3a"
-                  strokeWidth="8"
-                  paintOrder="stroke"
+            <Link href='/' className='pointer-events-auto'>
+              <img
+                src="/logo.svg"
+                alt="Star Emoji"
+                className="w-full h-full object-contain"
+                draggable={false}
+              />
+              <div className="absolute inset-0 flex items-center justify-center">
+                <svg
+                  viewBox="0 0 120 30"
+                  className="w-full h-full opacity-80 select-none"
+                  aria-hidden="true"
                 >
-                  EMMOLB
-                </text>
-              </svg>
-            </div>
+                  <text
+                    x="50%"
+                    y="50%"
+                    textAnchor="middle"
+                    dominantBaseline="middle"
+                    fontFamily="sans-serif"
+                    fontWeight="bold"
+                    fontSize="26"
+                    fill="var(--theme-text)"
+                    stroke="var(--theme-accent)"
+                    strokeWidth="8"
+                    paintOrder="stroke"
+                  >
+                    EMMOLB
+                  </text>
+                </svg>
+              </div>
+            </Link>
           </div>
         </div>
 

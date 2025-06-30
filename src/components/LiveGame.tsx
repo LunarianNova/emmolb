@@ -254,17 +254,17 @@ const groupedEvents = groupEventLog(eventLog);
           bases={{ first: lastEvent.on_1b, second: lastEvent.on_2b, third: lastEvent.on_3b }}
           pitcher={{
             name: lastEvent.pitcher,
-            stat: lastEvent.pitcher !== "" ? `(${getERA(players[lastEvent.pitcher].Stats)})` : "",
+            stat: (lastEvent.pitcher !== "" && lastEvent.pitcher !== null) ? `(${getERA(players[lastEvent.pitcher].Stats)})` : "",
             onClick: () => {setSelectedPlayer(lastEvent.pitcher); setPlayerType('pitching'); setShowStats(true);},
           }}
           batter={{
             name: lastEvent.batter,
-            stat: lastEvent.batter !== "" ? `(${getBA(players[lastEvent.batter].Stats)})` : "",
+            stat: (lastEvent.batter !== "" && lastEvent.batter !== null) ? `(${getBA(players[lastEvent.batter].Stats)})` : "",
             onClick: () => {setSelectedPlayer(lastEvent.batter); setPlayerType('batting'); setShowStats(true);},
           }}
           onDeck={{
             name: lastEvent.on_deck,
-            stat: lastEvent.on_deck !== "" ? `(${getBA(players[lastEvent.on_deck].Stats)})` : "",
+            stat: (lastEvent.on_deck !== "" && lastEvent.on_deck !== null) ? `(${getBA(players[lastEvent.on_deck].Stats)})` : "",
             onClick: () => {setSelectedPlayer(lastEvent.on_deck); setPlayerType('batting'); setShowStats(true);},
           }}
         />

@@ -14,9 +14,8 @@ const messages = [
   'May contain nuts',
   "The E stands for 'Echo'",
   "The E stands for 'Enhanced'",
-  "The E stands for 'Epic'",
-  "The E stands for 'Exceptional'",
-  "The E stands for 'Egyptian'"
+  "The E stands for 'Egyptian'",
+  "The E stands for 'Ecological'"
 ];
 
 
@@ -36,10 +35,10 @@ export default function Loading() {
   return (
     <>
     <Navbar />
-    <div className="flex flex-col items-center justify-center h-[80vh] text-white select-none">
-      <div className="animate-spin text-4xl">⚾</div>
-      <div className="mt-4 text-sm opacity-70">{message}</div>
-    </div>
+      <div className="flex flex-col items-center justify-center h-[80vh] text-theme-text select-none">
+        <div className="animate-spin text-4xl">⚾</div>
+        <div className="mt-4 text-sm opacity-70">{message}</div>
+      </div>
     </>
   )
 }

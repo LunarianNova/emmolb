@@ -43,7 +43,7 @@ export function GameStateDisplay({
 
   const baseStyles = (active: boolean) =>
     `absolute w-10 h-10 rotate-45 transition-opacity duration-500 ${
-      active ? 'opacity-90 bg-white' : 'opacity-15 bg-white'
+      active ? 'opacity-90 bg-theme-text' : 'opacity-15 bg-theme-text'
     }`
 
   const PlayerDisplay = ({ label, player }: { label: string; player: PlayerInfo }) => (
