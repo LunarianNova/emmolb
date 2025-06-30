@@ -1,5 +1,27 @@
+import { useState } from "react";
+
+type StatTooltipProps = {
+    label: string;
+    value: number | string;
+    tooltip: string;
+    isActive: boolean;
+    onToggle: () => void;
+}
+
+function StatTooltip({ label, value, tooltip, isActive, onToggle }: StatTooltipProps) {
+    return (
+        <div className="relative group bg-theme-secondary border border-theme-accent rounded-md p-2 flex flex-col items-center" onClick={(e) => {e.stopPropagation(); onToggle();}}>
+            <div className="text-xs font-bold cursor-pointer text-theme-text">{label}</div>
+            <div className="text-sm font-normal text-theme-secondary">{value}</div>
+            <div className={`absolute bottom-full mb-2 px-2 py-1 text-xs rounded z-50 text-center whitespace-pre transition-opacity bg-theme-primary text-theme-text group-hover:opacity-100 group-hover:pointer-events-auto ${isActive ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>{tooltip}</div>
+        </div>
+    );
+}
+
 export default function PlayerStats({ player, category }: {player: any, category?: any}) {
-    console.log(category);
+    const [activeTooltip, setActiveTooltip] = useState<string | null>(null);
+    const toggle = (label: string) => {setActiveTooltip((prev) => (prev === label ? null : label)), console.log(label);};
+
     const stats = player.Stats ?? player;
     const singles = stats.singles ?? 0;
     const doubles = stats.doubles ?? 0;
@@ -53,233 +75,65 @@ export default function PlayerStats({ player, category }: {player: any, category
 
 
     return (
-        <div>
+        <div onClick={() => setActiveTooltip(null)}>
             <div className="bg-theme-primary py-2 px-4 rounded-xl mt-1 h-full">
                 <div className="text-lg font-bold pt-2 text-center">Season Stats</div>
                 <div className="text-lg mb-2 text-center">{player.Emoji} {player.FirstName} {player.LastName}</div>
                 {((category && category == 'batting') || !category) ? (<div className="mb-4">
                     <div className="text-base font-semibold mb-1 text-center">Batting</div>
                     <div className="grid grid-cols-4 md:grid-cols-6 gap-1">
-                        <div className="relative group bg-theme-secondary border border-theme-accent rounded-md p-2 flex flex-col items-center">
-                            <div className="text-xs font-bold cursor-pointer text-theme-text">AVG</div>
-                            <div className="text-sm font-normal text-theme-secondary">{batting_average != 'NaN' ? batting_average : '-'}</div>
-                            <div className="absolute bottom-full mb-2 px-2 py-1 bg-theme-primary text-theme-text text-xs rounded opacity-0 group-hover:opacity-100 transition text-center whitespace-pre z-50">Batting Average</div>
-                        </div>
-                        <div className="relative group bg-theme-secondary border border-theme-accent rounded-md p-2 flex flex-col items-center">
-                            <div className="text-xs font-bold cursor-pointer text-theme-text">OBP</div>
-                            <div className="text-sm font-normal text-theme-secondary">{obp != 'NaN' ? obp : '-'}</div>
-                            <div className="absolute bottom-full mb-2 px-2 py-1 bg-theme-primary text-theme-text text-xs rounded opacity-0 group-hover:opacity-100 transition text-center whitespace-pre z-50">On-Base Percentage</div>
-                        </div>
-                        <div className="relative group bg-theme-secondary border border-theme-accent rounded-md p-2 flex flex-col items-center">
-                            <div className="text-xs font-bold cursor-pointer text-theme-text">SLG</div>
-                            <div className="text-sm font-normal text-theme-secondary">{slg != 'NaN' ? slg : '-'}</div>
-                            <div className="absolute bottom-full mb-2 px-2 py-1 bg-theme-primary text-theme-text text-xs rounded opacity-0 group-hover:opacity-100 transition text-center whitespace-pre z-50">Slugging Percentage</div>
-                        </div>
-                        <div className="relative group bg-theme-secondary border border-theme-accent rounded-md p-2 flex flex-col items-center">
-                            <div className="text-xs font-bold cursor-pointer text-theme-text">OPS</div>
-                            <div className="text-sm font-normal text-theme-secondary">{ops != 'NaN' ? ops : '-'}</div>
-                            <div className="absolute bottom-full mb-2 px-2 py-1 bg-theme-primary text-theme-text text-xs rounded opacity-0 group-hover:opacity-100 transition text-center whitespace-pre z-50">On-Base Plus Slugging</div>
-                        </div>
-                        <div className="relative group bg-theme-secondary border border-theme-accent rounded-md p-2 flex flex-col items-center">
-                            <div className="text-xs font-bold cursor-pointer text-theme-text">H</div>
-                            <div className="text-sm font-normal text-theme-secondary">{hits}</div>
-                            <div className="absolute bottom-full mb-2 px-2 py-1 bg-theme-primary text-theme-text text-xs rounded opacity-0 group-hover:opacity-100 transition text-center whitespace-pre z-50">Hits</div>
-                        </div>
-                        <div className="relative group bg-theme-secondary border border-theme-accent rounded-md p-2 flex flex-col items-center">
-                            <div className="text-xs font-bold cursor-pointer text-theme-text">1B</div>
-                            <div className="text-sm font-normal text-theme-secondary">{singles}</div>
-                            <div className="absolute bottom-full mb-2 px-2 py-1 bg-theme-primary text-theme-text text-xs rounded opacity-0 group-hover:opacity-100 transition text-center whitespace-pre z-50">Singles</div>
-                        </div>
-                        <div className="relative group bg-theme-secondary border border-theme-accent rounded-md p-2 flex flex-col items-center">
-                            <div className="text-xs font-bold cursor-pointer text-theme-text">2B</div>
-                            <div className="text-sm font-normal text-theme-secondary">{doubles}</div>
-                            <div className="absolute bottom-full mb-2 px-2 py-1 bg-theme-primary text-theme-text text-xs rounded opacity-0 group-hover:opacity-100 transition text-center whitespace-pre z-50">Doubles</div>
-                        </div>
-                        <div className="relative group bg-theme-secondary border border-theme-accent rounded-md p-2 flex flex-col items-center">
-                            <div className="text-xs font-bold cursor-pointer text-theme-text">3B</div>
-                            <div className="text-sm font-normal text-theme-secondary">{triples}</div>
-                            <div className="absolute bottom-full mb-2 px-2 py-1 bg-theme-primary text-theme-text text-xs rounded opacity-0 group-hover:opacity-100 transition text-center whitespace-pre z-50">Triples</div>
-                        </div>
-                        <div className="relative group bg-theme-secondary border border-theme-accent rounded-md p-2 flex flex-col items-center">
-                            <div className="text-xs font-bold cursor-pointer text-theme-text">HR</div>
-                            <div className="text-sm font-normal text-theme-secondary">{home_runs}</div>
-                            <div className="absolute bottom-full mb-2 px-2 py-1 bg-theme-primary text-theme-text text-xs rounded opacity-0 group-hover:opacity-100 transition text-center whitespace-pre z-50">Home Runs</div>
-                        </div>
-                        <div className="relative group bg-theme-secondary border border-theme-accent rounded-md p-2 flex flex-col items-center">
-                            <div className="text-xs font-bold cursor-pointer text-theme-text">BB</div>
-                            <div className="text-sm font-normal text-theme-secondary">{walked}</div>
-                            <div className="absolute bottom-full mb-2 px-2 py-1 bg-theme-primary text-theme-text text-xs rounded opacity-0 group-hover:opacity-100 transition text-center whitespace-pre z-50">Walks</div>
-                        </div>
-                        <div className="relative group bg-theme-secondary border border-theme-accent rounded-md p-2 flex flex-col items-center">
-                            <div className="text-xs font-bold cursor-pointer text-theme-text">PA</div>
-                            <div className="text-sm font-normal text-theme-secondary">{pa}</div>
-                            <div className="absolute bottom-full mb-2 px-2 py-1 bg-theme-primary text-theme-text text-xs rounded opacity-0 group-hover:opacity-100 transition text-center whitespace-pre z-50">Plate Appearances</div>
-                        </div>
-                        <div className="relative group bg-theme-secondary border border-theme-accent rounded-md p-2 flex flex-col items-center">
-                            <div className="text-xs font-bold cursor-pointer text-theme-text">AB</div>
-                            <div className="text-sm font-normal text-theme-secondary">{at_bats}</div>
-                            <div className="absolute bottom-full mb-2 px-2 py-1 bg-theme-primary text-theme-text text-xs rounded opacity-0 group-hover:opacity-100 transition text-center whitespace-pre z-50">At Bats</div>
-                        </div>
-                        <div className="relative group bg-theme-secondary border border-theme-accent rounded-md p-2 flex flex-col items-center">
-                            <div className="text-xs font-bold cursor-pointer text-theme-text">SB</div>
-                            <div className="text-sm font-normal text-theme-secondary">{sb}</div>
-                            <div className="absolute bottom-full mb-2 px-2 py-1 bg-theme-primary text-theme-text text-xs rounded opacity-0 group-hover:opacity-100 transition text-center whitespace-pre z-50">Stolen Bases</div>
-                        </div>
-                        <div className="relative group bg-theme-secondary border border-theme-accent rounded-md p-2 flex flex-col items-center">
-                            <div className="text-xs font-bold cursor-pointer text-theme-text">CS</div>
-                            <div className="text-sm font-normal text-theme-secondary">{cs}</div>
-                            <div className="absolute bottom-full mb-2 px-2 py-1 bg-theme-primary text-theme-text text-xs rounded opacity-0 group-hover:opacity-100 transition text-center whitespace-pre z-50">Caught Stealing</div>
-                        </div>
-                        <div className="relative group bg-theme-secondary border border-theme-accent rounded-md p-2 flex flex-col items-center">
-                            <div className="text-xs font-bold cursor-pointer text-theme-text">GIDP</div>
-                            <div className="text-sm font-normal text-theme-secondary">{gidp}</div>
-                            <div className="absolute bottom-full mb-2 px-2 py-1 bg-theme-primary text-theme-text text-xs rounded opacity-0 group-hover:opacity-100 transition text-center whitespace-pre z-50">Grounded Into Double Plays</div>
-                        </div>
+                        <StatTooltip label='BA' value={batting_average != 'NaN' ? batting_average : '-'} tooltip="Batting Average" isActive={activeTooltip === 'BA'} onToggle={() => toggle('BA')} />
+                        <StatTooltip label='OBP' value={obp != 'NaN' ? obp : '-'} tooltip="On-Base Percentage" isActive={activeTooltip === 'OBP'} onToggle={() => toggle('OBP')} />
+                        <StatTooltip label='SLG' value={slg != 'NaN' ? slg : '-'} tooltip="Slugging Percentage" isActive={activeTooltip === 'SLG'} onToggle={() => toggle('SLG')} />
+                        <StatTooltip label='OPS' value={ops != 'NaN' ? ops : '-'} tooltip="On-Base Plus Slugging" isActive={activeTooltip === 'OPS'} onToggle={() => toggle('OPS')} />
+                        <StatTooltip label='H' value={hits} tooltip="Hits" isActive={activeTooltip === 'H'} onToggle={() => toggle('H')} />
+                        <StatTooltip label='1B' value={singles} tooltip="Singles" isActive={activeTooltip === '1B'} onToggle={() => toggle('1B')} />
+                        <StatTooltip label='2B' value={doubles} tooltip="Doubles" isActive={activeTooltip === '2B'} onToggle={() => toggle('2B')} />
+                        <StatTooltip label='3B' value={triples} tooltip="Triples" isActive={activeTooltip === '3B'} onToggle={() => toggle('3B')} />
+                        <StatTooltip label='HR' value={home_runs} tooltip="Home Runs" isActive={activeTooltip === 'HR'} onToggle={() => toggle('HR')} />
+                        <StatTooltip label='BB' value={walked} tooltip="Walks" isActive={activeTooltip === 'BB'} onToggle={() => toggle('BB')} />
+                        <StatTooltip label='PA' value={pa} tooltip="Plate Appearances" isActive={activeTooltip === 'PA'} onToggle={() => toggle('PA')} />
+                        <StatTooltip label='AB' value={pa} tooltip="At Bats" isActive={activeTooltip === 'AB'} onToggle={() => toggle('AB')} />
+                        <StatTooltip label='SB' value={sb} tooltip="Stolen Bases" isActive={activeTooltip === 'SB'} onToggle={() => toggle('SB')} />
+                        <StatTooltip label='CS' value={cs} tooltip="Caught Stealing" isActive={activeTooltip === 'CS'} onToggle={() => toggle('CS')} />
+                        <StatTooltip label='GIDP' value={gidp} tooltip="Grounded Into Double Plays" isActive={activeTooltip === 'GIDP'} onToggle={() => toggle('GIDP')} />
                     </div>
                 </div>) : ('')}
                 {((category && category == 'pitching') || !category) ? (<div className="mb-4">
                     <div className="text-base font-semibold mb-1 text-center">Pitching</div>
                     <div className="grid grid-cols-4 md:grid-cols-6 gap-1">
-                        <div className="relative group bg-theme-secondary border border-theme-accent rounded-md p-2 flex flex-col items-center">
-                            <div className="text-xs font-bold cursor-pointer text-theme-text">ERA</div>
-                            <div className="text-sm font-normal text-theme-secondary">{era != 'NaN' ? era : '-'}</div>
-                            <div className="absolute bottom-full mb-2 px-2 py-1 bg-theme-primary text-theme-text text-xs rounded opacity-0 group-hover:opacity-100 transition text-center whitespace-pre z-50">Earned Run Average</div>
-                        </div>
-                        <div className="relative group bg-theme-secondary border border-theme-accent rounded-md p-2 flex flex-col items-center">
-                            <div className="text-xs font-bold cursor-pointer text-theme-text">WHIP</div>
-                            <div className="text-sm font-normal text-theme-secondary">{whip != 'NaN' ? whip : '-'}</div>
-                            <div className="absolute bottom-full mb-2 px-2 py-1 bg-theme-primary text-theme-text text-xs rounded opacity-0 group-hover:opacity-100 transition text-center whitespace-pre z-50">Walks and Hits Per Inning</div>
-                        </div>
-                        <div className="relative group bg-theme-secondary border border-theme-accent rounded-md p-2 flex flex-col items-center">
-                            <div className="text-xs font-bold cursor-pointer text-theme-text">K/BB</div>
-                            <div className="text-sm font-normal text-theme-secondary">{kbb != 'NaN' ? kbb : '-'}</div>
-                            <div className="absolute bottom-full mb-2 px-2 py-1 bg-theme-primary text-theme-text text-xs rounded opacity-0 group-hover:opacity-100 transition text-center whitespace-pre z-50">Strikeout to Walk Ratio</div>
-                        </div>
-                        <div className="relative group bg-theme-secondary border border-theme-accent rounded-md p-2 flex flex-col items-center">
-                            <div className="text-xs font-bold cursor-pointer text-theme-text">K/9</div>
-                            <div className="text-sm font-normal text-theme-secondary">{k9 != 'NaN' ? k9 : '-'}</div>
-                            <div className="absolute bottom-full mb-2 px-2 py-1 bg-theme-primary text-theme-text text-xs rounded opacity-0 group-hover:opacity-100 transition text-center whitespace-pre z-50">Strikeouts Per 9 Innings</div>
-                        </div>
-                        <div className="relative group bg-theme-secondary border border-theme-accent rounded-md p-2 flex flex-col items-center">
-                            <div className="text-xs font-bold cursor-pointer text-theme-text">H/9</div>
-                            <div className="text-sm font-normal text-theme-secondary">{h9 != 'NaN' ? h9 : '-'}</div>
-                            <div className="absolute bottom-full mb-2 px-2 py-1 bg-theme-primary text-theme-text text-xs rounded opacity-0 group-hover:opacity-100 transition text-center whitespace-pre z-50">Hits Per 9 Innings</div>
-                        </div>
-                        <div className="relative group bg-theme-secondary border border-theme-accent rounded-md p-2 flex flex-col items-center">
-                            <div className="text-xs font-bold cursor-pointer text-theme-text">BB/9</div>
-                            <div className="text-sm font-normal text-theme-secondary">{bb9 != 'NaN' ? bb9 : '-'}</div>
-                            <div className="absolute bottom-full mb-2 px-2 py-1 bg-theme-primary text-theme-text text-xs rounded opacity-0 group-hover:opacity-100 transition text-center whitespace-pre z-50">Walks Per 9 Innings</div>
-                        </div>
-                        <div className="relative group bg-theme-secondary border border-theme-accent rounded-md p-2 flex flex-col items-center">
-                            <div className="text-xs font-bold cursor-pointer text-theme-text">HR/9</div>
-                            <div className="text-sm font-normal text-theme-secondary">{hr9 != 'NaN' ? hr9 : '-'}</div>
-                            <div className="absolute bottom-full mb-2 px-2 py-1 bg-theme-primary text-theme-text text-xs rounded opacity-0 group-hover:opacity-100 transition text-center whitespace-pre z-50">Homers Per 9 Innings</div>
-                        </div>
-                        <div className="relative group bg-theme-secondary border border-theme-accent rounded-md p-2 flex flex-col items-center">
-                            <div className="text-xs font-bold cursor-pointer text-theme-text">IP</div>
-                            <div className="text-sm font-normal text-theme-secondary">{ip != '0.000' ? ip : '-'}</div>
-                            <div className="absolute bottom-full mb-2 px-2 py-1 bg-theme-primary text-theme-text text-xs rounded opacity-0 group-hover:opacity-100 transition text-center whitespace-pre z-50">Innings Played</div>
-                        </div>
-                        <div className="relative group bg-theme-secondary border border-theme-accent rounded-md p-2 flex flex-col items-center">
-                            <div className="text-xs font-bold cursor-pointer text-theme-text">K</div>
-                            <div className="text-sm font-normal text-theme-secondary">{strikeouts}</div>
-                            <div className="absolute bottom-full mb-2 px-2 py-1 bg-theme-primary text-theme-text text-xs rounded opacity-0 group-hover:opacity-100 transition text-center whitespace-pre z-50">Strikeouts</div>
-                        </div>
-                        <div className="relative group bg-theme-secondary border border-theme-accent rounded-md p-2 flex flex-col items-center">
-                            <div className="text-xs font-bold cursor-pointer text-theme-text">BBP</div>
-                            <div className="text-sm font-normal text-theme-secondary">{walks}</div>
-                            <div className="absolute bottom-full mb-2 px-2 py-1 bg-theme-primary text-theme-text text-xs rounded opacity-0 group-hover:opacity-100 transition text-center whitespace-pre z-50">Walks Allowed (Pitching)</div>
-                        </div>
-                        <div className="relative group bg-theme-secondary border border-theme-accent rounded-md p-2 flex flex-col items-center">
-                            <div className="text-xs font-bold cursor-pointer text-theme-text">HA</div>
-                            <div className="text-sm font-normal text-theme-secondary">{hits_allowed}</div>
-                            <div className="absolute bottom-full mb-2 px-2 py-1 bg-theme-primary text-theme-text text-xs rounded opacity-0 group-hover:opacity-100 transition text-center whitespace-pre z-50">Hits Allowed (Pitching)</div>
-                        </div>
-                        <div className="relative group bg-theme-secondary border border-theme-accent rounded-md p-2 flex flex-col items-center">
-                            <div className="text-xs font-bold cursor-pointer text-theme-text">HB</div>
-                            <div className="text-sm font-normal text-theme-secondary">{hit_batters}</div>
-                            <div className="absolute bottom-full mb-2 px-2 py-1 bg-theme-primary text-theme-text text-xs rounded opacity-0 group-hover:opacity-100 transition text-center whitespace-pre z-50">Hit Batters</div>
-                        </div>
-                        <div className="relative group bg-theme-secondary border border-theme-accent rounded-md p-2 flex flex-col items-center">
-                            <div className="text-xs font-bold cursor-pointer text-theme-text">ER</div>
-                            <div className="text-sm font-normal text-theme-secondary">{earned_runs}</div>
-                            <div className="absolute bottom-full mb-2 px-2 py-1 bg-theme-primary text-theme-text text-xs rounded opacity-0 group-hover:opacity-100 transition text-center whitespace-pre z-50">Earned Runs</div>
-                        </div>
-                        <div className="relative group bg-theme-secondary border border-theme-accent rounded-md p-2 flex flex-col items-center">
-                            <div className="text-xs font-bold cursor-pointer text-theme-text">W</div>
-                            <div className="text-sm font-normal text-theme-secondary">{wins}</div>
-                            <div className="absolute bottom-full mb-2 px-2 py-1 bg-theme-primary text-theme-text text-xs rounded opacity-0 group-hover:opacity-100 transition text-center whitespace-pre z-50">Wins</div>
-                        </div>
-                        <div className="relative group bg-theme-secondary border border-theme-accent rounded-md p-2 flex flex-col items-center">
-                            <div className="text-xs font-bold cursor-pointer text-theme-text">L</div>
-                            <div className="text-sm font-normal text-theme-secondary">{losses}</div>
-                            <div className="absolute bottom-full mb-2 px-2 py-1 bg-theme-primary text-theme-text text-xs rounded opacity-0 group-hover:opacity-100 transition text-center whitespace-pre z-50">Losses</div>
-                        </div>
-                        <div className="relative group bg-theme-secondary border border-theme-accent rounded-md p-2 flex flex-col items-center">
-                            <div className="text-xs font-bold cursor-pointer text-theme-text">QS</div>
-                            <div className="text-sm font-normal text-theme-secondary">{quality_starts}</div>
-                            <div className="absolute bottom-full mb-2 px-2 py-1 bg-theme-primary text-theme-text text-xs rounded opacity-0 group-hover:opacity-100 transition text-center whitespace-pre z-50">Quality Starts</div>
-                        </div>
-                        <div className="relative group bg-theme-secondary border border-theme-accent rounded-md p-2 flex flex-col items-center">
-                            <div className="text-xs font-bold cursor-pointer text-theme-text">SV</div>
-                            <div className="text-sm font-normal text-theme-secondary">{saves}</div>
-                            <div className="absolute bottom-full mb-2 px-2 py-1 bg-theme-primary text-theme-text text-xs rounded opacity-0 group-hover:opacity-100 transition text-center whitespace-pre z-50">Saves</div>
-                        </div>
-                        <div className="relative group bg-theme-secondary border border-theme-accent rounded-md p-2 flex flex-col items-center">
-                            <div className="text-xs font-bold cursor-pointer text-theme-text">BS</div>
-                            <div className="text-sm font-normal text-theme-secondary">{blown_saves}</div>
-                            <div className="absolute bottom-full mb-2 px-2 py-1 bg-theme-primary text-theme-text text-xs rounded opacity-0 group-hover:opacity-100 transition text-center whitespace-pre z-50">Blown Saves</div>
-                        </div>
-                        <div className="relative group bg-theme-secondary border border-theme-accent rounded-md p-2 flex flex-col items-center">
-                            <div className="text-xs font-bold cursor-pointer text-theme-text">G</div>
-                            <div className="text-sm font-normal text-theme-secondary">{appearances}</div>
-                            <div className="absolute bottom-full mb-2 px-2 py-1 bg-theme-primary text-theme-text text-xs rounded opacity-0 group-hover:opacity-100 transition text-center whitespace-pre z-50">Games Pitched</div>
-                        </div>
-                        <div className="relative group bg-theme-secondary border border-theme-accent rounded-md p-2 flex flex-col items-center">
-                            <div className="text-xs font-bold cursor-pointer text-theme-text">GF</div>
-                            <div className="text-sm font-normal text-theme-secondary">{finished_games}</div>
-                            <div className="absolute bottom-full mb-2 px-2 py-1 bg-theme-primary text-theme-text text-xs rounded opacity-0 group-hover:opacity-100 transition text-center whitespace-pre z-50">Games Finished</div>
-                        </div>
-                        <div className="relative group bg-theme-secondary border border-theme-accent rounded-md p-2 flex flex-col items-center">
-                            <div className="text-xs font-bold cursor-pointer text-theme-text">CG</div>
-                            <div className="text-sm font-normal text-theme-secondary">{complete_games}</div>
-                            <div className="absolute bottom-full mb-2 px-2 py-1 bg-theme-primary text-theme-text text-xs rounded opacity-0 group-hover:opacity-100 transition text-center whitespace-pre z-50">Complete Games</div>
-                        </div>
-                        <div className="relative group bg-theme-secondary border border-theme-accent rounded-md p-2 flex flex-col items-center">
-                            <div className="text-xs font-bold cursor-pointer text-theme-text">SHO</div>
-                            <div className="text-sm font-normal text-theme-secondary">{shutouts}</div>
-                            <div className="absolute bottom-full mb-2 px-2 py-1 bg-theme-primary text-theme-text text-xs rounded opacity-0 group-hover:opacity-100 transition text-center whitespace-pre z-50">Shutouts</div>
-                        </div>
-                        <div className="relative group bg-theme-secondary border border-theme-accent rounded-md p-2 flex flex-col items-center">
-                            <div className="text-xs font-bold cursor-pointer text-theme-text">NH</div>
-                            <div className="text-sm font-normal text-theme-secondary">{no_hitters}</div>
-                            <div className="absolute bottom-full mb-2 px-2 py-1 bg-theme-primary text-theme-text text-xs rounded opacity-0 group-hover:opacity-100 transition text-center whitespace-pre z-50">No Hitters</div>
-                        </div>
+                        <StatTooltip label='ERA' value={era != 'NaN' ? era : '-'} tooltip="Earned Run Average" isActive={activeTooltip === 'ERA'} onToggle={() => toggle('ERA')} />
+                        <StatTooltip label='WHIP' value={whip != 'NaN' ? whip : '-'} tooltip="Walks and Hits Per Inning" isActive={activeTooltip === 'WHIP'} onToggle={() => toggle('WHIP')} />
+                        <StatTooltip label='K/BB' value={kbb != 'NaN' ? kbb : '-'} tooltip="Strikout to Walk Ratio" isActive={activeTooltip === 'KBB'} onToggle={() => toggle('KBB')} />
+                        <StatTooltip label='K/9' value={k9 != 'NaN' ? k9 : '-'} tooltip="Strikeouts Per 9 Innings" isActive={activeTooltip === 'K9'} onToggle={() => toggle('K9')} />
+                        <StatTooltip label='H/9' value={h9 != 'NaN' ? h9 : '-'} tooltip="Hits Per 9 Innings" isActive={activeTooltip === 'H9'} onToggle={() => toggle('H9')} />
+                        <StatTooltip label='BB/9' value={bb9 != 'NaN' ? bb9 : '-'} tooltip="Walks Per 9 Innings" isActive={activeTooltip === 'BB9'} onToggle={() => toggle('BB9')} />
+                        <StatTooltip label='HR/9' value={hr9 != 'NaN' ? hr9 : '-'} tooltip="Home Runs Per 9 Innings" isActive={activeTooltip === 'HR9'} onToggle={() => toggle('HR9')} />
+                        <StatTooltip label='IP' value={ip != '0.000' ? ip : '-'} tooltip="Innings Played" isActive={activeTooltip === 'IP'} onToggle={() => toggle('IP')} />
+                        <StatTooltip label='K' value={strikeouts} tooltip="Strikeouts" isActive={activeTooltip === 'K'} onToggle={() => toggle('K')} />
+                        <StatTooltip label='BBP' value={walks} tooltip="Walks Allowed (Pitching)" isActive={activeTooltip === 'BBP'} onToggle={() => toggle('BBP')} />
+                        <StatTooltip label='HA' value={hits_allowed} tooltip="Hits Allowed (Pitching)" isActive={activeTooltip === 'HA'} onToggle={() => toggle('HA')} />
+                        <StatTooltip label='HB' value={hit_batters} tooltip="Hits Batters" isActive={activeTooltip === 'HB'} onToggle={() => toggle('HB')} />
+                        <StatTooltip label='ER' value={earned_runs} tooltip="Earned Runs" isActive={activeTooltip === 'ER'} onToggle={() => toggle('ER')} />
+                        <StatTooltip label='W' value={wins} tooltip="Earned Runs" isActive={activeTooltip === 'W'} onToggle={() => toggle('W')} />
+                        <StatTooltip label='L' value={losses} tooltip="Losses" isActive={activeTooltip === 'L'} onToggle={() => toggle('L')} />
+                        <StatTooltip label='QS' value={quality_starts} tooltip="Quality Starts" isActive={activeTooltip === 'QS'} onToggle={() => toggle('QS')} />
+                        <StatTooltip label='SV' value={saves} tooltip="Saves" isActive={activeTooltip === 'SV'} onToggle={() => toggle('SV')} />
+                        <StatTooltip label='BS' value={blown_saves} tooltip="Blown Saves" isActive={activeTooltip === 'BS'} onToggle={() => toggle('BS')} />
+                        <StatTooltip label='G' value={appearances} tooltip="Games Pitched" isActive={activeTooltip === 'G'} onToggle={() => toggle('G')} />
+                        <StatTooltip label='GF' value={finished_games} tooltip="Games Finished" isActive={activeTooltip === 'GF'} onToggle={() => toggle('GF')} />
+                        <StatTooltip label='CG' value={complete_games} tooltip="Complete Games" isActive={activeTooltip === 'CG'} onToggle={() => toggle('CG')} />
+                        <StatTooltip label='SHO' value={shutouts} tooltip="Shutouts" isActive={activeTooltip === 'SHO'} onToggle={() => toggle('SHO')} />
+                        <StatTooltip label='NH' value={no_hitters} tooltip="No Hitters" isActive={activeTooltip === 'NH'} onToggle={() => toggle('NH')} />
                     </div>
                 </div>) : ''}
                 {((category && category == 'defense') || !category) ? (<div className="mb-6">
                     <div className="text-base font-semibold mb-1 text-center">Defense</div>
                     <div className="grid grid-cols-4 md:grid-cols-6 gap-1">
-                        <div className="relative group bg-theme-secondary border border-theme-accent rounded-md p-2 flex flex-col items-center">
-                            <div className="text-xs font-bold cursor-pointer text-theme-text">E</div>
-                            <div className="text-sm font-normal text-theme-secondary">{errors}</div>
-                            <div className="absolute bottom-full mb-2 px-2 py-1 bg-theme-primary text-theme-text text-xs rounded opacity-0 group-hover:opacity-100 transition text-center whitespace-pre z-50">Errors</div>
-                        </div>
-                        <div className="relative group bg-theme-secondary border border-theme-accent rounded-md p-2 flex flex-col items-center">
-                            <div className="text-xs font-bold cursor-pointer text-theme-text">A</div>
-                            <div className="text-sm font-normal text-theme-secondary">{assists}</div>
-                            <div className="absolute bottom-full mb-2 px-2 py-1 bg-theme-primary text-theme-text text-xs rounded opacity-0 group-hover:opacity-100 transition text-center whitespace-pre z-50">Assists</div>
-                        </div>
-                        <div className="relative group bg-theme-secondary border border-theme-accent rounded-md p-2 flex flex-col items-center">
-                            <div className="text-xs font-bold cursor-pointer text-theme-text">PO</div>
-                            <div className="text-sm font-normal text-theme-secondary">{putouts}</div>
-                            <div className="absolute bottom-full mb-2 px-2 py-1 bg-theme-primary text-theme-text text-xs rounded opacity-0 group-hover:opacity-100 transition text-center whitespace-pre z-50">Putouts</div>
-                        </div>
-                        <div className="relative group bg-theme-secondary border border-theme-accent rounded-md p-2 flex flex-col items-center">
-                            <div className="text-xs font-bold cursor-pointer text-theme-text">DP</div>
-                            <div className="text-sm font-normal text-theme-secondary">{double_plays}</div>
-                            <div className="absolute bottom-full mb-2 px-2 py-1 bg-theme-primary text-theme-text text-xs rounded opacity-0 group-hover:opacity-100 transition text-center whitespace-pre z-50">Double Plays</div>
-                        </div>
+                        <StatTooltip label='E' value={errors} tooltip="Errors" isActive={activeTooltip === 'E'} onToggle={() => toggle('E')} />
+                        <StatTooltip label='A' value={assists} tooltip="Assists" isActive={activeTooltip === 'A'} onToggle={() => toggle('A')} />
+                        <StatTooltip label='PO' value={putouts} tooltip="Putouts" isActive={activeTooltip === 'PO'} onToggle={() => toggle('PO')} />
+                        <StatTooltip label='DP' value={double_plays} tooltip="Double Plays" isActive={activeTooltip === 'DP'} onToggle={() => toggle('DP')} />
                     </div>
                 </div>) : ''}
             </div>

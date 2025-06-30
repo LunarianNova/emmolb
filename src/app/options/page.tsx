@@ -11,12 +11,11 @@ export default function OptionsPage() {
     const [importData, setImportData] = useState("");
 
     useEffect(() => {
-    if (!settings.theme) return;
+        if (!settings.theme) return;
 
-    for (const [key, value] of Object.entries(settings.theme)) {
-        document.documentElement.style.setProperty(`--theme-${key}`, value);
-    }
-    }, [JSON.stringify(settings.theme)]); // <-- force effect to re-run when theme changes
+        for (const [key, value] of Object.entries(settings.theme))
+            document.documentElement.style.setProperty(`--theme-${key}`, value);
+    }, [JSON.stringify(settings.theme)]); // Re-run on every change
 
   return (
     <>

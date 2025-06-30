@@ -6,26 +6,20 @@ import { SettingsProvider } from "@/components/Settings";
 import { ThemeUpdater } from "@/components/ThemeUpdater";
 
 export const metadata: Metadata = {
-  title: "Shards of Space",
-  description: "Idunno what I'm doing (:",
+    title: "Shards of Space",
+    description: "Idunno what I'm doing (:",
 };
 
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
-  return (
-    <html lang="en">
-      <body
-        className={`${GeistSans.className} min-h-screen`}
-      >
-        <SettingsProvider>
-        <ThemeUpdater />
-        {children}
-        </SettingsProvider>
-        <Analytics />
-      </body>
-    </html>
-  );
+export default function RootLayout({ children, }: Readonly<{children: React.ReactNode;}>) {
+    return (
+        <html lang="en">
+            <body className={`${GeistSans.className} min-h-screen`}>
+                <SettingsProvider>
+                    <ThemeUpdater />
+                    {children}
+                </SettingsProvider>
+                <Analytics />
+            </body>
+        </html>
+    );
 }
