@@ -1,33 +1,29 @@
 const SERVICE_WORKER_FILE_PATH = './sw.js';
 
 export function notificationUnsupported(): boolean {
-  let unsupported = false;
-  if (
-    !('serviceWorker' in navigator) ||
-    !('PushManager' in window) ||
-    !('showNotification' in ServiceWorkerRegistration.prototype)
-  ) {
-    unsupported = true;
-  }
-  return unsupported;
+  const isIos = /iP(ad|hone|od)/.test(navigator.userAgent);
+  return (
+    isIos ||
+    !(
+      'serviceWorker' in navigator &&
+      'PushManager' in window &&
+      'showNotification' in ServiceWorkerRegistration.prototype
+    )
+  );
 }
 
 export function checkPermissionStateAndAct(
   onSubscribe: (subs: PushSubscription | null) => void,
 ): void {
   const state: NotificationPermission = Notification.permission;
-  switch (state) {
-    case 'denied':
-      break;
-    case 'granted':
-      registerAndSubscribe(onSubscribe);
-      break;
-    case 'default':
-      break;
+  if (state === 'granted') {
+    registerAndSubscribe(onSubscribe);
   }
 }
 
-async function subscribe(onSubscribe: (subs: PushSubscription | null) => void): Promise<void> {
+async function subscribeOnce(
+  onSubscribe: (subs: PushSubscription | null) => void,
+): Promise<void> {
   navigator.serviceWorker.ready
     .then((registration: ServiceWorkerRegistration) => {
       return registration.pushManager.subscribe({
@@ -36,14 +32,29 @@ async function subscribe(onSubscribe: (subs: PushSubscription | null) => void): 
       });
     })
     .then((subscription: PushSubscription) => {
-      console.info('Created subscription Object: ', subscription.toJSON());
-      submitSubscription(subscription).then(_ => {
-        onSubscribe(subscription);
-      });
+      console.info('Created subscription object:', subscription.toJSON());
+      onSubscribe(subscription);
     })
     .catch(e => {
-      console.error('Failed to subscribe cause of: ', e);
+      console.error('Failed to subscribe:', e);
     });
+}
+
+export async function isSubscribed(teamId: string): Promise<boolean> {
+  const reg = await navigator.serviceWorker.ready;
+  const sub = await reg.pushManager.getSubscription();
+  const endpoint = sub?.endpoint;
+
+  if (!endpoint) return false;
+
+  const res = await fetch('https://lunanova.space/cgi-bin/is_subscribed.py', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ team_id: teamId, endpoint }),
+  });
+
+  const { subscribed } = await res.json();
+  return subscribed;
 }
 
 export async function subscribeToTeam(teamId: string) {
@@ -51,7 +62,8 @@ export async function subscribeToTeam(teamId: string) {
   if (permission !== 'granted') return;
 
   const reg = await navigator.serviceWorker.ready;
-  const sub = await reg.pushManager.subscribe({
+  const existingSub = await reg.pushManager.getSubscription();
+  const sub = existingSub || await reg.pushManager.subscribe({
     userVisibleOnly: true,
     applicationServerKey: process.env.VAPID_PUBLIC_KEY,
   });
@@ -66,18 +78,18 @@ export async function subscribeToTeam(teamId: string) {
   });
 }
 
+export async function unsubscribeFromTeam(teamId: string) {
+  const reg = await navigator.serviceWorker.ready;
+  const sub = await reg.pushManager.getSubscription();
+  const endpoint = sub?.endpoint;
 
-async function submitSubscription(subscription: PushSubscription): Promise<void> {
-  const endpointUrl = '/api/web-push/subscription';
-  const res = await fetch(endpointUrl, {
+  if (!endpoint) return;
+
+  await fetch('https://lunanova.space/cgi-bin/unsubscribe.py', {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ subscription }),
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ team_id: teamId, endpoint }),
   });
-  const result = await res.json();
-  console.log(result);
 }
 
 export async function registerAndSubscribe(
@@ -85,28 +97,8 @@ export async function registerAndSubscribe(
 ): Promise<void> {
   try {
     await navigator.serviceWorker.register(SERVICE_WORKER_FILE_PATH);
-    await subscribe(onSubscribe);
+    await subscribeOnce(onSubscribe);
   } catch (e) {
-    console.error('Failed to register service-worker: ', e);
+    console.error('Failed to register service worker:', e);
   }
-}
-
-export async function sendWebPush(message: string | null): Promise<void> {
-  const endPointUrl = '/api/web-push/send';
-  const pushBody = {
-    title: 'Test Push',
-    body: message ?? 'This is a test push message',
-    image: '/logo.svg',
-    icon: 'logo.svg',
-    url: 'https://lunanova.space',
-  };
-  const res = await fetch(endPointUrl, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(pushBody),
-  });
-  const result = await res.json();
-  console.log(result);
 }

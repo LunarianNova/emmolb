@@ -160,6 +160,7 @@ function getBlockMetadata(message: string): { emoji?: string; title?: string, on
     let emoji = null;
     if (player) {
         emoji = awayPlayers.includes(player) ? data.AwayTeamEmoji : data.HomeTeamEmoji;
+        emoji = (data.AwayTeamEmoji === data.HomeTeamEmoji) ? awayPlayers.includes(player) ? emoji + "✈️" : emoji + "🏠" : emoji;
     }
     return player && emoji ? { emoji: emoji, title: player, onClick: () => {setSelectedPlayer(player); setShowStats(true);} } : null;
   }
