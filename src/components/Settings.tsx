@@ -19,6 +19,7 @@ export type ThemeColors = {
 
 type Settings = {
   useBlasesloaded: boolean;
+  useTeamColoredHeaders: boolean;
   theme?: ThemeColors;
   [key: string]: any;
 };
@@ -33,6 +34,7 @@ type SettingsContextType = {
 
 const defaultSettings: Settings = {
   useBlasesloaded: false,
+  useTeamColoredHeaders: false,
   theme: {
     primary: '#1e2a36',
     secondary: '#0f1a2b',

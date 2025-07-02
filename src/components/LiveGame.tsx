@@ -7,6 +7,7 @@ import { GameStateDisplay } from '@/components/GameStateDisplay';
 import { EventBlock } from './EventBlock';
 import { CopiedPopup } from './CopiedPopup';
 import PlayerStats from './PlayerStats';
+import { useSettings } from './Settings';
 
 type Event = any; // ahhhh
 
@@ -21,6 +22,7 @@ type EventBlockGroup = {
   emoji?: string;
   title?: string;
   color?: string;
+  titleColor?: string;
   messages: EventMessage[];
   onClick?: any;
 };
@@ -53,6 +55,7 @@ export default function LiveGame({ awayTeam, homeTeam, initialData, gameId }: { 
   const players: Record<string, any> = {};
   const homePlayers: string[] = [];
   const awayPlayers: string[] = [];
+  const { settings } = useSettings();
 
   for (const player of awayTeam.Players) {
     const fullName = `${player.FirstName} ${player.LastName}`
@@ -153,7 +156,7 @@ useEffect(() => {
 }, [gameId]);
 
 
-function getBlockMetadata(message: string): { emoji?: string; title?: string, onClick?: () => void } | null {
+function getBlockMetadata(message: string): { emoji?: string; title?: string, titleColor?: string, onClick?: () => void } | null {
   if (message.includes('Now batting')) {
     const match = message.match(/Now batting: (.+)/);
     const player = match ? match[1].split("(")[0].trim() : null;
@@ -162,13 +165,13 @@ function getBlockMetadata(message: string): { emoji?: string; title?: string, on
         emoji = awayPlayers.includes(player) ? data.AwayTeamEmoji : data.HomeTeamEmoji;
         emoji = (data.AwayTeamEmoji === data.HomeTeamEmoji) ? awayPlayers.includes(player) ? emoji + "✈️" : emoji + "🏠" : emoji;
     }
-    return player && emoji ? { emoji: emoji, title: player, onClick: () => {setSelectedPlayer(player); setShowStats(true);} } : null;
+    return player && emoji ? { emoji: emoji, titleColor: settings.useTeamColoredHeaders ? awayPlayers.includes(player) ? data.AwayTeamColor : data.HomeTeamColor : null, title: player, onClick: () => {setSelectedPlayer(player); setShowStats(true);} } : null;
   }
 
   if (message.includes('"')) return { emoji: '🤖', title: 'ROBO-UMP' };
   if (message.includes('mound visit')) return { emoji: '🚶', title: 'Mound Visit' };
-  if (message.includes('7.') && message.includes(awayPlayers[0])) return { emoji: awayTeam.Emoji, title: 'Away Lineup' };
-  if (message.includes('7.') && message.includes(homePlayers[0])) return { emoji: homeTeam.Emoji, title: 'Home Lineup' };
+  if (message.includes('7.') && message.includes(awayPlayers[0])) return { emoji: awayTeam.Emoji, title: 'Away Lineup', titleColor: settings.useTeamColoredHeaders ? data.AwayTeamColor : null };
+  if (message.includes('7.') && message.includes(homePlayers[0])) return { emoji: homeTeam.Emoji, title: 'Home Lineup', titleColor: settings.useTeamColoredHeaders ? data.HomeTeamColor : null};
   if (message.includes('End') || message.includes('@') || message.includes('Start of the top of the 1st') || message.includes('Final score:')) return { emoji: 'ℹ️', title: 'Game Info' };
 
 
@@ -296,7 +299,7 @@ const groupedEvents = groupEventLog(eventLog);
 
         <div className="mt-6 space-y-4">
             {groupedEvents.map((block, idx) => (
-                <EventBlock key={idx} emoji={block.emoji} title={block.title} color={block.color} messages={block.messages} onClick={block.onClick ? block.onClick : undefined}/>
+                <EventBlock key={idx} emoji={block.emoji} title={block.title} color={block.color} titleColor={block.titleColor} messages={block.messages} onClick={block.onClick ? block.onClick : undefined}/>
             ))}
         </div>
 

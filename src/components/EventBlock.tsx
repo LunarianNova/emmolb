@@ -31,7 +31,8 @@ function useHighlightEventOnHash() {
 interface EventBlockProps {
   emoji?: string;
   title?: string;
-  color?: string,
+  color?: string;
+  titleColor?: string;
   messages: EventMessage[];
   onClick?: () => void;
 }
@@ -43,13 +44,29 @@ type EventMessage = {
   pitchZone?: string | null;
 }
 
-export function EventBlock({ emoji, title, color, messages, onClick }: EventBlockProps) {
+function getLuminance(hex: string): number {
+    const c = hex.charAt(0) === '#' ? hex.substring(1) : hex;
+    const r = parseInt(c.substring(0, 2), 16) / 255;
+    const g = parseInt(c.substring(2, 4), 16) / 255;
+    const b = parseInt(c.substring(4, 6), 16) / 255;
+    const [R, G, B] = [r, g, b].map((ch) =>
+        ch <= 0.03928 ? ch / 12.92 : Math.pow((ch + 0.055) / 1.055, 2.4)
+    );
+    return 0.2126 * R + 0.7152 * G + 0.0722 * B;
+}
+
+function getContrastTextColor(bgHex: string): 'black' | 'white' {
+    const luminance = getLuminance(bgHex);
+    return luminance > 0.179 ? 'black' : 'white';
+}
+
+export function EventBlock({ emoji, title, color, titleColor, messages, onClick }: EventBlockProps) {
   useHighlightEventOnHash();
-  const bgColor = color ?? '--bg-theme-secondary';
+  const bgColor = color ?? '--bg-theme-primary';
   return (
     <div className="relative mt-6">
       {(emoji || title) && (
-        <div className={`absolute -top-3 left-3 z-10 inline-block rounded-full px-3 py-1 text-base font-bold text-theme-secondary bg-theme-secondary border border-theme-accent shadow-md ${onClick?'cursor-pointer':''}`} onClick={onClick}>
+        <div className={`absolute -top-3 left-3 z-10 inline-block rounded-full px-3 py-1 text-base font-bold text-theme-secondary border border-theme-accent shadow-md ${onClick?'cursor-pointer':''}`} onClick={onClick} style={{background: titleColor ? `#${titleColor}` : 'var(--theme-secondary)', color: titleColor ? getContrastTextColor(titleColor) : 'var(--theme-text)'}}>
           {emoji && <span className="mr-1">{emoji}</span>}
           {title}
         </div>
