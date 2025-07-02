@@ -66,7 +66,7 @@ export function EventBlock({ emoji, title, color, titleColor, messages, onClick 
   return (
     <div className="relative mt-6">
       {(emoji || title) && (
-        <div className={`absolute -top-3 left-3 z-10 inline-block rounded-full px-3 py-1 text-base font-bold text-theme-secondary border border-theme-accent shadow-md ${onClick?'cursor-pointer':''}`} onClick={onClick} style={{background: titleColor ? `#${titleColor}` : 'var(--theme-secondary)', color: titleColor ? getContrastTextColor(titleColor) : 'var(--theme-text)'}}>
+        <div className={`absolute -top-3 left-3 z-10 inline-block rounded-full px-3 py-1 text-base font-bold text-theme-secondary border border-theme-accent shadow-md ${onClick?'cursor-pointer':''}`} onClick={onClick} style={{background: titleColor ? `#${titleColor}` : 'var(--theme-secondary)', borderColor: titleColor ? getContrastTextColor(titleColor) : 'var(--theme-accent)', color: titleColor ? getContrastTextColor(titleColor) : 'var(--theme-text)'}}>
           {emoji && <span className="mr-1">{emoji}</span>}
           {title}
         </div>

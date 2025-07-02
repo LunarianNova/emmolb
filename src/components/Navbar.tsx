@@ -6,6 +6,7 @@ import React, { useState, useRef, useEffect } from 'react'
 export function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [openDropdown, setOpenDropdown] = useState<string | null>(null)
+  const [collapsed, setCollapsed] = useState<boolean>(false);
 
   // Close dropdowns on outside click
   const navRef = useRef<HTMLDivElement>(null)
@@ -13,6 +14,7 @@ export function Navbar() {
     function handleClickOutside(event: MouseEvent) {
       if (navRef.current && !navRef.current.contains(event.target as Node)) {
         setOpenDropdown(null)
+        setMobileMenuOpen(false);
       }
     }
     document.addEventListener('mousedown', handleClickOutside)
@@ -26,7 +28,7 @@ export function Navbar() {
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-theme-background text-theme-text font-sans">
-      <div ref={navRef} className="relative overflow-visible">
+      <div ref={navRef} className={`relative overflow-visible transition-all duration-300`}>
         {/* Background logo */}
         <div className="absolute inset-0 flex justify-center items-center pointer-events-none z-0">
           <div className="relative w-24 h-24 opacity-20">

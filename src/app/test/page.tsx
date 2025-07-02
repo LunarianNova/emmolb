@@ -1,6 +1,8 @@
 // 'use client';
 // import React, { useState } from "react";
 
+import TestBasesPage from "@/components/BaseParser";
+
 // type Entry = {
 //     away_score: number,
 //     balls: number,
@@ -230,6 +232,6 @@
 // }
 export default function placeholder() {
     return (
-        <div></div>
+        <TestBasesPage />
     );
 }
