@@ -2,32 +2,30 @@
 
 import { useState } from "react";
 
-type Base = 'first' | 'second' | 'third'
-
 type Bases = {
     first: string | null;
     second: string | null;
     third: string | null;
 }
 
-function extractOutPlayers(message: string, playerList: string[]): string[] {
-    const outSegments = message.split(/\. /).filter(s => s.includes('out at'));
-    const outPlayers: string[] = [];
+function extractOutPlayers(message: string, playerList: string[], check: string): string[] {
+    const checkedSegments = message.split(/\. /).filter(s => (s.includes(check)));
+    const checkedPlayers: string[] = [];
 
-    for (const segment of outSegments) {
-        const [rawNamePart] = segment.split(' out at ');
+    for (const segment of checkedSegments) {
+        const [rawNamePart] = segment.split(` ${check}`);
         const words = rawNamePart.trim().split(/\s+/);
 
         for (let i = 0; i < words.length; i++) {
             const candidate = words.slice(i).join(' ');
             if (playerList.includes(candidate)) {
-                outPlayers.push(candidate);
+                checkedPlayers.push(candidate);
                 break;
             }
         }
     }
 
-    return outPlayers;
+    return checkedPlayers;
 }
 
 
@@ -40,26 +38,38 @@ export function ProcessMessage(event: any, players: string[], queue: string[]): 
     for (let i = 0; i < (scoreMatch ? scoreMatch?.length : 0); i++)
         newQueue.shift();
 
-    if (message.match(/(singles|doubles|triples|walks|reaches on a fielding error)/i))
+    if (message.match(/starts the inning on/i))
+        for (const player of extractOutPlayers(message, players, 'starts the inning on'))
+            newQueue.push(player);
+
+    if (message.match(/(singles|doubles|triples|walks|reaches on a fielding error|was hit by the pitch|into a forced out|reaches on a throwing error)/i))
         newQueue.push(event.batter);
 
     if (message.match(/homers/i))
         newQueue.length = 0;
 
-    if (message.outs === null || message.outs === undefined)
+    if (event.outs === null)
         newQueue.length = 0;
 
-    const outs = extractOutPlayers(message, players);
+    let outs = extractOutPlayers(message, players, 'out at');
+    outs = [...outs, ...extractOutPlayers(message, players, 'is caught stealing')];
     for (const player of outs) {
         const index = newQueue.indexOf(player);
         if (index !== -1) newQueue.splice(index, 1);
     }
 
-    const occupiedBases = [event.on_1b, event.on_2b, event.on_3b].map((on, idx) => on ? idx : -1).filter(i => i !== -1);
     const bases: Bases = {
-        third: occupiedBases[2] !== undefined ? newQueue[occupiedBases[2]] : null,
-        second: occupiedBases[1] !== undefined ? newQueue[occupiedBases[1]] : null,
-        first: occupiedBases[0] !== undefined ? newQueue[occupiedBases[0]] : null,
+        first: event.on_1b ? 
+                event.on_2b ? 
+                    event.on_3b ? 
+                        newQueue[2] : 
+                        newQueue[1] :
+                        event.on_3b ?
+                    newQueue[1] : 
+                newQueue[0] : 
+            null,
+        second: event.on_2b ? event.on_3b ? newQueue[1] : newQueue[0] : null,
+        third: event.on_3b ? newQueue[0] : null,
     };
 
     return {

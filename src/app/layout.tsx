@@ -5,6 +5,7 @@ import "./globals.css";
 import { Analytics } from "@vercel/analytics/next"
 import { SettingsProvider } from "@/components/Settings";
 import { ThemeUpdater } from "@/components/ThemeUpdater";
+import { Navbar } from "@/components/Navbar";
 
 
 
@@ -12,6 +13,7 @@ export default function RootLayout({ children, }: Readonly<{children: React.Reac
   return (
         <html lang="en">
             <body className={`${GeistSans.className} min-h-screen`}>
+                <Navbar />
                 <SettingsProvider>
                     <ThemeUpdater />
                     {children}

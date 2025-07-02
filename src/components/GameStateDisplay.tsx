@@ -13,9 +13,9 @@ type GameStateDisplayProps = {
   strikes: number
   outs: number
   bases: {
-    first: boolean
-    second: boolean
-    third: boolean
+    first: boolean | string | null
+    second: boolean | string | null
+    third: boolean | string | null
   }
   pitcher: PlayerInfo
   batter: PlayerInfo
@@ -83,6 +83,7 @@ export function GameStateDisplay({
 
 
   return (
+    <>
     <div className="flex justify-center items-start gap-x-10 w-full max-w-md mx-auto px-2">
       {/* Balls / Strikes / Outs */}
       <div className="space-y-2 text-right w-[100px] shrink-0">
@@ -104,7 +105,7 @@ export function GameStateDisplay({
       <div className="flex justify-center w-[150px]">
         <div className="relative w-24 h-24 mx-auto">
           <div
-            className={baseStyles(bases.second)}
+            className={baseStyles(bases.second ? true : false)}
             style={{
               left: 'calc(50% - 20px)',
               top: 'calc(20% + 20px)',
@@ -112,7 +113,7 @@ export function GameStateDisplay({
             }}
           />
           <div
-            className={baseStyles(bases.first)}
+            className={baseStyles(bases.first ? true : false)}
             style={{
               left: 'calc(90% - 20px)',
               top: 'calc(60% + 20px)',
@@ -120,13 +121,13 @@ export function GameStateDisplay({
             }}
           />
           <div
-            className={baseStyles(bases.third)}
+            className={baseStyles(bases.third ? true : false)}
             style={{
               left: 'calc(10% - 20px)',
               top: 'calc(60% + 20px)',
               transform: 'translate(-50%, -50%) rotate(90deg)',
             }}
-          />
+          ></div>
         </div>
       </div>
 
@@ -137,5 +138,7 @@ export function GameStateDisplay({
         <PlayerDisplay label="On Deck" player={onDeck} />
       </div>
     </div>
+    <div className='text-theme-text text-sm'>1st: {bases.first ? bases.first : '-'}<br></br>2nd: {bases.second ? bases.second : '-'}<br></br>3rd: {bases.third ? bases.third : '-'}</div>
+    </>
   )
 }

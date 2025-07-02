@@ -30,16 +30,16 @@ export function Navbar() {
     <nav className="fixed top-0 left-0 right-0 z-50 bg-theme-background text-theme-text font-sans">
       <div ref={navRef} className={`relative overflow-visible transition-all duration-300`}>
         {/* Background logo */}
-        <div className="absolute inset-0 flex justify-center items-center pointer-events-none z-0">
+        <div className="absolute inset-0 flex justify-center items-center pointer-events-none z-100">
           <div className="relative w-24 h-24 opacity-20">
             <Link href='/' className='pointer-events-auto'>
               <img
                 src="/logo.svg"
                 alt="Star Emoji"
-                className="w-full h-full object-contain"
+                className="w-full h-full object-contain z-100"
                 draggable={false}
               />
-              <div className="absolute inset-0 flex items-center justify-center">
+              <div className="absolute inset-0 z-100 flex items-center justify-center">
                 <svg
                   viewBox="0 0 120 30"
                   className="w-full h-full opacity-80 select-none"

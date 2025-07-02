@@ -8,6 +8,7 @@ import { EventBlock } from './EventBlock';
 import { CopiedPopup } from './CopiedPopup';
 import PlayerStats from './PlayerStats';
 import { useSettings } from './Settings';
+import { ProcessMessage } from './BaseParser';
 
 type Event = any; // ahhhh
 
@@ -35,7 +36,22 @@ function getERA(stats: any): string {
   if (inningsPitched === 0) return "∞ ERA";
 
   const era = (earnedRuns / inningsPitched) * 9;
-  return `${era.toFixed(2)} ERA`;
+  return `${era.toFixed(3)} ERA`;
+}
+
+function getOPS(stats: any): string {
+    const singles = stats.singles ?? 0;
+    const doubles = stats.doubles ?? 0;
+    const triples = stats.triples ?? 0;
+    const home_runs = stats.home_runs ?? 0;
+    const walked = stats.walked ?? 0;
+    const hbp = stats.hit_by_pitch ?? 0;
+    const sac_flies = stats.sacrifice_flies ?? 0;
+    const at_bats = stats.at_bats ?? 0;
+    const hits = (stats.singles ?? 0) + (stats.doubles ?? 0) + (stats.triples ?? 0) + (stats.home_runs ?? 0)
+    const obp = ((hits + walked + hbp) / (at_bats + walked + hbp + sac_flies)).toFixed(3);
+    const slg = ((singles + 2 * doubles + 3 * triples + 4 * home_runs)/(at_bats)).toFixed(3);
+    return (Number(obp) + Number(slg)).toFixed(3);
 }
 
 function getBA(stats: any): string {
@@ -215,6 +231,17 @@ function groupEventLog(eventLog: { away_score: string, home_score: string, batte
 }
 
 const groupedEvents = groupEventLog(eventLog);
+const playerNames = Array.from(new Set(eventLog.map(e => e.batter)));
+let currentQueue: string[] = [];
+let lastBases: {first: string | null, second: string | null, third: string | null} = { first: null, second: null, third: null }; 
+
+for (const event of eventLog) {
+  const result = ProcessMessage(event, playerNames, currentQueue);
+  currentQueue = result.baseQueue;
+  lastBases = result.bases;
+  console.log(lastBases);
+  console.log(players[lastBases.first ? lastBases.first : 0])
+}
 
   return (
     <>
@@ -255,7 +282,7 @@ const groupedEvents = groupEventLog(eventLog);
           balls={lastEvent.balls ?? 0}
           strikes={lastEvent.strikes ?? 0}
           outs={lastEvent.outs ?? 0}
-          bases={{ first: lastEvent.on_1b, second: lastEvent.on_2b, third: lastEvent.on_3b }}
+          bases={{first: lastBases.first ? lastBases.first + ` (${getOPS(players[lastBases.first].Stats)} OPS)` : lastBases.first, second: lastBases.second ? lastBases.second + ` (${getOPS(players[lastBases.second].Stats)} OPS)` : lastBases.second, third: lastBases.third ? lastBases.third + ` (${getOPS(players[lastBases.third].Stats)} OPS)` : lastBases.third}}
           pitcher={{
             name: lastEvent.pitcher,
             stat: (lastEvent.pitcher !== "" && lastEvent.pitcher !== null) ? `(${getERA(players[lastEvent.pitcher].Stats)})` : "",
