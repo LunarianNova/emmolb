@@ -98,14 +98,12 @@ export default function TeamPage({ id }: { id: string }) {
 
   if (loading) return (
     <>
-      <Navbar />
       <Loading />
     </>
   );
 
   if (!team) return (
     <>
-      <Navbar />
       <div className="text-white text-center mt-10">Can't find that team</div>
     </>
   );
@@ -114,7 +112,6 @@ export default function TeamPage({ id }: { id: string }) {
 
   return (
     <>
-      <Navbar />
       <main className="mt-16">
         <div className="min-h-screen bg-theme-background text-theme-text font-sans p-4 pt-24 max-w-2xl mx-auto">
             <div className="relative w-full h-28 px-6 py-4 border-2 rounded-2xl shadow-xl border-theme-accent overflow-hidden mb-4 flex items-center" style={{background: `#${team.Color}`, color: getContrastTextColor(team.Color)}}>

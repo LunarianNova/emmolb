@@ -25,6 +25,8 @@ export default function LesserLeaguePage() {
         '6805db0cac48194de3cd3ff2',
         '6805db0cac48194de3cd3ff3',
         '6805db0cac48194de3cd3ff4',
+        '6805db0cac48194de3cd3ff5',
+        '6805db0cac48194de3cd3ff6',
     ];
 
     useEffect(() => {
@@ -47,12 +49,10 @@ export default function LesserLeaguePage() {
     }, []);
 
     if (loading) return (<>
-        <Navbar />
         <Loading />
     </>);
 
     return (<>
-        <Navbar />
         <main className="mt-16">
             <div className="min-h-screen bg-theme-background text-theme-text font-sans p-4 pt-24 max-w-2xl mx-auto">
                 <div className="text-2xl font-bold text-center mb-6">Lesser League Subleagues</div>

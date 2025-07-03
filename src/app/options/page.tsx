@@ -19,7 +19,6 @@ export default function OptionsPage() {
 
   return (
     <>
-    <Navbar />
     <CopiedPopup />
     <main className="mt-12">
         <div className="min-h-screen bg-theme-background text-theme-text font-sans p-4 pt-20 max-w-3xl mx-auto">

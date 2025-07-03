@@ -245,7 +245,6 @@ for (const event of eventLog) {
 
   return (
     <>
-    <Navbar />
     <main className="mt-16">
       <CopiedPopup />
       <div className="min-h-screen bg-theme-background text-theme-text font-sans p-4 pt-20 max-w-3xl mx-auto h-full">
