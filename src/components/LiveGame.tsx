@@ -233,6 +233,7 @@ export default function LiveGame({ awayTeamArg, homeTeamArg, initialDataArg, gam
                     player: lastEvent.on_deck ? players[lastEvent.on_deck] : null,
                     onClick: () => {setSelectedPlayer(lastEvent.on_deck); setPlayerType('batting'); setShowStats(true);},
                 }}
+                showBases={true}
             />
 
             <>

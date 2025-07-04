@@ -16,6 +16,7 @@ type GameStateDisplayProps = {
     pitcher: PlayerInfo;
     batter: PlayerInfo;
     onDeck: PlayerInfo;
+    showBases?: boolean
 }
 
 export function GameStateDisplay({
@@ -24,6 +25,7 @@ export function GameStateDisplay({
   pitcher,
   batter,
   onDeck,
+  showBases=false,
 }: GameStateDisplayProps) {
   const renderCircles = (count: number, max: number) =>
     Array.from({ length: max }).map((_, i) => (
@@ -141,9 +143,9 @@ export function GameStateDisplay({
         <PlayerDisplay label="On Deck" player={onDeck} />
       </div>
     </div>
-    1st: {bases.first}<br></br>
+    {showBases && (<div>1st: {bases.first}<br></br>
     2nd: {bases.second}<br></br>
-    3rd: {bases.third}<br></br>
+    3rd: {bases.third}<br></br></div>)}
     </>
   )
 }
