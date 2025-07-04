@@ -11,25 +11,11 @@ type PlayerInfo = {
 }
 
 type GameStateDisplayProps = {
-<<<<<<< HEAD
-  balls: number
-  strikes: number
-  outs: number
-  bases: {
-    first: boolean | string | null
-    second: boolean | string | null
-    third: boolean | string | null
-  }
-  pitcher: PlayerInfo
-  batter: PlayerInfo
-  onDeck: PlayerInfo
-=======
     event: Event;
     bases: Bases;
     pitcher: PlayerInfo;
     batter: PlayerInfo;
     onDeck: PlayerInfo;
->>>>>>> dcab695 (Proper Typing (sort of))
 }
 
 export function GameStateDisplay({
@@ -116,11 +102,7 @@ export function GameStateDisplay({
         <div className="relative w-24 h-24 mx-auto">
           <div>
           <div
-<<<<<<< HEAD
-            className={baseStyles(bases.second ? true : false)}
-=======
             className={baseStyles(!!bases.second)}
->>>>>>> dcab695 (Proper Typing (sort of))
             style={{
               left: 'calc(50% - 20px)',
               top: 'calc(20% + 20px)',
@@ -130,11 +112,7 @@ export function GameStateDisplay({
           </div>
           <div>
           <div
-<<<<<<< HEAD
-            className={baseStyles(bases.first ? true : false)}
-=======
             className={baseStyles(!!bases.first)}
->>>>>>> dcab695 (Proper Typing (sort of))
             style={{
               left: 'calc(90% - 20px)',
               top: 'calc(60% + 20px)',
@@ -145,21 +123,14 @@ export function GameStateDisplay({
           </div>
           <div>
           <div
-<<<<<<< HEAD
-            className={baseStyles(bases.third ? true : false)}
-=======
             className={baseStyles(!!bases.third)}
->>>>>>> dcab695 (Proper Typing (sort of))
             style={{
               left: 'calc(10% - 20px)',
               top: 'calc(60% + 20px)',
               transform: 'translate(-50%, -50%) rotate(90deg)',
             }}
           ></div>
-<<<<<<< HEAD
-=======
           </div>
->>>>>>> dcab695 (Proper Typing (sort of))
         </div>
       </div>
 
@@ -170,13 +141,9 @@ export function GameStateDisplay({
         <PlayerDisplay label="On Deck" player={onDeck} />
       </div>
     </div>
-<<<<<<< HEAD
-    <div className='text-theme-text text-sm'>1st: {bases.first ? bases.first : '-'}<br></br>2nd: {bases.second ? bases.second : '-'}<br></br>3rd: {bases.third ? bases.third : '-'}</div>
-=======
     1st: {bases.first}<br></br>
     2nd: {bases.second}<br></br>
     3rd: {bases.third}<br></br>
->>>>>>> dcab695 (Proper Typing (sort of))
     </>
   )
 }

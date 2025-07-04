@@ -9,22 +9,10 @@ import { CopiedPopup } from './CopiedPopup';
 import PlayerStats from './PlayerStats';
 import { useSettings } from './Settings';
 import { ProcessMessage } from './BaseParser';
-<<<<<<< HEAD
-
-type Event = any; // ahhhh
-
-type EventMessage = {
-  index: number;
-  message: string;
-  pitchSpeed?: string | null;
-  pitchZone?: string | null;
-}
-=======
 import { Bases } from '@/types/Bases';
 import { MapAPITeamResponse, Team } from '@/types/Team';
 import { Game, MapAPIGameResponse } from '@/types/Game';
 import { Event } from '@/types/Event';
->>>>>>> dcab695 (Proper Typing (sort of))
 
 type EventBlockGroup = {
     emoji?: string;
@@ -35,20 +23,6 @@ type EventBlockGroup = {
     onClick?: any;
 };
 
-<<<<<<< HEAD
-function getERA(stats: any): string {
-  const earnedRuns = stats.earned_runs ?? 0;
-  const outs = stats.outs ?? 0;
-  const inningsPitched = outs / 3;
-
-  if (inningsPitched === 0) return "∞ ERA";
-
-  const era = (earnedRuns / inningsPitched) * 9;
-  return `${era.toFixed(3)} ERA`;
-}
-
-=======
->>>>>>> dcab695 (Proper Typing (sort of))
 function getOPS(stats: any): string {
     const singles = stats.singles ?? 0;
     const doubles = stats.doubles ?? 0;
@@ -230,82 +204,11 @@ export default function LiveGame({ awayTeamArg, homeTeamArg, initialDataArg, gam
     let currentQueue: string[] = [];
     let lastBases: Bases = { first: null, second: null, third: null }; 
 
-<<<<<<< HEAD
-const groupedEvents = groupEventLog(eventLog);
-const playerNames = Array.from(new Set(eventLog.map(e => e.batter)));
-let currentQueue: string[] = [];
-let lastBases: {first: string | null, second: string | null, third: string | null} = { first: null, second: null, third: null }; 
-
-for (const event of eventLog) {
-  const result = ProcessMessage(event, playerNames, currentQueue);
-  currentQueue = result.baseQueue;
-  lastBases = result.bases;
-  console.log(lastBases);
-  console.log(players[lastBases.first ? lastBases.first : 0])
-}
-
-  return (
-    <>
-    <main className="mt-16">
-      <CopiedPopup />
-      <div className="min-h-screen bg-theme-background text-theme-text font-sans p-4 pt-20 max-w-3xl mx-auto h-full">
-        <GameHeader
-          homeTeam={{
-            id: data.HomeTeamID,
-            name: data.HomeTeamName,
-            emoji: data.HomeTeamEmoji,
-            score: lastEvent.home_score,
-            wins: homeTeam.Record["Regular Season"].Wins,
-            losses: homeTeam.Record["Regular Season"].Losses,
-            runDiff: homeTeam.Record["Regular Season"].RunDifferential,
-            color: data.HomeTeamColor,
-          }}
-          awayTeam={{
-            id: data.AwayTeamID,
-            name: data.AwayTeamName,
-            emoji: data.AwayTeamEmoji,
-            score: lastEvent.away_score,
-            wins: awayTeam.Record["Regular Season"].Wins,
-            losses: awayTeam.Record["Regular Season"].Losses,
-            runDiff: awayTeam.Record["Regular Season"].RunDifferential,
-            color: data.AwayTeamColor,
-          }}
-          center={{
-            icon: data.Weather.Emoji,
-            title: data.Weather.Name,
-            subtitle: data.Weather.Tooltip,
-          }}
-          inning={data.State != "Complete" ? (lastEvent.inning_side === 1 ? 'BOT' : 'TOP') + ' ' + lastEvent.inning : "FINAL"}
-        />
-
-        <GameStateDisplay
-          balls={lastEvent.balls ?? 0}
-          strikes={lastEvent.strikes ?? 0}
-          outs={lastEvent.outs ?? 0}
-          bases={{first: lastBases.first ? lastBases.first + ` (${getOPS(players[lastBases.first].Stats)} OPS)` : lastBases.first, second: lastBases.second ? lastBases.second + ` (${getOPS(players[lastBases.second].Stats)} OPS)` : lastBases.second, third: lastBases.third ? lastBases.third + ` (${getOPS(players[lastBases.third].Stats)} OPS)` : lastBases.third}}
-          pitcher={{
-            name: lastEvent.pitcher,
-            stat: (lastEvent.pitcher !== "" && lastEvent.pitcher !== null) ? `(${getERA(players[lastEvent.pitcher].Stats)})` : "",
-            onClick: () => {setSelectedPlayer(lastEvent.pitcher); setPlayerType('pitching'); setShowStats(true);},
-          }}
-          batter={{
-            name: lastEvent.batter,
-            stat: (lastEvent.batter !== "" && lastEvent.batter !== null) ? `(${getBA(players[lastEvent.batter].Stats)})` : "",
-            onClick: () => {setSelectedPlayer(lastEvent.batter); setPlayerType('batting'); setShowStats(true);},
-          }}
-          onDeck={{
-            name: lastEvent.on_deck,
-            stat: (lastEvent.on_deck !== "" && lastEvent.on_deck !== null) ? `(${getBA(players[lastEvent.on_deck].Stats)})` : "",
-            onClick: () => {setSelectedPlayer(lastEvent.on_deck); setPlayerType('batting'); setShowStats(true);},
-          }}
-        />
-=======
     for (const event of eventLog) {
         const result = ProcessMessage(event, [...awayPlayers, ...homePlayers], currentQueue);
         currentQueue = result.baseQueue;
         lastBases = result.bases;
     }
->>>>>>> dcab695 (Proper Typing (sort of))
 
     return (
         <>

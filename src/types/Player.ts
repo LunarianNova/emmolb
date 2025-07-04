@@ -1,4 +1,4 @@
-import { MapAPIPlayerStats, PlayerStats } from "./PlayerStats";
+import { DerivedPlayerStats, MapAPIPlayerStats, PlayerStats } from "./PlayerStats";
 
 export type EquipmentEffect = {
     attribute: string;
@@ -42,7 +42,7 @@ export type Player = {
     position: string;
     position_type: string;
     season_stats: Record<string, Record<string, string>>;
-    stats: Record<string, PlayerStats>;
+    stats: Record<string, DerivedPlayerStats>;
     team_id: string;
     throws: string;
     id: string;

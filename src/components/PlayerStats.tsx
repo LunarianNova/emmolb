@@ -21,6 +21,7 @@ function StatTooltip({ label, value, tooltip, isActive, onToggle }: StatTooltipP
 }
 
 export default function PlayerStats({ player, category }: {player: TeamPlayer | Player | null, category?: any}) {
+    const [activeTooltip, setActiveTooltip] = useState<string | null>(null);
     if (player === null) {
         return (
             <div className="bg-theme-primary py-2 px-4 rounded-xl mt-1 h-full">
@@ -28,7 +29,6 @@ export default function PlayerStats({ player, category }: {player: TeamPlayer | 
             </div>
         );
     }
-    const [activeTooltip, setActiveTooltip] = useState<string | null>(null);
     const toggle = (label: string) => {setActiveTooltip((prev) => (prev === label ? null : label)), console.log(label);};
     const stats = 'team_id' in player ? player.stats[player.team_id] : player.stats; // Handle both TeamPlayer and Player
 
