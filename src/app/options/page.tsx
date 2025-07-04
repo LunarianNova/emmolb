@@ -2,7 +2,8 @@
 import { CopiedPopup } from "@/components/CopiedPopup";
 import { EventBlock } from "@/components/EventBlock";
 import { Navbar } from "@/components/Navbar";
-import { ThemeColors, useSettings } from "@/components/Settings";
+import { useSettings } from "@/components/Settings";
+import { ThemeColors } from "@/types/ThemeColors";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
@@ -53,9 +54,9 @@ export default function OptionsPage() {
                     </div>
                     <span className="text-sm font-medium text-theme-secondary opacity-80">Change Event Log Headers to Match Team Colors</span>
                 </label>
-                {(['primary', 'secondary', 'accent', 'background', 'score', 'text', 'secondaryText'] as (keyof ThemeColors)[]).map((key) => (                    
+                {(['primary', 'secondary', 'accent', 'background', 'score', 'text', 'secondary_text'] as (keyof ThemeColors)[]).map((key) => (                    
                     <div key={key} className="flex items-center justify-between">
-                        <label className="capitalize text-md text-theme-secondary opacity-80">{key} color</label>
+                        <label className="capitalize text-md text-theme-secondary opacity-80">{key.toString().replace('_', ' ')} color</label>
                         <input
                             type="color"
                             value={settings.theme?.[key] || '#ffffff'}

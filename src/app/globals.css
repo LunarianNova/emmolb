@@ -7,7 +7,7 @@
   --theme-score: #14532D;
   --theme-accent: #17212b;
   --theme-text: #ffffff;
-  --theme-secondaryText: #fef4e5;
+  --theme-secondary_text: #fef4e5;
 }
 
 
@@ -20,7 +20,7 @@
 }
 
 .text-theme-secondary {
-  color: var(--theme-secondaryText)
+  color: var(--theme-secondary_text)
 }
 
 .bg-theme-primary {

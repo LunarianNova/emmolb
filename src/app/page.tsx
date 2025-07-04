@@ -6,6 +6,8 @@ import Link from 'next/link';
 import { LiveGameCompact } from '@/components/LiveGameCompact';
 import { FullBlobileDisplay } from '@/components/BlobileLayout';
 import { useSettings } from '@/components/Settings';
+import { MapAPITeamResponse } from '@/types/Team';
+import { MapAPIGameResponse } from '@/types/Game';
 
 interface GameHeaderApiResponse {
     teamId: string;
@@ -53,11 +55,10 @@ export default function HomePage() {
         fetchGameHeaders();
     }, []);
 
-    if (loading) return <><Navbar /><Loading /></>;
+    if (loading) return <Loading />;
 
     if (gameHeaders.length === 0) {
         return (<>
-            <Navbar />
             <div className='flex flex-col items-center justify-center h-[80vh] text-white select-none font-sans text-2xl text-theme-secondary'>
                 You have no favorite teams<br></br><Link href="/teams" className='text-blue-100'>Go here to add some!</Link>
             </div>
@@ -65,7 +66,6 @@ export default function HomePage() {
     }
 
     return (<>
-        <Navbar />
         <main className="mt-16">
             {settings.useBlasesloaded ? gameHeaders.map(({ teamId, gameHeader }) => (
                 <Link key={teamId + "link"} href={"/game/" + gameHeader.gameId}>
@@ -75,7 +75,7 @@ export default function HomePage() {
                 <div className="min-h-screen bg-theme-background text-theme-text font-sans p-4 pt-20 max-w-3xl mx-auto">
                     {gameHeaders.map(({ teamId, gameHeader }) => (
                         <Link key={teamId + "link"} href={"/game/" + gameHeader.gameId}>
-                            <LiveGameCompact key={teamId} gameId={gameHeader.gameId} homeTeam={gameHeader.homeTeam} awayTeam={gameHeader.awayTeam} game={gameHeader.game} killLinks={true} />
+                            <LiveGameCompact key={teamId} gameId={gameHeader.gameId} homeTeam={MapAPITeamResponse(gameHeader.homeTeam)} awayTeam={MapAPITeamResponse(gameHeader.awayTeam)} game={MapAPIGameResponse(gameHeader.game)} killLinks={true} />
                         </Link>
                     ))}
                 </div>

@@ -1,8 +1,8 @@
 'use client';
 import { useEffect, useState } from "react";
 import Loading from "@/components/Loading";
-import { Navbar } from "@/components/Navbar";
 import MiniTeamHeader from "@/components/MiniTeamHeader";
+import { MapAPILeagueTeamResponse } from "@/types/Team";
 
 export default function TwoLeaguesTeamsPage() {
     const [loading, setLoading] = useState(true);
@@ -33,13 +33,11 @@ export default function TwoLeaguesTeamsPage() {
     }, []);
 
     if (loading) return (<>
-        <Navbar />
         <Loading />
     </>);
 
     return (
         <>
-            <Navbar />
             <main className="mt-16">
                 <div className='min-h-screen bg-theme-background text-theme-text font-sans p-4 pt-20 max-w-3xl mx-auto'>
                     <h1 className="text-2xl font-bold text-center mb-6">Greater League Standings</h1>
@@ -49,7 +47,7 @@ export default function TwoLeaguesTeamsPage() {
                                 <h2 className="text-xl font-bold text-center mb-4">{leagueNames[i]} Division</h2>
                                 {entry.teams.map((team, idx) => (
                                     <div key={idx} className="rounded-xl shadow-md mb-4 overflow-hidden max-w-md mx-auto border border-[#1c2a3a]">
-                                        <MiniTeamHeader team={team} />
+                                        <MiniTeamHeader team={MapAPILeagueTeamResponse(team)} />
                                     </div>
                                 ))}
                             </div>

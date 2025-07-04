@@ -1,5 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import MiniTeamHeader from "./MiniTeamHeader";
+import { MapAPITeamResponse } from "@/types/Team";
+import { Bases } from "@/types/Bases";
+import { ProcessMessage } from "./BaseParser";
 
 function getTeamInitials(team: any) {
   if (!team) return "";
@@ -104,12 +107,25 @@ export function FullBlobileDisplay({ gameId, awayTeam, homeTeam, game}: {gameId:
       };
     }, [gameId]);
 
+    let currentQueue: string[] = [];
+    let lastBases: Bases = { first: null, second: null, third: null }; 
+    const allPlayerNames = [
+        ...awayTeam.Players.map((p: any) => `${p.FirstName} ${p.LastName}`),
+        ...homeTeam.Players.map((p: any) => `${p.FirstName} ${p.LastName}`)
+    ];
+
+    for (const event of eventLog) {
+        const result = ProcessMessage(event, allPlayerNames, currentQueue);
+        currentQueue = result.baseQueue;
+        lastBases = result.bases;
+    }
+
     return (
         <div>
-            <BlobileTeamHeader awayTeam={awayTeam} homeTeam={homeTeam}/>
+            <BlobileTeamHeader awayTeam={MapAPITeamResponse(awayTeam)} homeTeam={MapAPITeamResponse(homeTeam)}/>
             <div className='grid grid-cols-1 md:grid-cols-2 w-full bg-[#00A837] items-center'> 
-                <BlobileDiamond pitcher={lastEvent.pitcher} batter={lastEvent.batter} first={lastEvent.on_1b} second={lastEvent.on_2b} third={lastEvent.on_3b} weather={game.Weather.Name}/>       
-                <BlobileScoreboard inning={lastEvent.inning} isTop={lastEvent.inning_side == 0} isFinal={game.state === "Complete"} balls={lastEvent.balls} outs={lastEvent.outs} strikes={lastEvent.strikes} awayTeam={awayTeam} homeTeam={homeTeam} event={lastEvent}/>
+                <BlobileDiamond pitcher={lastEvent.pitcher} batter={lastEvent.batter} first={lastBases.first} second={lastBases.second} third={lastBases.third} weather={game.Weather.Name}/>       
+                <BlobileScoreboard inning={lastEvent.inning} isTop={lastEvent.inning_side == 0} isFinal={game.State === "Complete"} balls={lastEvent.balls} outs={lastEvent.outs} strikes={lastEvent.strikes} awayTeam={awayTeam} homeTeam={homeTeam} event={lastEvent}/>
             </div>
         </div>
     );
@@ -304,9 +320,8 @@ export function BlobileScoreboard({ inning, isTop, isFinal, balls, outs, strikes
         <rect x="20" y="160" width="600" height="168" stroke="yellow" strokeWidth="4" fill="none" />
         <foreignObject x="30" y="165" width="580" height="153">
           <div
-            style={{ fontSize: 25, fontFamily: "scoreboard, sans-serif", fontWeight: "bold", color: "white" }}
+            style={{ fontSize: 25, fontFamily: "scoreboard, sans-serif", fontWeight: "bold", color: "white" }} dangerouslySetInnerHTML={{__html: event.message}}
           >
-            {event.message}
           </div>
         </foreignObject>
       </svg>
@@ -314,7 +329,7 @@ export function BlobileScoreboard({ inning, isTop, isFinal, balls, outs, strikes
   );
 }
 
-export default function BlobileDiamond({ pitcher, batter, first, second, third, weather } : {pitcher: string, batter: string, first: boolean, second: boolean, third: boolean, weather: string}) {
+export default function BlobileDiamond({ pitcher, batter, first, second, third, weather } : {pitcher: string, batter: string, first: string | null, second: string | null, third: string | null, weather: string}) {
   const font = {
     family: 'Arial',
     weight: 'bold',
@@ -689,7 +704,7 @@ export default function BlobileDiamond({ pitcher, batter, first, second, third, 
           stroke="black"
           strokeWidth={font.strokeWidth}
         >
-          {first ? 'Occupied' : ''}
+          {first}
         </tspan>
       </text>
       {/* Player 2 */}
@@ -706,7 +721,7 @@ export default function BlobileDiamond({ pitcher, batter, first, second, third, 
         stroke="black"
         strokeWidth={font.strokeWidth}
       >
-        {second ? 'Occupied' : ''}
+        {second}
       </text>
       {/* Player 3 */}
       <text
@@ -725,7 +740,7 @@ export default function BlobileDiamond({ pitcher, batter, first, second, third, 
           strokeWidth={font.strokeWidth}
           textAnchor="end"
         >
-          {third ? 'Occupied' : ''}
+          {third}
         </tspan>
       </text>
       <text

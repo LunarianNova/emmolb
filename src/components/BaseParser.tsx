@@ -1,7 +1,9 @@
 'use client'
 
+import { Bases } from "@/types/Bases";
 import { useState } from "react";
 
+<<<<<<< HEAD
 type Bases = {
     first: string | null;
     second: string | null;
@@ -9,11 +11,18 @@ type Bases = {
 }
 
 function extractOutPlayers(message: string, playerList: string[], check: string): string[] {
+=======
+function extractPlayers(message: string, playerList: string[], check: string): string[] {
+>>>>>>> dcab695 (Proper Typing (sort of))
     const checkedSegments = message.split(/\. /).filter(s => (s.includes(check)));
     const checkedPlayers: string[] = [];
 
     for (const segment of checkedSegments) {
+<<<<<<< HEAD
         const [rawNamePart] = segment.split(` ${check}`);
+=======
+        const [rawNamePart] = segment.split(` ${check} `);
+>>>>>>> dcab695 (Proper Typing (sort of))
         const words = rawNamePart.trim().split(/\s+/);
 
         for (let i = 0; i < words.length; i++) {
@@ -39,26 +48,43 @@ export function ProcessMessage(event: any, players: string[], queue: string[]): 
         newQueue.shift();
 
     if (message.match(/starts the inning on/i))
+<<<<<<< HEAD
         for (const player of extractOutPlayers(message, players, 'starts the inning on'))
+=======
+        for (const player of extractPlayers(message, players, 'starts the inning on'))
+>>>>>>> dcab695 (Proper Typing (sort of))
             newQueue.push(player);
 
     if (message.match(/(singles|doubles|triples|walks|reaches on a fielding error|was hit by the pitch|into a forced out|reaches on a throwing error)/i))
         newQueue.push(event.batter);
 
-    if (message.match(/homers/i))
+    if (message.match(/(homers|grand slam)/i))
         newQueue.length = 0;
 
+<<<<<<< HEAD
     if (event.outs === null)
         newQueue.length = 0;
 
     let outs = extractOutPlayers(message, players, 'out at');
     outs = [...outs, ...extractOutPlayers(message, players, 'is caught stealing')];
+=======
+    if (event.outs === null || event.outs === undefined)
+        newQueue.length = 0;
+
+    let outs = extractPlayers(message, players, 'out at');
+    outs = [...outs, ...extractPlayers(message, players, 'is caught stealing')];
+    outs = [...outs, ...extractPlayers(message, players, 'steals home')];
+>>>>>>> dcab695 (Proper Typing (sort of))
     for (const player of outs) {
         const index = newQueue.indexOf(player);
         if (index !== -1) newQueue.splice(index, 1);
     }
 
+<<<<<<< HEAD
     const bases: Bases = {
+=======
+    let bases: Bases = {
+>>>>>>> dcab695 (Proper Typing (sort of))
         first: event.on_1b ? 
                 event.on_2b ? 
                     event.on_3b ? 
@@ -71,6 +97,13 @@ export function ProcessMessage(event: any, players: string[], queue: string[]): 
         second: event.on_2b ? event.on_3b ? newQueue[1] : newQueue[0] : null,
         third: event.on_3b ? newQueue[0] : null,
     };
+    if ((!bases.first && event.on_1b) || (!bases.second && event.on_2b) || (!bases.third && event.on_3b)){
+        bases = {
+            first: event.on_1b ? 'Unknown' : null,
+            second: event.on_2b ? 'Unknown' : null,
+            third: event.on_3b ? 'Unknown' : null, 
+        }
+    }
 
     return {
         bases, baseQueue: newQueue

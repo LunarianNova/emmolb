@@ -92,13 +92,11 @@ export async function unsubscribeFromTeam(teamId: string) {
   });
 }
 
-export async function registerAndSubscribe(
-  onSubscribe: (subs: PushSubscription | null) => void,
-): Promise<void> {
-  try {
-    await navigator.serviceWorker.register(SERVICE_WORKER_FILE_PATH);
-    await subscribeOnce(onSubscribe);
-  } catch (e) {
-    console.error('Failed to register service worker:', e);
-  }
+export async function registerAndSubscribe(onSubscribe: (subs: PushSubscription | null) => void): Promise<void> {
+    try {
+        await navigator.serviceWorker.register(SERVICE_WORKER_FILE_PATH);
+        await subscribeOnce(onSubscribe);
+    } catch (e) {
+        console.error('Failed to register service worker:', e);
+    }
 }

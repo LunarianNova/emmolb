@@ -1,14 +1,17 @@
 'use client'
 
+import { Bases } from '@/types/Bases'
+import { Event } from '@/types/Event'
+import { TeamPlayer } from '@/types/Team'
 import React from 'react'
 
 type PlayerInfo = {
-  name: string
-  stat: string // ERA or BA
+  player: TeamPlayer | string;
   onClick?: () => void;
 }
 
 type GameStateDisplayProps = {
+<<<<<<< HEAD
   balls: number
   strikes: number
   outs: number
@@ -20,12 +23,17 @@ type GameStateDisplayProps = {
   pitcher: PlayerInfo
   batter: PlayerInfo
   onDeck: PlayerInfo
+=======
+    event: Event;
+    bases: Bases;
+    pitcher: PlayerInfo;
+    batter: PlayerInfo;
+    onDeck: PlayerInfo;
+>>>>>>> dcab695 (Proper Typing (sort of))
 }
 
 export function GameStateDisplay({
-  balls,
-  strikes,
-  outs,
+  event,
   bases,
   pitcher,
   batter,
@@ -46,7 +54,12 @@ export function GameStateDisplay({
       active ? 'opacity-90 bg-theme-text' : 'opacity-15 bg-theme-text'
     }`
 
-  const PlayerDisplay = ({ label, player }: { label: string; player: PlayerInfo }) => (
+  function PlayerDisplay({ label, player }: { label: string; player: PlayerInfo }){ 
+    const isTeamPlayer = (p: any): p is TeamPlayer => p && typeof p === 'object' && 'first_name' in p && 'last_name' in p;
+    const p = player.player;
+    const name = isTeamPlayer(p) ? `${p.first_name} ${p.last_name}` : typeof(p) === 'string' ? p : '';
+    const stat = isTeamPlayer(p) && p.stats ? p.position_type === 'Batter' ? `(${p.stats.ops.toFixed(3)} OPS)` : `(${p.stats.era.toFixed(3)} ERA)` : '';
+    return (
     <div className="max-w-full sm:max-w-none">
       <div className="text-[10px] sm:text-xs font-semibold uppercase tracking-wide opacity-70 leading-tight">
         {label}
@@ -57,26 +70,23 @@ export function GameStateDisplay({
             onClick={player.onClick}
             className="font-medium text-white-400 hover:underline text-left whitespace-normal sm:whitespace-nowrap"
           >
-            {player.name}
-            {player.stat && (
+            {name}
               <span className="ml-1 text-xs text-theme-primary opacity-70">
-                {player.stat.replace(/\s/g, '\u00A0')}
+                {stat}
               </span>
-            )}
           </button>
         ) : (
           <span className="font-medium text-left whitespace-normal sm:whitespace-nowrap">
-            {player.name}
-            {player.stat && (
-              <span className="ml-1 text-xs text-gray-400">
-                {player.stat.replace(/\s/g, '\u00A0')}
+            {name}
+            <span className="ml-1 text-xs text-theme-primary opacity-70">
+                {stat}
               </span>
-            )}
           </span>
         )}
       </div>
     </div>
   );
+    }
 
 
 
@@ -89,45 +99,67 @@ export function GameStateDisplay({
       <div className="space-y-2 text-right w-[100px] shrink-0">
         <div>
           <div className="text-sm font-semibold mb-1">Balls</div>
-          <div className="flex justify-end space-x-1">{renderCircles(balls, 3)}</div>
+          <div className="flex justify-end space-x-1">{renderCircles(event.balls, 3)}</div>
         </div>
         <div>
           <div className="text-sm font-semibold mb-1">Strikes</div>
-          <div className="flex justify-end space-x-1">{renderCircles(strikes, 2)}</div>
+          <div className="flex justify-end space-x-1">{renderCircles(event.strikes, 2)}</div>
         </div>
         <div>
           <div className="text-sm font-semibold mb-1">Outs</div>
-          <div className="flex justify-end space-x-1">{renderCircles(outs, 2)}</div>
+          <div className="flex justify-end space-x-1">{renderCircles(event.outs, 2)}</div>
         </div>
       </div>
 
       {/* Diamond */}
       <div className="flex justify-center w-[150px]">
         <div className="relative w-24 h-24 mx-auto">
+          <div>
           <div
+<<<<<<< HEAD
             className={baseStyles(bases.second ? true : false)}
+=======
+            className={baseStyles(!!bases.second)}
+>>>>>>> dcab695 (Proper Typing (sort of))
             style={{
               left: 'calc(50% - 20px)',
               top: 'calc(20% + 20px)',
               transform: 'translate(-50%, -50%) rotate(90deg)',
             }}
           />
+          </div>
+          <div>
           <div
+<<<<<<< HEAD
             className={baseStyles(bases.first ? true : false)}
+=======
+            className={baseStyles(!!bases.first)}
+>>>>>>> dcab695 (Proper Typing (sort of))
             style={{
               left: 'calc(90% - 20px)',
               top: 'calc(60% + 20px)',
               transform: 'translate(-50%, -50%) rotate(90deg)',
             }}
           />
+          
+          </div>
+          <div>
           <div
+<<<<<<< HEAD
             className={baseStyles(bases.third ? true : false)}
+=======
+            className={baseStyles(!!bases.third)}
+>>>>>>> dcab695 (Proper Typing (sort of))
             style={{
               left: 'calc(10% - 20px)',
               top: 'calc(60% + 20px)',
               transform: 'translate(-50%, -50%) rotate(90deg)',
             }}
           ></div>
+<<<<<<< HEAD
+=======
+          </div>
+>>>>>>> dcab695 (Proper Typing (sort of))
         </div>
       </div>
 
@@ -138,7 +170,13 @@ export function GameStateDisplay({
         <PlayerDisplay label="On Deck" player={onDeck} />
       </div>
     </div>
+<<<<<<< HEAD
     <div className='text-theme-text text-sm'>1st: {bases.first ? bases.first : '-'}<br></br>2nd: {bases.second ? bases.second : '-'}<br></br>3rd: {bases.third ? bases.third : '-'}</div>
+=======
+    1st: {bases.first}<br></br>
+    2nd: {bases.second}<br></br>
+    3rd: {bases.third}<br></br>
+>>>>>>> dcab695 (Proper Typing (sort of))
     </>
   )
 }

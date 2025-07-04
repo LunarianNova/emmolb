@@ -5,6 +5,7 @@ import { Navbar } from "@/components/Navbar";
 import { useEffect, useState } from "react";
 import LeagueHeader from "./LeagueHeader";
 import MiniTeamHeader from "./MiniTeamHeader";
+import { MapAPILeagueTeamResponse, MapAPITeamResponse } from "@/types/Team";
 
 export default function LeaguePage({ id }: { id: string }) {
   const [loading, setLoading] = useState(true);
@@ -36,21 +37,18 @@ export default function LeaguePage({ id }: { id: string }) {
 
   if (loading) return (
     <>
-      <Navbar />
       <Loading />
     </>
   );
 
   if (!league || !teams.length) return (
     <>
-      <Navbar />
       <div className="text-white text-center mt-10">Can't find that league</div>
     </>
   );
 
   return (
     <>
-      <Navbar />
       <main className="mt-16">
         <div className="min-h-screen bg-theme-background text-theme-text font-sans p-4 pt-24 max-w-2xl mx-auto">
             <div className="mb-8">
@@ -59,7 +57,7 @@ export default function LeaguePage({ id }: { id: string }) {
                     <div className="flex justify-center">
                         <div className="w-full max-w-[32rem] space-y-2">
                             {teams.map((team: any, index) => (
-                                <MiniTeamHeader key={index} team={team} index={index+1} />
+                                <MiniTeamHeader key={index} team={MapAPILeagueTeamResponse(team)} index={index+1} />
                             ))}
                         </div>
                     </div>

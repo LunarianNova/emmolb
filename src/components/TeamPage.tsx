@@ -1,28 +1,13 @@
 'use client'
-
 import Loading from "@/components/Loading";
-import { Navbar } from "@/components/Navbar";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { GameStateDisplayCompact, LiveGameCompact } from "./LiveGameCompact";
+import { LiveGameCompact } from "./LiveGameCompact";
 import PlayerStats from "./PlayerStats";
 import CheckboxDropdown from "./CheckboxDropdown";
-
-function getLuminance(hex: string): number {
-  const c = hex.charAt(0) === '#' ? hex.substring(1) : hex;
-  const r = parseInt(c.substring(0, 2), 16) / 255;
-  const g = parseInt(c.substring(2, 4), 16) / 255;
-  const b = parseInt(c.substring(4, 6), 16) / 255;
-  const [R, G, B] = [r, g, b].map((ch) =>
-    ch <= 0.03928 ? ch / 12.92 : Math.pow((ch + 0.055) / 1.055, 2.4)
-  );
-  return 0.2126 * R + 0.7152 * G + 0.0722 * B;
-}
-
-function getContrastTextColor(bgHex: string): 'black' | 'white' {
-  const luminance = getLuminance(bgHex);
-  return luminance > 0.179 ? 'black' : 'white';
-}
+import { getContrastTextColor } from "@/helpers/Colors";
+import { Game, MapAPIGameResponse } from "@/types/Game";
+import { MapAPITeamResponse, PlaceholderTeam, Team, TeamPlayer } from "@/types/Team";
 
 export default function TeamPage({ id }: { id: string }) {
   const LeagueNames: Record<string, string> = {
@@ -44,9 +29,9 @@ export default function TeamPage({ id }: { id: string }) {
   };
 
   const [loading, setLoading] = useState(true);
-  const [team, setTeam] = useState<any>(null);
-  const [game, setGame] = useState<any>(null);
-  const [gameID, setGameID] = useState<any>(null);
+  const [team, setTeam] = useState<Team>(PlaceholderTeam);
+  const [game, setGame] = useState<any>();
+  const [gameID, setGameID] = useState<string>();
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
   const [expandedPlayers, setExpandedPlayers] = useState<Record<string, boolean>>({});
   const [selectedSeasons, setSelectedSeasons] = useState<string[]>(["2"]);
@@ -70,10 +55,8 @@ export default function TeamPage({ id }: { id: string }) {
 
         const teamRes = await fetch(`/nextapi/team/${id}`);
         if (!teamRes.ok) throw new Error('Failed to load team data');
-        setTeam(await teamRes.json());
-        setExpandedPlayers(Object.fromEntries(team.Players.map((player: any) => [player.PlayerID, false])))
-        const uniqueTypes: string[] = Array.from(new Set(team.Feed.map((event: any) => event.type)));
-        setFeedFilters(uniqueTypes);
+        setTeam(MapAPITeamResponse(await teamRes.json()));
+        setExpandedPlayers(Object.fromEntries(team.players.map((player: TeamPlayer) => [player.player_id, false])))
 
 
       } catch (err) {
@@ -85,6 +68,13 @@ export default function TeamPage({ id }: { id: string }) {
 
     APICalls();
   }, [id]);
+
+    useEffect(() => {
+        if (team?.feed && feedFilters.length === 0) {
+            const uniqueTypes = Array.from(new Set(team.feed.map((event: any) => event.type)));
+            setFeedFilters(uniqueTypes);
+        }
+    }, [team?.feed]);
 
   function toggleFavorite(teamId: string) {
     setFavorites(prev => {
@@ -108,33 +98,33 @@ export default function TeamPage({ id }: { id: string }) {
     </>
   );
 
-  const uniqueTypes: string[] = Array.from(new Set(team.Feed.map((event: any) => event.type)));
+  const uniqueTypes: string[] = Array.from(new Set(team.feed.map((event: any) => event.type)));
 
   return (
     <>
       <main className="mt-16">
         <div className="min-h-screen bg-theme-background text-theme-text font-sans p-4 pt-24 max-w-2xl mx-auto">
-            <div className="relative w-full h-28 px-6 py-4 border-2 rounded-2xl shadow-xl border-theme-accent overflow-hidden mb-4 flex items-center" style={{background: `#${team.Color}`, color: getContrastTextColor(team.Color)}}>
-                <button onClick={(e) => {e.stopPropagation(); toggleFavorite(team._id);}} className="absolute top-2 left-2 text-2xl z-10 hover:scale-110 transition-transform">
-                    {favorites.has(team._id) ? '★' : '☆'}
+            <div className="relative w-full h-28 px-6 py-4 border-2 rounded-2xl shadow-xl border-theme-accent overflow-hidden mb-4 flex items-center" style={{background: `#${team.color}`, color: getContrastTextColor(team.color)}}>
+                <button onClick={(e) => {e.stopPropagation(); toggleFavorite(team.id);}} className="absolute top-2 left-2 text-2xl z-10 hover:scale-110 transition-transform">
+                    {favorites.has(team.id) ? '★' : '☆'}
                 </button>
                 <span className="text-7xl flex-shrink-0">
-                    {team.Emoji}
+                    {team.emoji}
                 </span>
                 <div className="absolute inset-0 flex flex-col items-center justify-start mt-3 pointer-events-none px-2">
-                    <Link href={`/league/${team.League}`}>
+                    <Link href={`/league/${team.league}`}>
                         <span className="text-xl font-bold underline cursor-pointer pointer-events-auto hover:opacity-80 transition text-center whitespace-nowrap overflow-hidden text-ellipsis max-w-full">
-                            {LeagueNames[team.League]}
+                            {LeagueNames[team.league]}
                         </span>
                     </Link>
-                    <span className="text-2xl font-bold tracking-wide leading-tight">{team.Location} {team.Name}</span>
+                    <span className="text-2xl font-bold tracking-wide leading-tight">{team.location} {team.name}</span>
                 </div>
                 <span className="absolute bottom-1 right-2 text-base font-semibold opacity-80 pointer-events-none">
-                    {team.Record["Regular Season"].Wins} - {team.Record["Regular Season"].Losses}
+                    {team.record.regular_season.wins} - {team.record.regular_season.losses}
                 </span>
-                <span className="absolute top-1 right-2 text-base font-semibold opacity-80 pointer-events-none">{team.Record["Regular Season"].RunDifferential > 0 ? '+' : ''}{team.Record["Regular Season"].RunDifferential}</span>
+                <span className="absolute top-1 right-2 text-base font-semibold opacity-80 pointer-events-none">{team.record.regular_season.run_differential > 0 ? '+' : ''}{team.record.regular_season.run_differential}</span>
             </div>
-            {game && game.game.State != "Complete" && (<><Link href={`/game/${gameID}`}><LiveGameCompact homeTeam={game.homeTeam} awayTeam={game.awayTeam} game={game.game} gameId={gameID} killLinks={true} /></Link></>)}
+            {game && game.game.State != "Complete" && (<><Link href={`/game/${gameID}`}><LiveGameCompact homeTeam={MapAPITeamResponse(game.homeTeam)} awayTeam={MapAPITeamResponse(game.awayTeam)} game={MapAPIGameResponse(game.game)} gameId={gameID ? gameID : ''} killLinks={true} /></Link></>)}
             <div className="mb-4 flex justify-center gap-4">
                 <button className="px-4 py-2 link-hover text-theme-secondary rounded mb-4">
                     Season Schedule
@@ -202,19 +192,18 @@ export default function TeamPage({ id }: { id: string }) {
             </div>
             <div className="flex justify-center">
                 <div className="w-128 space-y-2">
-                    {team.Players.map((player: any, i: number) => {
+                    {team.players.map((player: TeamPlayer, i: number) => {
                         return (
                             <div key={i}>
-                                <div className="flex justify-between items-center p-1 rounded link-hover cursor-pointer transition"
-                                onClick={()=>{setExpandedPlayers(prev => ({...prev, [player.PlayerID]: !prev[player.PlayerID],}))}}>
+                                <div className="flex justify-between items-center p-1 rounded link-hover cursor-pointer transition" onClick={()=>{setExpandedPlayers(prev => ({...prev, [player.player_id]: !prev[player.player_id],}))}}>
                                     <div className="flex items-center gap-3 overflow-hidden">
-                                        <span className="w-4 text-xl text-center">{player.Emoji}</span>
-                                        <span className="w-8 text-sm text-right">#{player.Number}</span>
-                                        <span className="w-6 text-sm font-bold text-theme-text opacity-80 text-right">{player.Position}</span>
-                                        <span className="flex-1 font-semibold text-left overflow-hidden text-ellipsis whitespace-nowrap">{player.FirstName} {player.LastName}</span>
+                                        <span className="w-4 text-xl text-center">{player.emoji}</span>
+                                        <span className="w-8 text-sm text-right">#{player.number}</span>
+                                        <span className="w-6 text-sm font-bold text-theme-text opacity-80 text-right">{player.position}</span>
+                                        <span className="flex-1 font-semibold text-left overflow-hidden text-ellipsis whitespace-nowrap">{player.first_name} {player.last_name}</span>
                                     </div>
                                 </div>
-                                {expandedPlayers[player.PlayerID] && (
+                                {expandedPlayers[player.player_id] && (
                                     <PlayerStats player={player} />
                                 )}
                             </div>
@@ -232,9 +221,7 @@ export default function TeamPage({ id }: { id: string }) {
                         selected={selectedSeasons}
                         setSelected={setSelectedSeasons}
                         isOpen={dropdownOpen.season}
-                        toggleOpen={() =>
-                        setDropdownOpen((prev) => ({ ...prev, season: !prev.season }))
-                        }
+                        toggleOpen={() => setDropdownOpen((prev) => ({ ...prev, season: !prev.season }))}
                     />
                     <CheckboxDropdown
                         label="Types"
@@ -242,17 +229,14 @@ export default function TeamPage({ id }: { id: string }) {
                         selected={feedFilters}
                         setSelected={setFeedFilters}
                         isOpen={dropdownOpen.type}
-                        toggleOpen={() =>
-                        setDropdownOpen((prev) => ({ ...prev, type: !prev.type }))
-                        }
+                        toggleOpen={() => setDropdownOpen((prev) => ({ ...prev, type: !prev.type }))}
                     />
                     </div>
                 </div>
                 <div className="bg-theme-primary rounded-xl p-3 max-h-60 overflow-y-auto text-sm space-y-1">
-                    {team.Feed.filter((event: any) => 
+                    {team.feed.filter((event: any) => 
                         selectedSeasons.includes(event.season?.toString()) && feedFilters.includes(event.type)).slice().reverse().map((event: any, i: number) => {
-                        const parts = event.text.split(/( vs\. | - )/); // split and keep separators
-                        console.log(event.links);
+                        const parts = event.text.split(/( vs\. | - )/);
                         
                         return (
                             <div key={i}>
