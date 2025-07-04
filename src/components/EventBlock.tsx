@@ -35,6 +35,7 @@ interface EventBlockProps {
   titleColor?: string;
   messages: EventMessage[];
   onClick?: () => void;
+  links?: boolean;
 }
 
 type EventMessage = {
@@ -60,7 +61,7 @@ function getContrastTextColor(bgHex: string): 'black' | 'white' {
     return luminance > 0.179 ? 'black' : 'white';
 }
 
-export function EventBlock({ emoji, title, color, titleColor, messages, onClick }: EventBlockProps) {
+export function EventBlock({ emoji, title, color, titleColor, messages, onClick, links=true }: EventBlockProps) {
   useHighlightEventOnHash();
   const bgColor = color ?? '--bg-theme-primary';
   return (
@@ -75,7 +76,7 @@ export function EventBlock({ emoji, title, color, titleColor, messages, onClick 
         <div className="text-sm whitespace-pre-line space-y-1">
           {messages.map(({index, message, pitchSpeed, pitchZone}, i) => (
             <div key={i} className="flex justify-between items-start gap-2">
-              <button
+              {links && (<button
                   onClick={() => {
                     const url = `${window.location.origin}${window.location.pathname}#event-${index}`;
                     navigator.clipboard.writeText(url);
@@ -83,7 +84,7 @@ export function EventBlock({ emoji, title, color, titleColor, messages, onClick 
                   }}
                   className="cursor-pointer no-underline">
                     🔗
-              </button>
+              </button>)}
               <div id={`event-${index}`} className="flex-1 text-left leading-[1.3] [&>*]:inline [&>*]:whitespace-normal" style={{ scrollMarginTop: '15rem' }} dangerouslySetInnerHTML={{__html: message}} />
               {(pitchSpeed && pitchZone) ? (
                 <div className="flex items-center gap-1 ml-2 text-[10px] opacity-80 w-fit shrink-0">

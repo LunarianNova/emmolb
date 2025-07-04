@@ -3,6 +3,8 @@ import { useEffect, useState } from 'react';
 import MiniTeamHeader from './MiniTeamHeader';
 import { subscribeToTeam, isSubscribed, registerAndSubscribe, notificationUnsupported, unsubscribeFromTeam } from '@/components/Push'; // your push utils
 import { MapAPITeamResponse, Team } from '@/types/Team';
+import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
+
 
 export default function TeamSelector() {
     const [input, setInput] = useState('');
@@ -102,7 +104,8 @@ export default function TeamSelector() {
 
     return (
         <div className="p-4 max-w-md mx-auto">
-        <h1 className="text-xl font-bold mb-2 text-theme-text">⭐ Favorite Teams</h1>
+        <h1 className="text-xl font-bold text-theme-text">⭐ Favorite Teams</h1>
+        <div className='text-xs opacity-70 mb-2'>You can drag these to change game order!</div>
 
         {!notificationsAllowed && !notificationUnsupported() && (
             <button onClick={allowNotifications} className="px-4 py-2 link-hover text-theme-secondary rounded mb-4">
@@ -115,22 +118,55 @@ export default function TeamSelector() {
             Add Team
         </button>
 
-        <ul className="space-y-2">
-            {teams.map(team => (
-                <li key={team.id} className="p-2">
-                    <MiniTeamHeader team={team} />
-                    <div className='flex justify-between items-center mt-2'>
-                        <button onClick={() => removeTeamID(team.id)} className="text-red-500 hover:underline text-sm">Remove</button>
-                        {notificationsAllowed && (
-                            <label className="flex items-center space-x-2">
-                                <input type="checkbox" checked={!!subscribedTeams[team.id]} onChange={() => toggleTeamSubscription(team.id)}/>
-                                <span className="text-sm">Notify</span>
-                            </label>
-                        )}
-                    </div>
-                </li>
-            ))}
-        </ul>
+        <DragDropContext
+            onDragEnd={(result: DropResult) => {
+                const { source, destination } = result;
+                if (!destination) return;
+
+                const updatedTeams = Array.from(teams);
+                const [movedTeam] = updatedTeams.splice(source.index, 1);
+                updatedTeams.splice(destination.index, 0, movedTeam);
+
+                setTeams(updatedTeams);
+                setTeamIDs(updatedTeams.map(team => team.id));
+                localStorage.setItem('favoriteTeamIDs', JSON.stringify(updatedTeams.map(team => team.id)));
+            }}
+        >
+            <Droppable droppableId="teams">
+                {(provided) => (
+                    <ul {...provided.droppableProps} ref={provided.innerRef} className="space-y-2">
+                        {teams.map((team, index) => (
+                            <Draggable key={team.id} draggableId={team.id} index={index}>
+                                {(provided) => (
+                                    <li
+                                        ref={provided.innerRef}
+                                        {...provided.draggableProps}
+                                        {...provided.dragHandleProps}
+                                        className="p-2 bg-theme-background border border-theme-text rounded shadow"
+                                    >
+                                        <MiniTeamHeader team={team} />
+                                        <div className='flex justify-between items-center mt-2'>
+                                            <button onClick={() => removeTeamID(team.id)} className="text-red-500 hover:underline text-sm">Remove</button>
+                                            {notificationsAllowed && (
+                                                <label className="flex items-center space-x-2">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={!!subscribedTeams[team.id]}
+                                                        onChange={() => toggleTeamSubscription(team.id)}
+                                                    />
+                                                    <span className="text-sm">Notify</span>
+                                                </label>
+                                            )}
+                                        </div>
+                                    </li>
+                                )}
+                            </Draggable>
+                        ))}
+                        {provided.placeholder}
+                    </ul>
+                )}
+            </Droppable>
+        </DragDropContext>
         </div>
     );
 }

@@ -38,6 +38,19 @@ export default function OptionsPage() {
                 <span className="text-sm font-medium text-theme-secondary opacity-80">Use Blasesloaded UI</span>
             </label>
             <Link href='https://github.com/RangerRick/blobile' className="text-theme-secondary opacity-70 text-xs text-bottom hover:underline">Credit to Ranger Rick's Blobile GitHub for most the code</Link>
+            <label className="flex items-center space-x-3 cursor-pointer select-none mt-2">
+                <div className="relative">
+                    <input
+                    type="checkbox"
+                    checked={settings.showChangelog}
+                    onChange={(e) => updateSetting('showChangelog', e.target.checked)}
+                    className="sr-only peer"
+                    />
+                    <div className="w-11 h-6 rounded-full transition-colors" style={{ backgroundColor: settings.useBlasesloaded ? 'var(--theme-primary)' : 'var(--theme-secondary)'}} />
+                    <div className="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full transition-transform peer-checked:translate-x-5" />
+                </div>
+                <span className="text-sm font-medium text-theme-secondary opacity-80">Show Changelog</span>
+            </label>
             <div className="mt-6 space-y-4 mb-10">
                 <h2 className="text-lg font-semibold mb-0">Customize Theme</h2>
                 <p className="text-xs text-color-secondary opacity-70">Enjoy Your Eldritch Horrors...</p>
@@ -65,7 +78,7 @@ export default function OptionsPage() {
                         />
                     </div>
                 ))}
-                <EventBlock emoji='🧩' title='Secondary Text/Color' messages={[{index: 1, message: "Primary Text/Color"}, {index: 0, message: "Accent is used for very slightly noticeable outlines on most things"}]}/>
+                <EventBlock emoji='🧩' title='Secondary Text/Color' links={false} messages={[{index: 1, message: "Primary Text/Color"}, {index: 0, message: "Accent is used for very slightly noticeable outlines on most things"}]}/>
                 <button onClick={resetTheme} className="link-hover px-4 py-2 bg-theme-accent text-sm text-theme-secondary rounded mb-4">
                     Reset Theme
                 </button>

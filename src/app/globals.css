@@ -51,6 +51,10 @@
   border-color: var(--theme-accent);
 }
 
+.border-theme-text {
+  border-color: var(--theme-text);
+}
+
 .link-hover {
   background-color: var(--theme-primary);
 }

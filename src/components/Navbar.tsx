@@ -128,6 +128,7 @@ export function Navbar() {
                 Info
               </summary>
               <div className='ml-4 space-y-1'>
+                <Link href='/schedule' className='block'>Schedule</Link>
                 <Link href='/what' className='block'>What is EMMOLB?</Link>
                 <Link href='https://www.patreon.com/MMOLB' className='block'>MMOLB Patreon</Link>
                 <Link href='https://discord.gg/cr3tRG2xqq' className='block'>MMOLB Discord</Link>
@@ -198,7 +199,7 @@ export function Navbar() {
               Info
             </button>
             <div
-              className={`absolute top-12 left-1/2 -translate-x-1/2 w-44 bg-theme-primary border border-theme-accent rounded-xl p-2 shadow-xl transition-all duration-200 ease-out transform z-50
+              className={`absolute top-12 left-1/2 -translate-x-1/2 w-48 bg-theme-primary border border-theme-accent rounded-xl p-2 shadow-xl transition-all duration-200 ease-out transform z-50
                 ${
                   openDropdown === 'info'
                     ? 'opacity-100 scale-100 translate-y-0 pointer-events-auto'
@@ -206,10 +207,24 @@ export function Navbar() {
                 }`}
             >
               <Link
+                href="/schedule"
+                className="block w-full text-left px-3 py-2 rounded link-hover transition cursor-pointer"
+              >
+                Schedule
+              </Link>
+              <Link
                 href="/what"
                 className="block w-full text-left px-3 py-2 rounded link-hover transition cursor-pointer"
               >
                 What is EMMOLB?
+              </Link>
+              <Link
+                href="https://ko-fi.com/echoviax"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block w-full text-left px-3 py-2 rounded link-hover transition cursor-pointer"
+              >
+                Buy us a Coffee
               </Link>
               <Link
                 href="https://www.patreon.com/MMOLB"
@@ -234,14 +249,6 @@ export function Navbar() {
                 className="block w-full text-left px-3 py-2 rounded link-hover transition cursor-pointer"
               >
                 MMOLB Reddit
-              </Link>
-              <Link
-                href="https://ko-fi.com/echoviax"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="block w-full text-left px-3 py-2 rounded link-hover transition cursor-pointer"
-              >
-                Buy us a Coffee
               </Link>
             </div>
           </div>

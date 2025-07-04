@@ -4,6 +4,7 @@ import React, { createContext, useContext, useState, useEffect, useRef } from 'r
 
 type Settings = {
     useBlasesloaded: boolean;
+    showChangelog: boolean;
     useTeamColoredHeaders: boolean;
     theme?: ThemeColors;
     [key: string]: any;
@@ -19,6 +20,7 @@ type SettingsContextType = {
 
 const defaultSettings: Settings = {
     useBlasesloaded: false,
+    showChangelog: false,
     useTeamColoredHeaders: false,
     theme: {
         primary: '#1e2a36',

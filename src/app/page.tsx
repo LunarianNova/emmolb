@@ -8,6 +8,7 @@ import { FullBlobileDisplay } from '@/components/BlobileLayout';
 import { useSettings } from '@/components/Settings';
 import { MapAPITeamResponse } from '@/types/Team';
 import { MapAPIGameResponse } from '@/types/Game';
+import Changelog from '@/components/Changelog';
 
 interface GameHeaderApiResponse {
     teamId: string;
@@ -78,8 +79,14 @@ export default function HomePage() {
                             <LiveGameCompact key={teamId} gameId={gameHeader.gameId} homeTeam={MapAPITeamResponse(gameHeader.homeTeam)} awayTeam={MapAPITeamResponse(gameHeader.awayTeam)} game={MapAPIGameResponse(gameHeader.game)} killLinks={true} />
                         </Link>
                     ))}
+                    {settings.showChangelog && (<Changelog />)}
                 </div>
-            )}        
+            )}  
+            {settings.useBlasesloaded && settings.showChangelog && (
+                <div className='max-w-3xl my-4 mx-auto'>
+                    <Changelog />
+                </div>
+            )}      
         </main>
     </>);
 }
