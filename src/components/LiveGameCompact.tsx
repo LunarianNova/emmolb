@@ -3,7 +3,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { GameStateDisplay } from '@/components/GameStateDisplay';
 import LastUpdatedCounter from './LastUpdatedCounter';
-import { GameHeader } from './GameHeader';
+import { GameHeader, GameHeaderEvent } from './GameHeader';
 import { Team } from '@/types/Team';
 import { Game } from '@/types/Game';
 import { Event } from '@/types/Event';
@@ -54,7 +54,7 @@ export function LiveGameCompact({ gameId, homeTeam, awayTeam, game, killLinks = 
     if (hasError || !event) return <GameHeader homeTeam={homeTeam} awayTeam={awayTeam} game={game} killLinks={killLinks} />;
   
     return (<>
-        <GameHeader homeTeam={homeTeam} awayTeam={awayTeam} game={game} killLinks={killLinks} />
+        <GameHeaderEvent homeTeam={homeTeam} awayTeam={awayTeam} game={game} event={event} killLinks={killLinks} />
         <GameStateDisplayCompact event={event} lastUpdated={lastUpdated}/>
     </>);
 }

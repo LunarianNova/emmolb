@@ -1,6 +1,5 @@
 'use client';
 import { useEffect, useState } from 'react';
-import { Navbar } from '@/components/Navbar';
 import Loading from '@/components/Loading';
 import Link from 'next/link';
 import { LiveGameCompact } from '@/components/LiveGameCompact';
@@ -9,6 +8,7 @@ import { useSettings } from '@/components/Settings';
 import { MapAPITeamResponse } from '@/types/Team';
 import { MapAPIGameResponse } from '@/types/Game';
 import Changelog from '@/components/Changelog';
+import PostseasonPage from '@/components/PostSeason';
 
 interface GameHeaderApiResponse {
     teamId: string;
@@ -26,6 +26,23 @@ export default function HomePage() {
     const [gameHeaders, setGameHeaders] = useState<GameHeaderApiResponse[]>([]);
     const [loading, setLoading] = useState(true);
     const {settings} = useSettings();
+    const [showPostseasonLink, setShowPostseasonLink] = useState(false);
+
+    useEffect(() => {
+        async function checkPostseasonStatus() {
+            try {
+                const res = await fetch('/nextapi/time');
+                const data = await res.json();
+                if (data?.season_status?.toLowerCase().includes('postseason')) {
+                    setShowPostseasonLink(true);
+            }
+            } catch (err) {
+                console.error('Failed to check postseason status:', err);
+            }
+        }
+
+        checkPostseasonStatus();
+    }, []);
 
     useEffect(() => {
         async function fetchGameHeaders() {
@@ -57,6 +74,8 @@ export default function HomePage() {
     }, []);
 
     if (loading) return <Loading />;
+
+    if (showPostseasonLink) return <PostseasonPage />
 
     if (gameHeaders.length === 0) {
         return (<>
