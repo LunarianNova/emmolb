@@ -26,6 +26,11 @@ export async function GET(_: NextRequest, { params }: { params: Promise<{ id: st
       gameId: id,
       awayTeam,
       homeTeam,
+      _debug: {
+        gameResStatus: gameRes.status,
+        awayResStatus: awayRes.status,
+        homeResStatus: homeRes.status,
+      },
     });
   } catch (err) {
     console.error(err);

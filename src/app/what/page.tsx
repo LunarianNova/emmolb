@@ -3,7 +3,6 @@ import Link from "next/link";
 
 export default function WhatPage() {
     return (<>
-        <Navbar />
         <main className='mt-16'>
             <div className="min-h-screen bg-theme-background text-theme-text font-sans p-4 pt-20 max-w-3xl mx-auto">
                 <div className="bg-theme-primary rounded-xl shadow-lg p-6 text-center text-2xl font-semibold mb-6">What is EMMOLB?</div>
