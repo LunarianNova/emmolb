@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { Navbar } from '@/components/Navbar';
-import { GameHeader } from '@/components/GameHeader';
+import { GameHeader, GameHeaderEvent } from '@/components/GameHeader';
 import { GameStateDisplay } from '@/components/GameStateDisplay';
 import { EventBlock } from './EventBlock';
 import { CopiedPopup } from './CopiedPopup';
@@ -216,7 +216,7 @@ export default function LiveGame({ awayTeamArg, homeTeamArg, initialDataArg, gam
         <main className="mt-16">
         <CopiedPopup />
         <div className="min-h-screen bg-theme-background text-theme-text font-sans p-4 pt-20 max-w-3xl mx-auto h-full">
-            <GameHeader awayTeam={awayTeam} homeTeam={homeTeam} game={data} />
+            <GameHeaderEvent awayTeam={awayTeam} event={lastEvent} homeTeam={homeTeam} game={data} />
 
             <GameStateDisplay
                 event={lastEvent}
@@ -247,8 +247,8 @@ export default function LiveGame({ awayTeamArg, homeTeamArg, initialDataArg, gam
             </div>
 
             {(showStats && followLive) ? (<div className='grid grid-cols-2 gap-2 items-stretch h-full'>
-                <PlayerStats player={lastEvent.pitcher ? players[lastEvent.pitcher] : ''} category='pitching' />
-                <PlayerStats player={lastEvent.batter ? players[lastEvent.batter] : ''} category='batting' />
+                <PlayerStats player={lastEvent.pitcher ? players[lastEvent.pitcher] : null} category='pitching' />
+                <PlayerStats player={lastEvent.batter ? players[lastEvent.batter] : null} category='batting' />
                 </div>) : ''}
             {(showStats && !followLive) ? (<PlayerStats player={selectedPlayer ? players[selectedPlayer] : null} category={playerType} />) : ''}
             </>

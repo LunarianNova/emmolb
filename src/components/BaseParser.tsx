@@ -37,7 +37,7 @@ export function ProcessMessage(event: any, players: string[], queue: string[]): 
         for (const player of extractPlayers(message, players, 'starts the inning on'))
             newQueue.push(player);
 
-    if (message.match(/(singles|doubles|triples|walks|reaches on a fielding error|was hit by the pitch|into a forced out|reaches on a throwing error)/i))
+    if (message.match(/(singles|doubles|triples|walks|reaches on a fielding error|was hit by the pitch|into a forced out|reaches on a throwing error|reaches on)/i))
         newQueue.push(event.batter);
 
     if (message.match(/(homers|grand slam)/i))

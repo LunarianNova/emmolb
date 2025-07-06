@@ -61,7 +61,7 @@ export default function PlayerStats({ player, category }: {player: TeamPlayer | 
                 {((category && category == 'pitching') || !category) && (<div className="mb-4">
                     <div className="text-base font-semibold mb-1 text-center">Pitching</div>
                     <div className="grid grid-cols-4 md:grid-cols-6 gap-1">
-                        <StatTooltip label='ERA' value={stats.era != 0 ? stats.era.toFixed(0) : '-'} tooltip="Earned Run Average" isActive={activeTooltip === 'ERA'} onToggle={() => toggle('ERA')} />
+                        <StatTooltip label='ERA' value={stats.era != 0 ? stats.era.toFixed(3) : '-'} tooltip="Earned Run Average" isActive={activeTooltip === 'ERA'} onToggle={() => toggle('ERA')} />
                         <StatTooltip label='WHIP' value={stats.whip != 0 ? stats.whip.toFixed(3) : '-'} tooltip="Walks and Hits Per Inning" isActive={activeTooltip === 'WHIP'} onToggle={() => toggle('WHIP')} />
                         <StatTooltip label='K/BB' value={stats.kbb != 0 ? stats.kbb.toFixed(3) : '-'} tooltip="Strikout to Walk Ratio" isActive={activeTooltip === 'KBB'} onToggle={() => toggle('KBB')} />
                         <StatTooltip label='K/9' value={stats.k9 != 0 ? stats.k9.toFixed(3) : '-'} tooltip="Strikeouts Per 9 Innings" isActive={activeTooltip === 'K9'} onToggle={() => toggle('K9')} />
