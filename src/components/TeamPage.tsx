@@ -8,6 +8,8 @@ import CheckboxDropdown from "./CheckboxDropdown";
 import { getContrastTextColor } from "@/helpers/Colors";
 import { Game, MapAPIGameResponse } from "@/types/Game";
 import { MapAPITeamResponse, PlaceholderTeam, Team, TeamPlayer } from "@/types/Team";
+import { CashewsPlayers, CashewsPlayer } from "@/types/FreeCashews";
+import CashewsPlayerStats from "./CashewsPlayerStats";
 
 export default function TeamPage({ id }: { id: string }) {
   const LeagueNames: Record<string, string> = {
@@ -28,6 +30,54 @@ export default function TeamPage({ id }: { id: string }) {
     '6805db0cac48194de3cd3ff5': 'Deep',
   };
 
+  const statKeyMap: Record<string, string> = {
+    "AVG": "ba",
+    "OBP": "obp",
+    "SLG": "slg",
+    "OPS": "ops",
+    "Hits": "hits",
+    "Singles": "singles",
+    "Doubles": "doubles",
+    "Triples": "triples",
+    "Home Runs": "home_runs",
+    "Total Bases": "total_bases",
+    "Walked": "walked",
+    "Hit By Pitch": "hit_by_pitch",
+    "Struck Out": "struck_out",
+    "Plate Appearances": "plate_appearances",
+    "At Bats": "at_bats",
+    "Stolen Bases": "stolen_bases",
+    "Caught Stealing": "caught_stealing",
+    "Grounded Into Double Plays": "grounded_into_double_play",
+    "ERA": "era",
+    "WHIP": "whip",
+    "K/BB": "kbb",
+    "K/9": "k9",
+    "H/9": "h9",
+    "BB/9": "bb9",
+    "HR/9": "hr9",
+    "Innings Pitched": "ip",
+    "Strikeouts": "strikeouts",
+    "Walks": "walks",
+    "Hits Allowed": "hits_allowed",
+    "Hit Batters": "hit_batters",
+    "Earned Runs": "earned_runs",
+    "Wins": "wins",
+    "Losses": "losses",
+    "Quality Starts": "quality_starts",
+    "Saves": "saves",
+    "Blown Saves": "blown_saves",
+    "Appearances": "appearances",
+    "Games Finished": "games_finished",
+    "Complete Games": "complete_games",
+    "Shutouts": "shutouts",
+    "No Hitters": "no_hitters",
+    "Errors": "errors",
+    "Assists": "assists",
+    "Putouts": "putouts",
+    "Double Plays": "double_plays",
+    "Runners Caught Stealing": "runners_caught_stealing"
+  };
   const [loading, setLoading] = useState(true);
   const [team, setTeam] = useState<Team>(PlaceholderTeam);
   const [game, setGame] = useState<any>();
@@ -37,6 +87,7 @@ export default function TeamPage({ id }: { id: string }) {
   const [selectedSeasons, setSelectedSeasons] = useState<string[]>(["2"]);
   const [feedFilters, setFeedFilters] = useState<string[]>(["game", "augment"]);
   const [dropdownOpen, setDropdownOpen] = useState<{ season: boolean; type: boolean }>({season: false, type: false});
+  const [players, setPlayers] = useState<CashewsPlayers|undefined>(undefined);
 
   useEffect(() => {
     async function APICalls() {
@@ -58,6 +109,10 @@ export default function TeamPage({ id }: { id: string }) {
         setTeam(MapAPITeamResponse(await teamRes.json()));
         setExpandedPlayers(Object.fromEntries(team.players.map((player: TeamPlayer) => [player.player_id, false])))
 
+        const playersRes = await fetch(`/nextapi/teamplayers/${id}`);
+        if (!playersRes.ok) throw new Error('Failed to load player data');
+        const players: CashewsPlayers = await playersRes.json();
+        setPlayers(players);
 
       } catch (err) {
         console.error(err);
@@ -203,9 +258,17 @@ export default function TeamPage({ id }: { id: string }) {
                                         <span className="flex-1 font-semibold text-left overflow-hidden text-ellipsis whitespace-nowrap">{player.first_name} {player.last_name}</span>
                                     </div>
                                 </div>
-                                {expandedPlayers[player.player_id] && (
-                                    <PlayerStats player={player} />
-                                )}
+                                {expandedPlayers[player.player_id] && (() => {
+                                    const statsPlayer = players?.items.find(p => p.entity_id === player.player_id);
+                                    if (!statsPlayer) return null;
+
+                                    const mergedPlayer: CashewsPlayer & TeamPlayer = {
+                                        ...(player as TeamPlayer),
+                                        ...(statsPlayer as CashewsPlayer),
+                                    };
+
+                                    return <CashewsPlayerStats player={mergedPlayer} />;
+                                })()}
                             </div>
                         );
                     })}
@@ -217,7 +280,7 @@ export default function TeamPage({ id }: { id: string }) {
                     <div className="flex gap-3 mb-2">
                     <CheckboxDropdown
                         label="Seasons"
-                        options={["1", "2"]}
+                        options={["1", "2", "3"]}
                         selected={selectedSeasons}
                         setSelected={setSelectedSeasons}
                         isOpen={dropdownOpen.season}

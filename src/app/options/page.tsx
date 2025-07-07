@@ -46,7 +46,7 @@ export default function OptionsPage() {
                     onChange={(e) => updateSetting('showChangelog', e.target.checked)}
                     className="sr-only peer"
                     />
-                    <div className="w-11 h-6 rounded-full transition-colors" style={{ backgroundColor: settings.useBlasesloaded ? 'var(--theme-primary)' : 'var(--theme-secondary)'}} />
+                    <div className="w-11 h-6 rounded-full transition-colors" style={{ backgroundColor: settings.showChangelog ? 'var(--theme-primary)' : 'var(--theme-secondary)'}} />
                     <div className="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full transition-transform peer-checked:translate-x-5" />
                 </div>
                 <span className="text-sm font-medium text-theme-secondary opacity-80">Show Changelog</span>

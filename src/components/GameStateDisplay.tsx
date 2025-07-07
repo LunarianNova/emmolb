@@ -2,6 +2,7 @@
 
 import { Bases } from '@/types/Bases'
 import { Event } from '@/types/Event'
+import { CashewsPlayers } from '@/types/FreeCashews'
 import { TeamPlayer } from '@/types/Team'
 import React from 'react'
 
@@ -16,7 +17,8 @@ type GameStateDisplayProps = {
     pitcher: PlayerInfo;
     batter: PlayerInfo;
     onDeck: PlayerInfo;
-    showBases?: boolean
+    showBases?: boolean;
+    cashewsPlayers?: CashewsPlayers;
 }
 
 export function GameStateDisplay({
@@ -26,6 +28,7 @@ export function GameStateDisplay({
   batter,
   onDeck,
   showBases=false,
+  cashewsPlayers,
 }: GameStateDisplayProps) {
   const renderCircles = (count: number, max: number) =>
     Array.from({ length: max }).map((_, i) => (
@@ -75,7 +78,13 @@ export function GameStateDisplay({
     </div>
   );
     }
+    const batterThrows = cashewsPlayers?.items.find(
+      (p) => `${p.data.FirstName} ${p.data.LastName}` === batter.player
+    )?.data.Throws;
 
+    const onDeckThrows = cashewsPlayers?.items.find(
+      (p) => `${p.data.FirstName} ${p.data.LastName}` === onDeck.player
+    )?.data.Throws;
 
 
 
@@ -138,9 +147,19 @@ export function GameStateDisplay({
 
       {/* Player info */}
       <div className="text-sm space-y-4 text-left w-[100px] shrink-0 whitespace-nowrap">
-        <PlayerDisplay label="Pitching" player={pitcher} />
-        <PlayerDisplay label="Batting" player={batter} />
-        <PlayerDisplay label="On Deck" player={onDeck} />
+        <PlayerDisplay
+          label={`Pitching ${cashewsPlayers ? `(${cashewsPlayers.items.find((p) => `${p.data.FirstName} ${p.data.LastName}` === pitcher.player)?.data.Throws})` : ``}`}
+          player={pitcher}
+        />        
+        <PlayerDisplay
+          label={`Batting${batterThrows ? ` (${batterThrows})` : ''}`}
+          player={batter}
+        />
+
+        <PlayerDisplay
+          label={`On Deck${onDeckThrows ? ` (${onDeckThrows})` : ''}`}
+          player={onDeck}
+        />
       </div>
     </div>
     {showBases && (<div>1st: {bases.first}<br></br>

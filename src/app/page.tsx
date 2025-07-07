@@ -27,6 +27,7 @@ export default function HomePage() {
     const [loading, setLoading] = useState(true);
     const {settings} = useSettings();
     const [showPostseasonLink, setShowPostseasonLink] = useState(false);
+    const [showHolidayPage, setShowHolidayPage] = useState(false);
 
     useEffect(() => {
         async function checkPostseasonStatus() {
@@ -35,7 +36,10 @@ export default function HomePage() {
                 const data = await res.json();
                 if (data?.season_status?.toLowerCase().includes('postseason')) {
                     setShowPostseasonLink(true);
-            }
+                }
+                else if (data?.season_status?.toLowerCase().includes('holiday')) {
+                    setShowHolidayPage(true);
+                }
             } catch (err) {
                 console.error('Failed to check postseason status:', err);
             }
@@ -77,9 +81,18 @@ export default function HomePage() {
 
     if (showPostseasonLink) return <PostseasonPage />
 
+    if (showHolidayPage) return (<>
+            <div className='flex flex-col items-center justify-center h-[80vh] font-sans text-2xl text-theme-text'>
+                It is currently Holiday
+                <div>
+                    There are no active games
+                </div>
+            </div>
+        </>);
+
     if (gameHeaders.length === 0) {
         return (<>
-            <div className='flex flex-col items-center justify-center h-[80vh] text-white select-none font-sans text-2xl text-theme-secondary'>
+            <div className='flex flex-col items-center justify-center h-[80vh] select-none font-sans text-2xl text-theme-text'>
                 You have no favorite teams<br></br><Link href="/teams" className='text-blue-100'>Go here to add some!</Link>
             </div>
         </>);

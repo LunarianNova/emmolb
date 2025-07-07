@@ -13,6 +13,8 @@ import { Bases } from '@/types/Bases';
 import { MapAPITeamResponse, Team } from '@/types/Team';
 import { Game, MapAPIGameResponse } from '@/types/Game';
 import { Event } from '@/types/Event';
+import { CashewsPlayers } from '@/types/FreeCashews';
+import CashewsPlayerStats from './CashewsPlayerStats';
 
 type EventBlockGroup = {
     emoji?: string;
@@ -38,13 +40,14 @@ function getOPS(stats: any): string {
     return (Number(obp) + Number(slg)).toFixed(3);
 }
 
-export default function LiveGame({ awayTeamArg, homeTeamArg, initialDataArg, gameId }: { awayTeamArg: any, homeTeamArg: any, initialDataArg: any; gameId: string }) {
+export default function LiveGame({ awayTeamArg, homeTeamArg, initialDataArg, gameId, cashewsPlayers }: { awayTeamArg: any, homeTeamArg: any, initialDataArg: any; gameId: string, cashewsPlayers: CashewsPlayers }) {
     const awayTeam = MapAPITeamResponse(awayTeamArg);
     const homeTeam = MapAPITeamResponse(homeTeamArg);
     const initialData = MapAPIGameResponse(initialDataArg);
     const [eventLog, setEventLog] = useState<Event[]>(initialData.event_log);
     const [lastEvent, setLastEvent] = useState(initialData.event_log[initialData.event_log.length - 1]);
     const [data, setData] = useState(initialData);
+    const [showDetailedStats, setShowDetailedStats] = useState(false);
     const players: Record<string, any> = {};
     const homePlayers: string[] = [];
     const awayPlayers: string[] = [];
@@ -148,7 +151,6 @@ export default function LiveGame({ awayTeamArg, homeTeamArg, initialDataArg, gam
         };
     }, [gameId]);
 
-
     function getBlockMetadata(message: string): { emoji?: string; title?: string, titleColor?: string, onClick?: () => void } | null {
         if (message.includes('Now batting')) {
             const match = message.match(/Now batting: (.+)/);
@@ -241,16 +243,24 @@ export default function LiveGame({ awayTeamArg, homeTeamArg, initialDataArg, gam
                 <button onClick={() => setShowStats(!showStats)} className="px-3 py-1 text-xs bg-theme-primary hover:opacity-80 rounded-md">
                     {showStats ? 'Hide Stats' : 'Show Stats'}
                 </button>
+                <button onClick={() => setShowDetailedStats(!showDetailedStats)} className="px-3 py-1 text-xs bg-theme-primary hover:opacity-80 rounded-md">
+                    {showDetailedStats  ? 'Hide Detailed Stats' : 'Show Detailed Stats'}
+                </button>
                 <button onClick={() => setFollowLive(prev => !prev)} className="px-3 py-1 text-xs bg-theme-primary hover:opacity-80 rounded-md">
                     {followLive ? 'Unfollow Live' : 'Follow Live'}
                 </button>
             </div>
 
-            {(showStats && followLive) ? (<div className='grid grid-cols-2 gap-2 items-stretch h-full'>
+            {(showStats && followLive && showDetailedStats) ? (<div className='grid grid-cols-2 gap-2 items-stretch h-full'>
+                <CashewsPlayerStats player={(selectedPlayer && cashewsPlayers.items.find((p) => `${p.data.FirstName} ${p.data.LastName}` === selectedPlayer)) ? {...players[selectedPlayer], ...cashewsPlayers.items.find((p) => `${p.data.FirstName} ${p.data.LastName}` === selectedPlayer)} : null} category='pitching' />
+                <CashewsPlayerStats player={(selectedPlayer && cashewsPlayers.items.find((p) => `${p.data.FirstName} ${p.data.LastName}` === selectedPlayer)) ? {...players[selectedPlayer], ...cashewsPlayers.items.find((p) => `${p.data.FirstName} ${p.data.LastName}` === selectedPlayer)} : null} category='batting' />
+                </div>) : ''}
+            {(showStats && followLive && !showDetailedStats) ? (<div className='grid grid-cols-2 gap-2 items-stretch h-full'>
                 <PlayerStats player={lastEvent.pitcher ? players[lastEvent.pitcher] : null} category='pitching' />
                 <PlayerStats player={lastEvent.batter ? players[lastEvent.batter] : null} category='batting' />
                 </div>) : ''}
-            {(showStats && !followLive) ? (<PlayerStats player={selectedPlayer ? players[selectedPlayer] : null} category={playerType} />) : ''}
+            {(showStats && !followLive && !showDetailedStats) ? (<PlayerStats player={selectedPlayer ? players[selectedPlayer] : null} category={playerType} />) : ''}
+            {(showStats && !followLive && showDetailedStats) ? (<CashewsPlayerStats player={(selectedPlayer && cashewsPlayers.items.find((p) => `${p.data.FirstName} ${p.data.LastName}` === selectedPlayer)) ? {...players[selectedPlayer], ...cashewsPlayers.items.find((p) => `${p.data.FirstName} ${p.data.LastName}` === selectedPlayer)} : null} category={playerType} />) : ''}
             </>
 
             <div className="mt-6 space-y-4">

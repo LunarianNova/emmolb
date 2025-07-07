@@ -212,6 +212,7 @@ export const defaultStats: PlayerStats = Object.fromEntries(
 
 export type DerivedPlayerStats = PlayerStats & {
     hits: number;
+    total_bases: number;
     ba: number;
     obp: number;
     slg: number;
@@ -243,6 +244,7 @@ export function MapAPIPlayerStats(rawStats: Partial<PlayerStats>): DerivedPlayer
     const hits_allowed = base.hits_allowed ?? 0;
     const hra = base.home_runs_allowed ?? 0;
     const strikeouts = base.strikeouts ?? 0;
+    const total_bases = singles + 2 * doubles + 3 * triples + 4 * home_runs;
 
     const hits = singles + doubles + triples + home_runs;
     const ba = at_bats ? hits / at_bats : 0;
@@ -260,6 +262,7 @@ export function MapAPIPlayerStats(rawStats: Partial<PlayerStats>): DerivedPlayer
 
     return {
         ...base,
+        total_bases,
         hits,
         ba,
         obp,
