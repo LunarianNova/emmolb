@@ -23,6 +23,8 @@ type EventBlockGroup = {
     titleColor?: string;
     messages: Event[];
     onClick?: any;
+    isStar?: boolean;
+    isScore?: boolean;
 };
 
 function getOPS(stats: any): string {
@@ -173,8 +175,8 @@ export default function LiveGame({ awayTeamArg, homeTeamArg, initialDataArg, gam
     }
 
     function getEventMessageObject(event: Event): Event {
-        if ((event.message.includes("homers") || event.message.includes("grand slam")) && !event.message.includes(`<strong>${event.batter} scores!`)) event.message += ` <strong>${event.batter} scores!</strong>`;
-        if ((event.message.includes("scores") || event.message.includes("steals home"))&& !event.message.includes('Score is now ')) event.message += `<strong> Score is now ${event.away_score}-${event.home_score}</strong>`
+        if ((event.message.includes("homers") || event.message.includes("grand slam")) && !event.message.includes(`<strong>${event.batter} scores!`) && settings.gamePage?.modifyEvents) event.message += ` <strong>${event.batter} scores!</strong>`;
+        if ((event.message.includes("scores") || event.message.includes("steals home"))&& !event.message.includes('Score is now ') && settings.gamePage?.modifyEvents) event.message += `<strong> Score is now ${event.away_score}-${event.home_score}</strong>`
 
         return {...event};
     }
@@ -187,20 +189,47 @@ export default function LiveGame({ awayTeamArg, homeTeamArg, initialDataArg, gam
             const meta = getBlockMetadata(event.message);
             const eventMessage = getEventMessageObject(event);
 
+            const isStar = /falling star/i.test(event.message);
+            const isScore = /scores!|homers|grand slam|steals home/i.test(event.message);
+
             if (meta) {
-                currentBlock = { ...meta, messages: [eventMessage] };
-                blocks.unshift(currentBlock); // Most recent events at top
+                currentBlock = {
+                    ...meta,
+                    messages: [eventMessage],
+                    isStar,
+                    isScore,
+                };
+                blocks.unshift(currentBlock); // New block on top
             } else if (currentBlock) {
-                if (event.message.includes("scores!") || event.message.includes("homers") || event.message.includes("grand slam") || event.message.includes("steals home")) currentBlock.color = "bg-theme-score";
+                // Set flags on the block if not already set
+                currentBlock.isStar ||= isStar;
+                currentBlock.isScore ||= isScore;
+
                 currentBlock.messages.unshift(eventMessage);
             } else {
-                currentBlock = { messages: [eventMessage] };
+                currentBlock = {
+                    messages: [eventMessage],
+                    isStar,
+                    isScore,
+                };
                 blocks.unshift(currentBlock);
             }
         });
 
+        // Post-process to assign gradient class
+        for (const block of blocks) {
+            if (block.isStar && block.isScore) {
+                block.color = 'linear-gradient(-43deg, var(--theme-score) 36%, var(--theme-falling_star) 64%)';
+            } else if (block.isStar) {
+                block.color = 'var(--theme-falling_star)';
+            } else if (block.isScore) {
+                block.color = 'var(--theme-score)';
+            }
+        }
+
         return blocks;
     }
+
 
     const groupedEvents = groupEventLog(eventLog);
     let currentQueue: string[] = [];
@@ -236,6 +265,7 @@ export default function LiveGame({ awayTeamArg, homeTeamArg, initialDataArg, gam
                     onClick: () => {setSelectedPlayer(lastEvent.on_deck); setPlayerType('batting'); setShowStats(true);},
                 }}
                 showBases={true}
+                cashewsPlayers={cashewsPlayers}
             />
 
             <>

@@ -2,11 +2,24 @@
 import { ThemeColors } from '@/types/ThemeColors';
 import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
 
-type Settings = {
-    useBlasesloaded: boolean;
-    showChangelog: boolean;
-    useTeamColoredHeaders: boolean;
+export type Settings = {
     theme?: ThemeColors;
+    homePage?: {
+        useBlasesloaded: boolean;
+        liveUpdate: boolean;
+        showMiniplayer: boolean;
+        showChangelog: boolean;
+    }
+    gamePage?: {
+        showHandedness: boolean;
+        useTeamColoredHeaders: boolean;
+        showBaserunners: boolean;
+        showStats: boolean;
+        modifyEvents: boolean;
+    }
+    teamPage?: {
+        showLiveGames: boolean;
+    }
     [key: string]: any;
 };
 
@@ -19,9 +32,6 @@ type SettingsContextType = {
 };
 
 const defaultSettings: Settings = {
-    useBlasesloaded: false,
-    showChangelog: false,
-    useTeamColoredHeaders: false,
     theme: {
         primary: '#1e2a36',
         secondary: '#0f1a2b',
@@ -30,6 +40,23 @@ const defaultSettings: Settings = {
         background: '#0c111b',
         text: '#ffffff',
         secondary_text: '#fef4e5',
+        falling_star: '#0D47A1'
+    },
+    homePage: {
+        useBlasesloaded: false,
+        liveUpdate: true,
+        showMiniplayer: true,
+        showChangelog: false,
+    },
+    gamePage: {
+        showHandedness: true,
+        useTeamColoredHeaders: false,
+        showBaserunners: false,
+        showStats: true,
+        modifyEvents: true,
+    },
+    teamPage: {
+        showLiveGames: true,
     },
 };
 
@@ -50,8 +77,11 @@ export const SettingsProvider = ({ children }: { children: React.ReactNode }) =>
 
 
     const resetSettings = () => {
-        setSettings(defaultSettings);
-        localStorage.setItem('appSettings', JSON.stringify(defaultSettings));
+        setSettings(() => {
+            const newSettings = { ...defaultSettings };
+            localStorage.setItem('appSettings', JSON.stringify(newSettings));
+            return newSettings;
+        });
     };
 
     useEffect(() => {

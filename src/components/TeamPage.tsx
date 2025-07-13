@@ -10,6 +10,7 @@ import { Game, MapAPIGameResponse } from "@/types/Game";
 import { MapAPITeamResponse, PlaceholderTeam, Team, TeamPlayer } from "@/types/Team";
 import { CashewsPlayers, CashewsPlayer } from "@/types/FreeCashews";
 import CashewsPlayerStats from "./CashewsPlayerStats";
+import { useSettings } from "./Settings";
 
 export default function TeamPage({ id }: { id: string }) {
   const LeagueNames: Record<string, string> = {
@@ -88,17 +89,20 @@ export default function TeamPage({ id }: { id: string }) {
   const [feedFilters, setFeedFilters] = useState<string[]>(["game", "augment"]);
   const [dropdownOpen, setDropdownOpen] = useState<{ season: boolean; type: boolean }>({season: false, type: false});
   const [players, setPlayers] = useState<CashewsPlayers|undefined>(undefined);
+  const {settings} = useSettings();
 
   useEffect(() => {
     async function APICalls() {
       try {
-        const currentGame = await fetch(`/nextapi/game-by-team/${id}`);
-        if (currentGame.ok) {
-            const res = await currentGame.json();
-            const gameId = res.game_id;
-            setGameID(gameId);
-            const currentHeader = await fetch(`/nextapi/gameheader/${gameId}`)
-            if (currentHeader.ok) setGame(await currentHeader.json());
+        if (settings.teamPage?.showLiveGames){
+            const currentGame = await fetch(`/nextapi/game-by-team/${id}`);
+            if (currentGame.ok) {
+                const res = await currentGame.json();
+                const gameId = res.game_id;
+                setGameID(gameId);
+                const currentHeader = await fetch(`/nextapi/gameheader/${gameId}`)
+                if (currentHeader.ok) setGame(await currentHeader.json());
+            }
         }
 
         const stored = JSON.parse(localStorage.getItem('favoriteTeamIDs') || '[]');

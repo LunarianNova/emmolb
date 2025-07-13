@@ -5,6 +5,7 @@ import { Event } from '@/types/Event'
 import { CashewsPlayers } from '@/types/FreeCashews'
 import { TeamPlayer } from '@/types/Team'
 import React from 'react'
+import { useSettings } from './Settings'
 
 type PlayerInfo = {
   player: TeamPlayer | string;
@@ -30,6 +31,7 @@ export function GameStateDisplay({
   showBases=false,
   cashewsPlayers,
 }: GameStateDisplayProps) {
+  const {settings} = useSettings();
   const renderCircles = (count: number, max: number) =>
     Array.from({ length: max }).map((_, i) => (
       <div
@@ -49,7 +51,7 @@ export function GameStateDisplay({
     const isTeamPlayer = (p: any): p is TeamPlayer => p && typeof p === 'object' && 'first_name' in p && 'last_name' in p;
     const p = player.player;
     const name = isTeamPlayer(p) ? `${p.first_name} ${p.last_name}` : typeof(p) === 'string' ? p : '';
-    const stat = isTeamPlayer(p) && p.stats ? p.position_type === 'Batter' ? `(${p.stats.ops.toFixed(3)} OPS)` : `(${p.stats.era.toFixed(3)} ERA)` : '';
+    const stat = (isTeamPlayer(p) && p.stats && settings.gamePage?.showStats) ? p.position_type === 'Batter' ? `(${p.stats.ops.toFixed(3)} OPS)` : `(${p.stats.era.toFixed(3)} ERA)` : '';
     return (
     <div className="max-w-full sm:max-w-none">
       <div className="text-[10px] sm:text-xs font-semibold uppercase tracking-wide opacity-70 leading-tight">
@@ -78,13 +80,18 @@ export function GameStateDisplay({
     </div>
   );
     }
-    const batterThrows = cashewsPlayers?.items.find(
-      (p) => `${p.data.FirstName} ${p.data.LastName}` === batter.player
+
+    const pitcherThrows = cashewsPlayers?.items.find(
+      (p) => `${p.data.FirstName} ${p.data.LastName}` === pitcher.player
     )?.data.Throws;
 
-    const onDeckThrows = cashewsPlayers?.items.find(
+    const batterHits = cashewsPlayers?.items.find(
+      (p) => `${p.data.FirstName} ${p.data.LastName}` === batter.player
+    )?.data.Bats;
+
+    const onDeckHits = cashewsPlayers?.items.find(
       (p) => `${p.data.FirstName} ${p.data.LastName}` === onDeck.player
-    )?.data.Throws;
+    )?.data.Bats;
 
 
 
@@ -148,21 +155,21 @@ export function GameStateDisplay({
       {/* Player info */}
       <div className="text-sm space-y-4 text-left w-[100px] shrink-0 whitespace-nowrap">
         <PlayerDisplay
-          label={`Pitching ${cashewsPlayers ? `(${cashewsPlayers.items.find((p) => `${p.data.FirstName} ${p.data.LastName}` === pitcher.player)?.data.Throws})` : ``}`}
+          label={`Pitching${(pitcherThrows && settings.gamePage?.showHandedness) ? ` (${pitcherThrows})` : ``}`}
           player={pitcher}
         />        
         <PlayerDisplay
-          label={`Batting${batterThrows ? ` (${batterThrows})` : ''}`}
+          label={`Batting${(batterHits && settings.gamePage?.showHandedness) ? ` (${batterHits})` : ''}`}
           player={batter}
         />
 
         <PlayerDisplay
-          label={`On Deck${onDeckThrows ? ` (${onDeckThrows})` : ''}`}
+          label={`On Deck${(onDeckHits && settings.gamePage?.showHandedness) ? ` (${onDeckHits})` : ''}`}
           player={onDeck}
         />
       </div>
     </div>
-    {showBases && (<div>1st: {bases.first}<br></br>
+    {(showBases && settings.gamePage?.showBaserunners) && (<div>1st: {bases.first}<br></br>
     2nd: {bases.second}<br></br>
     3rd: {bases.third}<br></br></div>)}
     </>

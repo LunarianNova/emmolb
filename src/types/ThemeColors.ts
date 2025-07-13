@@ -6,5 +6,6 @@ export type ThemeColors = {
     background: string;
     text: string;
     secondary_text: string;
+    falling_star: string;
     [key: string]: string;
 };

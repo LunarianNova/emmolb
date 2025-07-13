@@ -72,7 +72,7 @@ export function EventBlock({ emoji, title, color, titleColor, messages, onClick,
           {title}
         </div>
       )}
-      <div className={`rounded-md pt-6 p-3 mt-4 bg-theme-primary ${color}`}>
+      <div className="rounded-md pt-6 p-3 mt-4" style={{ background: color || 'var(--theme-primary)' }}>        
         <div className="text-sm whitespace-pre-line space-y-1">
           {messages.map(({index, message, pitchSpeed, pitchZone}, i) => (
             <div key={i} className="flex justify-between items-start gap-2">

@@ -8,6 +8,7 @@
   --theme-accent: #17212b;
   --theme-text: #ffffff;
   --theme-secondary_text: #fef4e5;
+  --theme-falling_star: #0D47A1;
 }
 
 
@@ -37,6 +38,10 @@
 
 .bg-theme-score {
   background-color: var(--theme-score);
+}
+
+.bg-theme-star {
+  background-color: var(--theme-falling_star);
 }
 
 .bg-theme-accent {
