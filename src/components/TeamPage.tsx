@@ -227,6 +227,15 @@ export default function TeamPage({ id }: { id: string }) {
         return reverse ? aValue - bValue : bValue - aValue;
     });
 
+    
+    const groupedFeed = team.feed.reduce((acc: Record<string, any[]>, game) => {
+        if (game.type !== 'game') return acc;
+        const seasonKey = String(game.season);
+        if (!acc[seasonKey]) acc[seasonKey] = [];
+        acc[seasonKey].push(game);
+        return acc;
+    }, {});
+
   return (
     <>
       <main className="mt-16">
@@ -245,6 +254,9 @@ export default function TeamPage({ id }: { id: string }) {
                         </span>
                     </Link>
                     <span className="text-2xl font-bold tracking-wide leading-tight">{team.location} {team.name}</span>
+                    <span className="text-md pointer-events-auto hover:opacity-80 transition text-center whitespace-nowrap overflow-hidden text-ellipsis max-w-full">
+                        🏟️: {team.ballpark_name}
+                    </span>
                 </div>
                 <span className="absolute bottom-1 right-2 text-base font-semibold opacity-80 pointer-events-none">
                     {team.record.regular_season.wins} - {team.record.regular_season.losses}
@@ -273,7 +285,7 @@ export default function TeamPage({ id }: { id: string }) {
                     <span>Quaelyth's Curios</span>
                 </a>
             </div></>)}
-            <GameSchedule id={id} />
+            <GameSchedule id={id} feed={groupedFeed}/>
             <h2 className="text-xl font-bold mb-4 text-center">Roster</h2>
             <div className="mb-4 text-center">
                 <label className="mr-2 font-semibold">Sort by:</label>

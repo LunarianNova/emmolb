@@ -25,6 +25,7 @@ interface GameHeaderEventProps {
 export function GameHeader({ homeTeam, awayTeam, game, killLinks = false }: GameHeaderProps) {
     const router = useRouter();
     const lastEvent = game.event_log[game.event_log.length - 1];
+    const stadium = game.event_log[0].message.split("@ ")[1];
 
     return (
         <div className="rounded-xl shadow-xl overflow-visible mb-6 border-3 border-theme-accent" style={{background: `linear-gradient(60deg, #${awayTeam.color} 36%, rgb(12, 17, 27) 50%, rgb(12, 17, 27) 50%, #${homeTeam.color} 64%)`}}>
@@ -46,7 +47,10 @@ export function GameHeader({ homeTeam, awayTeam, game, killLinks = false }: Game
 
                 <div className="flex items-center justify-center px-4 text-white text-center min-h-[54px] md:min-h-[88px] relative">
                     <div className="flex flex-col items-center justify-center gap-1">
-                        <WeatherInfo weather={game.weather} />
+                        <div className="flex items-center gap-2">
+                            <WeatherInfo weather={game.weather} />
+                            <WeatherInfo weather={{ emoji: "🏟️", name: stadium, tooltip: '' }} />
+                        </div>
                         <div className="text-base text-white md:text-lg font-bold leading-tight">
                             {game.state !== "Complete" ? (lastEvent.inning_side === 1 ? "BOT " : "TOP ") + lastEvent.inning : "FINAL"}
                         </div>
@@ -74,6 +78,7 @@ export function GameHeader({ homeTeam, awayTeam, game, killLinks = false }: Game
 
 export function GameHeaderEvent({ homeTeam, awayTeam, game, event, killLinks = false }: GameHeaderEventProps) {
     const router = useRouter();
+    const stadium = game.event_log[0].message.split("@ ")[1];
 
     return (
         <div className="rounded-xl shadow-xl overflow-visible mb-6 border-3 border-theme-accent" style={{background: `linear-gradient(60deg, #${awayTeam.color} 36%, rgb(12, 17, 27) 50%, rgb(12, 17, 27) 50%, #${homeTeam.color} 64%)`}}>
@@ -95,7 +100,10 @@ export function GameHeaderEvent({ homeTeam, awayTeam, game, event, killLinks = f
 
                 <div className="flex items-center justify-center px-4 text-white text-center min-h-[54px] md:min-h-[88px] relative">
                     <div className="flex flex-col items-center justify-center gap-1">
-                        <WeatherInfo weather={game.weather} />
+                        <div className="flex items-center gap-2">
+                            <WeatherInfo weather={game.weather} />
+                            <WeatherInfo weather={{ emoji: "🏟️", name: stadium, tooltip: '' }} />
+                        </div>
                         <div className="text-base text-white md:text-lg font-bold leading-tight">
                             {game.state !== "Complete" ? (event.inning_side === 1 ? "BOT " : "TOP ") + event.inning : "FINAL"}
                         </div>
