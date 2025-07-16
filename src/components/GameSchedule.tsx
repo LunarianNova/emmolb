@@ -56,7 +56,7 @@ export default function GameSchedule({ id }: { id: string }) {
                                 const won = isHome ? game.home_score > game.away_score : game.away_score > game.home_score;
                                 const inProgress = game.state !== "Complete";
                                 return (
-                                    <Link href={`/watch/${game.game_id}`} className="relative rounded-md p-1 text-xs min-h-[100px] flex flex-col items-center justify-center cursor-pointer hover:opacity-80" style={{background: `#${color}`, color: getContrastTextColor(color)}}>
+                                    <Link key={i} href={`/watch/${game.game_id}`} className="relative rounded-md p-1 text-xs min-h-[100px] flex flex-col items-center justify-center cursor-pointer hover:opacity-80" style={{background: `#${color}`, color: getContrastTextColor(color)}}>
                                         <span className="absolute top-1 left-1/2 -translate-x-1/2 text-[10px] font-bold">{game.day}</span>
                                         <span className="absolute top-1 right-1 text-xs">{game.weather.Emoji}</span>
                                         <span className="absolute top-1 left-1">{isHome ? '🏠' : '✈️'}</span>

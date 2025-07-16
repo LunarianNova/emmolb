@@ -92,9 +92,9 @@ export function GameStateDisplay({
     const normalize = (name: string) => name.trim().toLowerCase();
 
     if (isTeamPlayer(pitcher.player) && isTeamPlayer(batter.player) && isTeamPlayer(onDeck.player)) {
-        let pitch: TeamPlayer = pitcher.player
-        let bat: TeamPlayer = batter.player
-        let deck: TeamPlayer = onDeck.player;
+        const pitch: TeamPlayer = pitcher.player
+        const bat: TeamPlayer = batter.player
+        const deck: TeamPlayer = onDeck.player;
         pitcherThrows = cashewsPlayers?.items.find(
             (p) => normalize(`${p.data.FirstName} ${p.data.LastName}`) === normalize(`${pitch.first_name} ${pitch.last_name}`)
         )?.data.Throws;
