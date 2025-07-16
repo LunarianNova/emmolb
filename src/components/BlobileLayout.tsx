@@ -3,6 +3,7 @@ import MiniTeamHeader from "./MiniTeamHeader";
 import { MapAPITeamResponse } from "@/types/Team";
 import { Bases } from "@/types/Bases";
 import { ProcessMessage } from "./BaseParser";
+import { Event } from "@/types/Event";
 
 function getTeamInitials(team: any) {
   if (!team) return "";

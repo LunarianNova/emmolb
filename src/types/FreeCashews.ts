@@ -1,9 +1,9 @@
 export type CashewsEquipment = {
     Name?: string;
     Emoji?: string;
-    Prefix?: string;
+    Prefixes?: string[];
     Rarity?: string;
-    Suffix?: string;
+    Suffixes?: string[];
     Effects: any[];
 }
 

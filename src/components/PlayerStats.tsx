@@ -29,8 +29,8 @@ export default function PlayerStats({ player, category }: {player: TeamPlayer | 
             </div>
         );
     }
-    const toggle = (label: string) => {setActiveTooltip((prev) => (prev === label ? null : label)), console.log(label);};
-    const stats = 'team_id' in player ? player.stats[player.team_id] : player.stats; // Handle both TeamPlayer and Player
+    const toggle = (label: string) => {setActiveTooltip((prev) => (prev === label ? null : label))};
+    const stats = 'team_id' in player ? player.stats[player.team_id] : player.stats;
 
 
     return (

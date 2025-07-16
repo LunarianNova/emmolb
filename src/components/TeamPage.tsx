@@ -3,7 +3,6 @@ import Loading from "@/components/Loading";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { LiveGameCompact } from "./LiveGameCompact";
-import PlayerStats from "./PlayerStats";
 import CheckboxDropdown from "./CheckboxDropdown";
 import { getContrastTextColor } from "@/helpers/Colors";
 import { Game, MapAPIGameResponse } from "@/types/Game";
@@ -11,8 +10,53 @@ import { MapAPITeamResponse, PlaceholderTeam, Team, TeamPlayer } from "@/types/T
 import { CashewsPlayers, CashewsPlayer } from "@/types/FreeCashews";
 import CashewsPlayerStats from "./CashewsPlayerStats";
 import { useSettings } from "./Settings";
+import { DerivedPlayerStats } from "@/types/PlayerStats";
+import GameSchedule from "./GameSchedule";
+
+function getCountdown() {
+    const now = new Date();
+    const nowUTC = Date.UTC(
+        now.getUTCFullYear(),
+        now.getUTCMonth(),
+        now.getUTCDate(),
+        now.getUTCHours(),
+        now.getUTCMinutes(),
+        now.getUTCSeconds()
+    );
+
+    let targetUTC = Date.UTC(
+        now.getUTCFullYear(),
+        now.getUTCMonth(),
+        now.getUTCDate(),
+        5, 0, 0
+    );
+
+    if (nowUTC >= targetUTC) {
+        targetUTC += 24 * 60 * 60 * 1000;
+    }
+
+    return targetUTC - nowUTC;
+}
+
+function useSimpleCountdown() {
+    const [timeLeft, setTimeLeft] = useState(getCountdown());
+
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setTimeLeft(getCountdown());
+        }, 1000);
+        return () => clearInterval(interval);
+    }, []);
+
+    const pad = (n: number) => n.toString().padStart(2, '0');
+    const hours = Math.floor(timeLeft / (1000 * 60 * 60));
+    const minutes = Math.floor((timeLeft / (1000 * 60)) % 60);
+    const seconds = Math.floor((timeLeft / 1000) % 60);
+    return `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
+}
 
 export default function TeamPage({ id }: { id: string }) {
+  const countdown = useSimpleCountdown();
   const LeagueNames: Record<string, string> = {
     '6805db0cac48194de3cd3fe7': 'Baseball',
     '6805db0cac48194de3cd3fe8': 'Precision',
@@ -79,13 +123,14 @@ export default function TeamPage({ id }: { id: string }) {
     "Double Plays": "double_plays",
     "Runners Caught Stealing": "runners_caught_stealing"
   };
+  const [sortStat, setSortStat] = useState<string>('');
   const [loading, setLoading] = useState(true);
   const [team, setTeam] = useState<Team>(PlaceholderTeam);
   const [game, setGame] = useState<any>();
   const [gameID, setGameID] = useState<string>();
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
   const [expandedPlayers, setExpandedPlayers] = useState<Record<string, boolean>>({});
-  const [selectedSeasons, setSelectedSeasons] = useState<string[]>(["2"]);
+  const [selectedSeasons, setSelectedSeasons] = useState<string[]>(["3"]);
   const [feedFilters, setFeedFilters] = useState<string[]>(["game", "augment"]);
   const [dropdownOpen, setDropdownOpen] = useState<{ season: boolean; type: boolean }>({season: false, type: false});
   const [players, setPlayers] = useState<CashewsPlayers|undefined>(undefined);
@@ -159,6 +204,29 @@ export default function TeamPage({ id }: { id: string }) {
 
   const uniqueTypes: string[] = Array.from(new Set(team.feed.map((event: any) => event.type)));
 
+    const reverseSortStats = new Set([
+        "era", "whip", "bb9", "h9", "hr9", "losses", "blown_saves", "errors"
+    ]);
+
+    const sortedPlayers = [...team.players].sort((a, b) => {
+        if (!sortStat || !players) return 0;
+
+        const statKey = statKeyMap[sortStat] as keyof DerivedPlayerStats;
+        const aStats = a.stats[statKey];
+        const bStats = b.stats[statKey];
+
+        const aValue = typeof aStats === 'number' ? aStats : Infinity;
+        const bValue = typeof bStats === 'number' ? bStats : Infinity;
+
+        const reverse = reverseSortStats.has(statKey);
+
+        if (!Number.isFinite(aValue) && !Number.isFinite(bValue)) return 0;
+        if (!Number.isFinite(aValue)) return 1;
+        if (!Number.isFinite(bValue)) return -1;
+
+        return reverse ? aValue - bValue : bValue - aValue;
+    });
+
   return (
     <>
       <main className="mt-16">
@@ -184,15 +252,32 @@ export default function TeamPage({ id }: { id: string }) {
                 <span className="absolute top-1 right-2 text-base font-semibold opacity-80 pointer-events-none">{team.record.regular_season.run_differential > 0 ? '+' : ''}{team.record.regular_season.run_differential}</span>
             </div>
             {game && game.game.State != "Complete" && (<><Link href={`/game/${gameID}`}><LiveGameCompact homeTeam={MapAPITeamResponse(game.homeTeam)} awayTeam={MapAPITeamResponse(game.awayTeam)} game={MapAPIGameResponse(game.game)} gameId={gameID ? gameID : ''} killLinks={true} /></Link></>)}
-            <div className="mb-4 flex justify-center gap-4">
-                <button className="px-4 py-2 link-hover text-theme-secondary rounded mb-4">
-                    Season Schedule
-                </button>
-            </div>
+            {settings.teamPage?.showMMOLBLinks && (<div className="bg-theme-primary rounded-xl shadow-lg p-6 text-center text-lg mb-6">
+                <div className="mb-4 text-white">Augments apply in <span className="font-mono">{countdown}</span></div>
+                <a target="_blank" className="px-4 py-2 bg-theme-secondary text-theme-secondary rounded mb-4" href="https://mmolb.com/augment">
+                    <span>Edit Augment</span>
+                </a>
+            </div>)}
+            {settings.teamPage?.showMMOLBLinks && (<><h2 className="text-xl font-bold mb-4 text-center">Ballpark Village</h2>
+            <div className="mb-6 flex justify-center gap-4">
+                <a target="_blank" className="px-4 py-2 link-hover text-theme-secondary rounded mb-4" href="https://mmolb.com/ballpark">
+                    <span className="text-xl">🏟️</span>
+                    <span>Clubhouse</span>
+                </a>
+                <a target="_blank" className="px-4 py-2 link-hover text-theme-secondary rounded mb-4" href="https://mmolb.com/hall-of-unmaking">
+                    <span className="text-xl">💀</span>
+                    <span>Hall of Unmaking</span>
+                </a>
+                <a target="_blank" className="px-4 py-2 link-hover text-theme-secondary rounded mb-4" href="https://mmolb.com/shop">
+                    <span className="text-xl">🛒</span>
+                    <span>Quaelyth's Curios</span>
+                </a>
+            </div></>)}
+            <GameSchedule id={id} />
             <h2 className="text-xl font-bold mb-4 text-center">Roster</h2>
             <div className="mb-4 text-center">
                 <label className="mr-2 font-semibold">Sort by:</label>
-                <select className="bg-theme-primary text-theme-text px-2 py-1 rounded">
+                <select className="bg-theme-primary text-theme-text px-2 py-1 rounded" value={sortStat} onChange={(e) => setSortStat(e.target.value)}>
                     <option value="">Default</option>
                     <optgroup label="Batting">
                         <option value="AVG">AVG</option>
@@ -251,15 +336,23 @@ export default function TeamPage({ id }: { id: string }) {
             </div>
             <div className="flex justify-center">
                 <div className="w-128 space-y-2">
-                    {team.players.map((player: TeamPlayer, i: number) => {
+                    {sortedPlayers.map((player, i) => {
+                        const statKey = statKeyMap[sortStat] as keyof DerivedPlayerStats;
+                        const rawStat = statKey && player ? player.stats[statKey] : null;
+                        const formattedStat = typeof rawStat === 'number' ? !Number.isFinite(rawStat) ? '-' : ['ba', 'obp', 'slg', 'ops', 'era', 'whip', 'kbb', 'k9', 'bb9', 'h9', 'hr9'].includes(statKey!) ? rawStat.toFixed(3) : Math.round(rawStat).toString() : '';
                         return (
                             <div key={i}>
                                 <div className="flex justify-between items-center p-1 rounded link-hover cursor-pointer transition" onClick={()=>{setExpandedPlayers(prev => ({...prev, [player.player_id]: !prev[player.player_id],}))}}>
-                                    <div className="flex items-center gap-3 overflow-hidden">
+                                    <div className="flex items-center gap-3 w-full">
                                         <span className="w-4 text-xl text-center">{player.emoji}</span>
                                         <span className="w-8 text-sm text-right">#{player.number}</span>
                                         <span className="w-6 text-sm font-bold text-theme-text opacity-80 text-right">{player.position}</span>
                                         <span className="flex-1 font-semibold text-left overflow-hidden text-ellipsis whitespace-nowrap">{player.first_name} {player.last_name}</span>
+                                        {sortStat && (
+                                            <span className="ml-auto w-20 text-right text-sm opacity-70 text-theme-text font-mono">
+                                                {formattedStat}
+                                            </span>
+                                        )}
                                     </div>
                                 </div>
                                 {expandedPlayers[player.player_id] && (() => {

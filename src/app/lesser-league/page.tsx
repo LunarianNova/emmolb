@@ -5,6 +5,7 @@ import Loading from "@/components/Loading";
 import { Navbar } from "@/components/Navbar";
 import LeagueHeader from "@/components/LeagueHeader";
 import Link from "next/link";
+import { MapAPILeagueResponse } from "@/types/League";
 
 export default function LesserLeaguePage() {
     const [loading, setLoading] = useState(true);
@@ -61,7 +62,7 @@ export default function LesserLeaguePage() {
                         <div className="space-y-3">
                             {leagues.map((league, index) => (
                                 <Link key={index} href={`/league/${league._id}`}>
-                                    <LeagueHeader league={league} />
+                                    <LeagueHeader league={MapAPILeagueResponse(league)} />
                                 </Link>
                             ))}
                         </div>

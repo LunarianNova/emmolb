@@ -1,3 +1,5 @@
+// components/CashewsPlayerStats.tsx
+// Authors: Navy, Luna
 import { CashewsEquipment, CashewsPlayer } from "@/types/FreeCashews";
 import { TeamPlayer } from "@/types/Team";
 import { useState } from "react";
@@ -22,7 +24,7 @@ function StatTooltip({ label, value, tooltip, isActive, onToggle }: StatTooltipP
 
 function EquipmentTooltip({ equipment, emoji, name, isActive, onToggle }: { equipment: CashewsEquipment | undefined, emoji: string, name: string, isActive: boolean, onToggle: () => void }) {
     const itemBorder: Record<string, string> = {'Normal': '#1c2a3a', 'Magic': '#42A5F5', 'Rare': '#FFEE58'}
-    const formattedName = equipment ? `${equipment.Prefix ? equipment.Prefix : ''} ${equipment.Name} ${equipment.Suffix ? equipment.Suffix : ''}` : name;
+    const formattedName = equipment ? `${equipment.Prefixes?.join(' ') ?? ''} ${equipment.Name ?? ''} ${equipment.Suffixes?.join(' ') ?? ''}`.trim() : name;    
     const stats = equipment?.Effects ? equipment.Effects.map(({ Value, Attribute }) => `<br>+${(Value*100).toFixed(0)} ${Attribute}`).join('') : '';    
     const tooltip = `${formattedName}` + stats;
     return (
@@ -47,10 +49,8 @@ export default function PlayerStats({ player, category }: {player: CashewsPlayer
             </div>
         );
     }
-    const toggle = (label: string) => {setActiveTooltip((prev) => (prev === label ? null : label)), console.log(label);};
-    console.log(player);
+    const toggle = (label: string) => {setActiveTooltip((prev) => (prev === label ? null : label));};
     const stats = player.stats;
-    console.log(stats);
 
     return (
         <div onClick={() => setActiveTooltip(null)}>

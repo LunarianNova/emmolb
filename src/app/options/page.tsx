@@ -68,7 +68,7 @@ export default function OptionsPage() {
                         <Checkbox settings={settings} settingKey={'gamePage.showHandedness'} label="Show Handedness" onChange={updateSetting} />
                         <Checkbox settings={settings} settingKey={'gamePage.showStats'} label="Show OPS/ERA for Current Players" onChange={updateSetting} />
                         <Checkbox settings={settings} settingKey={'gamePage.modifyEvents'} label="QOL Event Message Changes" onChange={updateSetting} />
-                        <Checkbox settings={settings} settingKey={'gamePage.useTeamColoroedHeaders'} label="Change Event Log Headers to Match Team Colors" onChange={updateSetting} />
+                        <Checkbox settings={settings} settingKey={'gamePage.useTeamColoredHeaders'} label="Change Event Log Headers to Match Team Colors" onChange={updateSetting} />
                         <Checkbox settings={settings} settingKey={'gamePage.showBaserunners'} label="Display Who Is on Base" onChange={updateSetting} />
                     </div>
                 </div>
@@ -78,6 +78,7 @@ export default function OptionsPage() {
                 <div className="pl-2">
                     <div className="space-y-2 mt-2">
                         <Checkbox settings={settings} settingKey={'teamPage.showLiveGames'} label="Show Live Games" onChange={updateSetting} />
+                        <Checkbox settings={settings} settingKey={'teamPage.showMMOLBLinks'} label="Show Links That Lead to MMOLB" onChange={updateSetting} />
                     </div>
                 </div>
             </div>
@@ -96,7 +97,7 @@ export default function OptionsPage() {
                     </div>
                 ))}
                 <div className="pl-2 space-y-4">
-                    <EventBlock emoji='🧩' title='Secondary Text/Color' links={false} messages={[{index: 1, message: "Primary Text/Color"}, {index: 0, message: "Accent is used for outlines on some things"}]}/>
+                    <EventBlock emoji='🧩' title='Secondary Text/Color' links={false} messages={[{index: 1, message: "Primary Text/Color"}, {index: 0, message: "Accent is used for outlines on some things"}]} />
                     <button onClick={resetTheme} className="link-hover px-4 py-2 bg-theme-accent text-sm text-theme-secondary rounded mb-4">
                         Reset Theme
                     </button>

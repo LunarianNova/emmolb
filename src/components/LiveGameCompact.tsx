@@ -60,7 +60,7 @@ export function LiveGameCompact({ gameId, homeTeam, awayTeam, game, killLinks = 
 }
 
 export function GameStateDisplayCompact({ event, lastUpdated }: { event: Event, lastUpdated: any }) {
-    const background = (event.message.includes('scores!') || event.message.includes('homers')) ? 'bg-theme-score' : 'bg-theme-secondary';
+    const background = (event.message.includes('scores!') || event.message.includes('homers')) ? 'bg-theme-score' : event.message.includes('star') ? 'bg-theme-star' : 'bg-theme-secondary';
 
     return (
         <div className={`${background} p-4 rounded-lg shadow-lg border border-theme-accent mb-16`}>

@@ -1,3 +1,5 @@
+// components/CheckboxDropdown.tsx
+// Author: Navy
 export default function CheckboxDropdown({label, options, selected, setSelected, isOpen, toggleOpen,}: {
     label: string;
     options: string[];

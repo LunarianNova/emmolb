@@ -119,7 +119,6 @@ export default function PostseasonPage() {
   }, [bracket, activeGames]);
 
   if (loading || !bracket) return <Loading />;
-  console.log(activeGames);
   const renderMockGame = (away: BracketTeam, home: BracketTeam, label: string) => (
     <MockGameHeader key={label} awayTeam={away} homeTeam={home} label={label} />
   );
@@ -131,7 +130,6 @@ export default function PostseasonPage() {
 
         <div className="overflow-x-auto">
           <div className="grid grid-cols-2 gap-x-6 gap-y-10 min-w-[600px] sm:min-w-full">
-            {/* Clover Bracket */}
             <div className="space-y-6">
               <h2 className="text-lg font-semibold text-center">Clover League</h2>
               <div className="space-y-1">
@@ -144,7 +142,6 @@ export default function PostseasonPage() {
               </div>
             </div>
 
-            {/* Pineapple Bracket */}
             <div className="space-y-6">
               <h2 className="text-lg font-semibold text-center">Pineapple League</h2>
               <div className="space-y-1">
@@ -159,14 +156,12 @@ export default function PostseasonPage() {
           </div>
         </div>
 
-        {/* Season Champion */}
         <div className="flex justify-center mt-10">
           <div className="w-full max-w-2xl">
             {renderMockGame(bracket.CloverLeagueChamp, bracket.PineappleLeagueChamp, 'Best of 7')}
           </div>
         </div>
 
-        {/* Live Games */}
         {Object.values(activeGames).length > 0 && (
           <div className="mt-12 space-y-8">
             <h2 className="text-xl font-semibold text-center">Live Games</h2>

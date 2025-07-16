@@ -247,18 +247,18 @@ export function MapAPIPlayerStats(rawStats: Partial<PlayerStats>): DerivedPlayer
     const total_bases = singles + 2 * doubles + 3 * triples + 4 * home_runs;
 
     const hits = singles + doubles + triples + home_runs;
-    const ba = at_bats ? hits / at_bats : 0;
-    const obp = (at_bats + walked + hbp + sac_flies) ? (hits + walked + hbp) / (at_bats + walked + hbp + sac_flies) : 0;
-    const slg = at_bats ? (singles + 2 * doubles + 3 * triples + 4 * home_runs) / at_bats : 0;
+    const ba = at_bats ? hits / at_bats : Infinity;
+    const obp = (at_bats + walked + hbp + sac_flies) ? (hits + walked + hbp) / (at_bats + walked + hbp + sac_flies) : Infinity;
+    const slg = at_bats ? (singles + 2 * doubles + 3 * triples + 4 * home_runs) / at_bats : Infinity;
     const ops = obp + slg;
-    const ip = (Math.floor(outs / 3) + (outs % 3) / 10);
-    const era = outs ? (earned_runs / (outs / 3)) * 9 : 0;
-    const whip = outs ? (walks + hits_allowed) / (outs / 3) : 0;
-    const kbb = walks ? strikeouts / walks : 0;
-    const k9 = outs ? (strikeouts / (outs / 3)) * 9 : 0;
-    const h9 = outs ? (hits_allowed / (outs / 3)) * 9 : 0;
-    const bb9 = outs ? (walks / (outs / 3)) * 9 : 0;
-    const hr9 = outs ? (hra / (outs / 3)) * 9 : 0;
+    const ip = outs ? (Math.floor(outs / 3) + (outs % 3) / 10) : Infinity;
+    const era = outs ? (earned_runs / (outs / 3)) * 9 : Infinity;
+    const whip = outs ? (walks + hits_allowed) / (outs / 3) : Infinity;
+    const kbb = walks ? strikeouts / walks : Infinity;
+    const k9 = outs ? (strikeouts / (outs / 3)) * 9 : Infinity;
+    const h9 = outs ? (hits_allowed / (outs / 3)) * 9 : Infinity;
+    const bb9 = outs ? (walks / (outs / 3)) * 9 : Infinity;
+    const hr9 = outs ? (hra / (outs / 3)) * 9 : Infinity;
 
     return {
         ...base,

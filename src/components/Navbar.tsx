@@ -151,7 +151,7 @@ export function Navbar() {
 
         {/* Desktop / large screen menu */}
         <div
-          className={`sm:flex sm:justify-center sm:gap-42 py-5 z-10 hidden sm:block`}
+          className={`sm:flex sm:justify-center sm:gap-42 py-5 z-10 hidden`}
         >
           {/* Home */}
           <Link

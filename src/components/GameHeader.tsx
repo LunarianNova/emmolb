@@ -24,7 +24,6 @@ interface GameHeaderEventProps {
 
 export function GameHeader({ homeTeam, awayTeam, game, killLinks = false }: GameHeaderProps) {
     const router = useRouter();
-    console.log(game.event_log.length);
     const lastEvent = game.event_log[game.event_log.length - 1];
 
     return (

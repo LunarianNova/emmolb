@@ -18,7 +18,8 @@ export default {
       },
       fontFamily: {
         scoreboard: ['Scoreboard', 'Geist'],
-        impact: ['Impact', 'Geist']
+        impact: ['Impact', 'Geist'],
+        mono: ['var(--font-geist-mono)', ...fontFamily.mono],
       }
     },
   },

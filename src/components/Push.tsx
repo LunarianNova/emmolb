@@ -1,3 +1,4 @@
+// Don't touch this file for all this is holy
 const SERVICE_WORKER_FILE_PATH = './sw.js';
 
 export function notificationUnsupported(): boolean {

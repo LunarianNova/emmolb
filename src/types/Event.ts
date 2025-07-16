@@ -1,7 +1,7 @@
 export type Event = {
     away_score: number;
     balls: number;
-    batter: string | null;
+    batter?: string;
     event: string;
     home_score: number;
     index: number;
@@ -11,10 +11,10 @@ export type Event = {
     on_1b: boolean;
     on_2b: boolean;
     on_3b: boolean;
-    on_deck: string | null;
+    on_deck?: string;
     outs: number;
     pitch_info: string;
-    pitcher: string | null;
+    pitcher?: string;
     strikes: number;
     zone: string;
 }

@@ -13,9 +13,9 @@ export const ThemeUpdater = () => {
         const theme: ThemeColors = settings.theme;
 
         for (const key in theme) {
-        root.style.setProperty(`--theme-${key}`, theme[key]);
+            root.style.setProperty(`--theme-${key}`, theme[key]);
         }
     }, [settings.theme, ready]);
 
-    return <></>;
+    return null;
 };

@@ -19,6 +19,7 @@ export type Settings = {
     }
     teamPage?: {
         showLiveGames: boolean;
+        showMMOLBLinks: boolean;
     }
     [key: string]: any;
 };
@@ -57,6 +58,7 @@ const defaultSettings: Settings = {
     },
     teamPage: {
         showLiveGames: true,
+        showMMOLBLinks: false,
     },
 };
 
@@ -88,7 +90,29 @@ export const SettingsProvider = ({ children }: { children: React.ReactNode }) =>
         try {
             const saved = localStorage.getItem('appSettings');
             if (saved) {
-                setSettings(JSON.parse(saved));
+                const parsed = JSON.parse(saved);
+                // Deep merge: saved settings override defaults, but defaults fill gaps
+                const merged = {
+                    ...defaultSettings,
+                    ...parsed,
+                    theme: {
+                        ...defaultSettings.theme,
+                        ...(parsed.theme || {}),
+                    },
+                    homePage: {
+                        ...defaultSettings.homePage,
+                        ...(parsed.homePage || {}),
+                    },
+                    gamePage: {
+                        ...defaultSettings.gamePage,
+                        ...(parsed.gamePage || {}),
+                    },
+                    teamPage: {
+                        ...defaultSettings.teamPage,
+                        ...(parsed.teamPage || {}),
+                    },
+                };
+                setSettings(merged);
             }
         } catch (e) {
             console.error('Error loading settings', e);

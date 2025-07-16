@@ -4,6 +4,7 @@ import MiniTeamHeader from './MiniTeamHeader';
 import { subscribeToTeam, isSubscribed, registerAndSubscribe, notificationUnsupported, unsubscribeFromTeam } from '@/components/Push'; // your push utils
 import { MapAPITeamResponse, Team } from '@/types/Team';
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
+import Loading from './Loading';
 
 
 export default function TeamSelector() {
@@ -13,6 +14,7 @@ export default function TeamSelector() {
     const [notificationsAllowed, setNotificationsAllowed] = useState(false);
     const [subscription, setSubscription] = useState<PushSubscription | null>(null);
     const [subscribedTeams, setSubscribedTeams] = useState<Record<string, boolean>>({});
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const stored = localStorage.getItem('favoriteTeamIDs');
@@ -23,7 +25,12 @@ export default function TeamSelector() {
             Promise.all(ids.map(id => fetch(`/nextapi/team/${id}`).then(res => (res.ok ? res.json() : null)))).then(results => {
                 const validTeams = results.filter((team): team is NonNullable<typeof team> => team !== null).map(MapAPITeamResponse);
                 setTeams(validTeams);
+                setLoading(false);
+            }).catch(() => {
+                setLoading(false);
             });
+        } else {
+            setLoading(false);
         }
 
         if (!notificationUnsupported() && Notification.permission === 'granted') {
@@ -101,6 +108,8 @@ export default function TeamSelector() {
             return newMap;
         });
     };
+
+    if (loading) return <Loading />
 
     return (
         <div className="p-4 max-w-md mx-auto">

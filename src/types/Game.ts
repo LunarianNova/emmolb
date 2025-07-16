@@ -19,6 +19,7 @@ export type Game = {
     home_team_emoji: string;
     home_team_id: string;
     home_team_name: string;
+    hype_end_index?: any;
     league: string;
     pitcher_entry: Record<string, {bf: number, id: string}>;
     realm: string;
@@ -49,6 +50,7 @@ export function MapAPIGameResponse(data: any): Game {
         home_team_emoji: data.HomeTeamEmoji,
         home_team_id: data.HomeTeamID,
         home_team_name: data.HomeTeamName,
+        hype_end_index: data.HypeEndIndex,
         league: data.League,
         pitcher_entry: data.PitcherEntry,
         realm: data.Realm,

@@ -16,6 +16,11 @@ export type Team = {
     abbreviation: string;
     active: boolean;
     augments: number;
+    ballpark_name?: string,
+    ballpark_suffix?: string,
+    ballpark_use_city?: boolean,
+    ballpark_word_1?: string,
+    ballpark_word_2?: string,
     championships: number;
     color: string;
     emoji: string;
@@ -25,7 +30,7 @@ export type Team = {
     location: string;
     modifications: any[];
     motes_used: number;
-    motto: string | null;
+    motto?: string;
     name: string;
     owner_id: string;
     players: TeamPlayer[];
@@ -45,6 +50,11 @@ export function MapAPITeamResponse(data: any): Team {
         abbreviation: data.Abbreviation,
         active: data.Active,
         augments: data.Augments,
+        ballpark_name: data.BallparkName,
+        ballpark_suffix: data.BallparkSuffix,
+        ballpark_use_city: data.BallparkUseCity,
+        ballpark_word_1: data.BallparkWord1,
+        ballpark_word_2: data.BallparkWord2,
         championships: data.Championships,
         color: data.Color,
         emoji: data.Emoji,
@@ -81,10 +91,13 @@ export function MapAPITeamResponse(data: any): Team {
 }
 
 export function MapAPILeagueTeamResponse(data: any): Team {
+    const regularSeasonRecord = data.Record?.["Regular Season"] ?? {};
+
     return {
         abbreviation: data.Abbreviation,
         active: data.Active,
         augments: data.Augments,
+        ballpark_name: data.BallparkName,
         championships: data.Championships,
         color: data.Color,
         emoji: data.Emoji,
@@ -110,9 +123,9 @@ export function MapAPILeagueTeamResponse(data: any): Team {
         }],
         record: {
             regular_season: {
-                losses: data.Record["Regular Season"].Losses,
-                run_differential: data.Record["Regular Season"].RunDifferential,
-                wins: data.Record["Regular Season"].Wins,
+                losses: regularSeasonRecord.Losses ?? 0,
+                run_differential: regularSeasonRecord.RunDifferential ?? 0,
+                wins: regularSeasonRecord.Wins ?? 0,
             },
         },
         season_records: data.SeasonRecords,
@@ -133,7 +146,6 @@ export const PlaceholderTeam: Team = {
     location: 'Placeholder',
     modifications: [],
     motes_used: 0,
-    motto: null,
     name: 'Placeholders',
     owner_id: 'placeholder',
     players: [],

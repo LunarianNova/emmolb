@@ -27,7 +27,6 @@ async function setSubscription(request: any) {
 }
 
 async function sendPush(request: any) {
-  console.log(subscription, 'subs');
   const body = await request.json();
   const pushPayload = JSON.stringify(body);
   await webpush.sendNotification(subscription, pushPayload);

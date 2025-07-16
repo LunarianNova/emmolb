@@ -81,17 +81,49 @@ export function GameStateDisplay({
   );
     }
 
-    const pitcherThrows = cashewsPlayers?.items.find(
-      (p) => `${p.data.FirstName} ${p.data.LastName}` === pitcher.player
-    )?.data.Throws;
+    function isTeamPlayer(p: unknown): p is TeamPlayer {
+        return typeof p === 'object' && p !== null && 'first_name' in p && 'last_name' in p;
+    }
 
-    const batterHits = cashewsPlayers?.items.find(
-      (p) => `${p.data.FirstName} ${p.data.LastName}` === batter.player
-    )?.data.Bats;
+    let pitcherThrows: string | undefined;
+    let batterHits: string | undefined;
+    let onDeckHits: string | undefined;
 
-    const onDeckHits = cashewsPlayers?.items.find(
-      (p) => `${p.data.FirstName} ${p.data.LastName}` === onDeck.player
-    )?.data.Bats;
+    const normalize = (name: string) => name.trim().toLowerCase();
+
+    if (isTeamPlayer(pitcher.player) && isTeamPlayer(batter.player) && isTeamPlayer(onDeck.player)) {
+        let pitch: TeamPlayer = pitcher.player
+        let bat: TeamPlayer = batter.player
+        let deck: TeamPlayer = onDeck.player;
+        pitcherThrows = cashewsPlayers?.items.find(
+            (p) => normalize(`${p.data.FirstName} ${p.data.LastName}`) === normalize(`${pitch.first_name} ${pitch.last_name}`)
+        )?.data.Throws;
+
+        batterHits = cashewsPlayers?.items.find(
+            (p) => normalize(`${p.data.FirstName} ${p.data.LastName}`) === normalize(`${bat.first_name} ${bat.last_name}`)
+        )?.data.Bats;
+
+        onDeckHits = cashewsPlayers?.items.find(
+            (p) => normalize(`${p.data.FirstName} ${p.data.LastName}`) === normalize(`${deck.first_name} ${deck.last_name}`)
+        )?.data.Bats;
+    } else {
+        pitcherThrows = cashewsPlayers?.items.find(
+            (p) => normalize(`${p.data.FirstName} ${p.data.LastName}`) === normalize(String(pitcher.player))
+        )?.data.Throws;
+
+        batterHits = cashewsPlayers?.items.find(
+            (p) => normalize(`${p.data.FirstName} ${p.data.LastName}`) === normalize(String(batter.player))
+        )?.data.Bats;
+
+        onDeckHits = cashewsPlayers?.items.find(
+            (p) => normalize(`${p.data.FirstName} ${p.data.LastName}`) === normalize(String(onDeck.player))
+        )?.data.Bats;
+    }
+
+
+
+    console.log(onDeck.player);
+    console.log(onDeckHits);
 
 
 
@@ -152,7 +184,6 @@ export function GameStateDisplay({
         </div>
       </div>
 
-      {/* Player info */}
       <div className="text-sm space-y-4 text-left w-[100px] shrink-0 whitespace-nowrap">
         <PlayerDisplay
           label={`Pitching${(pitcherThrows && settings.gamePage?.showHandedness) ? ` (${pitcherThrows})` : ``}`}

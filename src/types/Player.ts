@@ -6,14 +6,20 @@ export type EquipmentEffect = {
     value: number;
 }
 
+export type Boon = {
+    description: string,
+    emoji: string,
+    name: string,
+}
+
 export type Equipment = {
     effects: EquipmentEffect[];
     emoji: string;
     name: string;
-    prefix: string | null;
+    prefix?: string[];
     rarity: string;
     slot?: string;
-    suffix: string | null;
+    suffix?: string[];
 }
 
 export type Player = {
@@ -24,18 +30,18 @@ export type Player = {
     dislikes: string;
     durability: number;
     equipment: {
-        accessory: Equipment | null;
-        body: Equipment | null;
-        feet: Equipment | null;
-        hands: Equipment | null;
-        head: Equipment | null;
+        accessory?: Equipment;
+        body?: Equipment;
+        feet?: Equipment;
+        hands?: Equipment;
+        head?: Equipment;
     }
     feed: any[];
     first_name: string;
-    greater_boon: string | null;
+    greater_boon?: Boon;
     home: string;
     last_name: string;
-    lesser_boon: string | null;
+    lesser_boon?: Boon;
     likes: string;
     modifications: any[];
     number: number;
@@ -56,8 +62,8 @@ function mapEffect(effect: any): EquipmentEffect {
     };
 }
 
-function mapEquipment(raw: any): Equipment | null {
-    if (!raw) return null;
+function mapEquipment(raw: any): Equipment | undefined {
+    if (!raw) return;
 
     return {
         effects: Array.isArray(raw.Effects) ? raw.Effects.map(mapEffect) : [],
@@ -68,6 +74,16 @@ function mapEquipment(raw: any): Equipment | null {
         slot: raw.Slot,
         suffix: raw.Suffix,
     };
+}
+
+function mapBoon(raw: any): Boon | undefined {
+    if (!raw) return;
+
+    return {
+        description: raw.Description,
+        emoji: raw.Emoji,
+        name: raw.Name,
+    }
 }
 
 export function MapAPIPlayerResponse(data: any): Player {
@@ -87,10 +103,10 @@ export function MapAPIPlayerResponse(data: any): Player {
         },
         feed: data.Feed,
         first_name: data.FirstName,
-        greater_boon: data.GreaterBoon,
+        greater_boon: mapBoon(data.GreaterBoon),
         home: data.Home,
         last_name: data.LastName,
-        lesser_boon: data.LesserBoon,
+        lesser_boon: mapBoon(data.LesserBoon),
         likes: data.Likes,
         modifications: data.Modifications,
         number: data.Number,

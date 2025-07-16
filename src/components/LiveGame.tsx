@@ -72,7 +72,7 @@ export default function LiveGame({ awayTeamArg, homeTeamArg, initialDataArg, gam
     const repeatedAfterCountRef = useRef(0);
     const lastAfterRef = useRef<string | null>(null);
     const pollingRef = useRef<NodeJS.Timeout | null>(null);
-    const [selectedPlayer, setSelectedPlayer] = useState<string | null>(null);
+    const [selectedPlayer, setSelectedPlayer] = useState<string | undefined>();
     const [playerType, setPlayerType] = useState<'pitching' | 'batting' | null>(null);
     const [showStats, setShowStats] = useState(false);
     const [followLive, setFollowLive] = useState(false);
@@ -162,7 +162,7 @@ export default function LiveGame({ awayTeamArg, homeTeamArg, initialDataArg, gam
                 emoji = awayPlayers.includes(player) ? data.away_team_emoji : data.home_team_emoji;
                 emoji = (data.away_team_emoji === data.home_team_emoji) ? awayPlayers.includes(player) ? emoji + "✈️" : emoji + "🏠" : emoji;
             }
-            return player && emoji ? { emoji: emoji, titleColor: settings.useTeamColoredHeaders ? awayPlayers.includes(player) ? data.away_team_color : data.home_team_color : undefined, title: player, onClick: () => {setSelectedPlayer(player); setShowStats(true);} } : null;
+            return player && emoji ? { emoji: emoji, titleColor: settings.gamePage?.useTeamColoredHeaders ? awayPlayers.includes(player) ? data.away_team_color : data.home_team_color : undefined, title: player, onClick: () => {setSelectedPlayer(player); setShowStats(true);} } : null;
         }
 
         if (message.includes('"')) return { emoji: '🤖', title: 'ROBO-UMP' };
@@ -282,8 +282,8 @@ export default function LiveGame({ awayTeamArg, homeTeamArg, initialDataArg, gam
             </div>
 
             {(showStats && followLive && showDetailedStats) ? (<div className='grid grid-cols-2 gap-2 items-stretch h-full'>
-                <CashewsPlayerStats player={(selectedPlayer && cashewsPlayers.items.find((p) => `${p.data.FirstName} ${p.data.LastName}` === selectedPlayer)) ? {...players[selectedPlayer], ...cashewsPlayers.items.find((p) => `${p.data.FirstName} ${p.data.LastName}` === selectedPlayer)} : null} category='pitching' />
-                <CashewsPlayerStats player={(selectedPlayer && cashewsPlayers.items.find((p) => `${p.data.FirstName} ${p.data.LastName}` === selectedPlayer)) ? {...players[selectedPlayer], ...cashewsPlayers.items.find((p) => `${p.data.FirstName} ${p.data.LastName}` === selectedPlayer)} : null} category='batting' />
+                <CashewsPlayerStats player={(lastEvent.pitcher && cashewsPlayers.items.find((p) => `${p.data.FirstName} ${p.data.LastName}` === lastEvent.pitcher)) ? {...players[lastEvent.pitcher], ...cashewsPlayers.items.find((p) => `${p.data.FirstName} ${p.data.LastName}` === lastEvent.pitcher)} : null} category='pitching' />
+                <CashewsPlayerStats player={(lastEvent.batter && cashewsPlayers.items.find((p) => `${p.data.FirstName} ${p.data.LastName}` === lastEvent.batter)) ? {...players[lastEvent.batter], ...cashewsPlayers.items.find((p) => `${p.data.FirstName} ${p.data.LastName}` === lastEvent.batter)} : null} category='batting' />
                 </div>) : ''}
             {(showStats && followLive && !showDetailedStats) ? (<div className='grid grid-cols-2 gap-2 items-stretch h-full'>
                 <PlayerStats player={lastEvent.pitcher ? players[lastEvent.pitcher] : null} category='pitching' />

@@ -58,7 +58,7 @@ export default function HomePage() {
             }
 
             try {
-                const res = await fetch('https://lunanova.space/nextapi/gameheaders', {
+                const res = await fetch('/nextapi/gameheaders', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ teamIds: favoriteTeamIDs }),
@@ -100,7 +100,7 @@ export default function HomePage() {
 
     return (<>
         <main className="mt-16">
-            {settings.useBlasesloaded ? gameHeaders.map(({ teamId, gameHeader }) => (
+            {settings.homePage?.useBlasesloaded ? gameHeaders.map(({ teamId, gameHeader }) => (
                 <Link key={teamId + "link"} href={"/game/" + gameHeader.gameId}>
                     <FullBlobileDisplay key={teamId} gameId={gameHeader.gameId} homeTeam={gameHeader.homeTeam} awayTeam={gameHeader.awayTeam} game={gameHeader.game} />
                 </Link>
@@ -111,10 +111,10 @@ export default function HomePage() {
                             <LiveGameCompact key={teamId} gameId={gameHeader.gameId} homeTeam={MapAPITeamResponse(gameHeader.homeTeam)} awayTeam={MapAPITeamResponse(gameHeader.awayTeam)} game={MapAPIGameResponse(gameHeader.game)} killLinks={true} />
                         </Link>
                     ))}
-                    {settings.showChangelog && (<Changelog />)}
+                    {settings.homePage?.showChangelog && (<Changelog />)}
                 </div>
             )}  
-            {settings.useBlasesloaded && settings.showChangelog && (
+            {settings.homePage?.useBlasesloaded && settings.homePage?.showChangelog && (
                 <div className='max-w-3xl my-4 mx-auto'>
                     <Changelog />
                 </div>

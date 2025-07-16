@@ -1,9 +1,11 @@
+// /components/BaseParser.tsx
+// Authors: Navy, Luna
 'use client'
 
 import { Bases } from "@/types/Bases";
-import { useState } from "react";
+import { Event } from "@/types/Event";
 
-function extractPlayers(message: string, playerList: string[], check: string): string[] {
+function extractPlayers(message: string, playerList: Set<string>, check: string): string[] {
     const checkedSegments = message.split(/\. /).filter(s => (s.includes(check)));
     const checkedPlayers: string[] = [];
 
@@ -13,7 +15,7 @@ function extractPlayers(message: string, playerList: string[], check: string): s
 
         for (let i = 0; i < words.length; i++) {
             const candidate = words.slice(i).join(' ');
-            if (playerList.includes(candidate)) {
+            if (playerList.has(candidate)) {
                 checkedPlayers.push(candidate);
                 break;
             }
@@ -23,120 +25,58 @@ function extractPlayers(message: string, playerList: string[], check: string): s
     return checkedPlayers;
 }
 
+function assignBases(event: Event, queue: string[]): Bases {
+    const { on_1b, on_2b, on_3b } = event;
 
+    let first = null, second = null, third = null;
 
-export function ProcessMessage(event: any, players: string[], queue: string[]): {bases: Bases, baseQueue: string[]} {
+    if (on_3b) third = queue[0] ?? 'Unknown';
+    if (on_2b) second = on_3b ? queue[1] ?? 'Unknown' : queue[0] ?? 'Unknown';
+    if (on_1b) first = on_2b ? (on_3b ? queue[2] ?? 'Unknown' : queue[1] ?? 'Unknown') : (queue[0] ?? 'Unknown');
+
+    if (!on_1b) first = null;
+    if (!on_2b) second = null;
+    if (!on_3b) third = null;
+
+    return { first, second, third };
+}
+
+export function ProcessMessage(event: Event, players: string[], queue: string[]): {bases: Bases, baseQueue: string[]} {
     const message = event.message;
+    const playerSet = new Set(players);
     const newQueue = [...queue];
 
-    const scoreMatch = message.match(/scores!/g);
-    for (let i = 0; i < (scoreMatch ? scoreMatch?.length : 0); i++)
-        newQueue.shift();
+    const scoreCount = (message.match(/scores!/g) ?? []).length;
+    for (let i = 0; i < scoreCount; i++) newQueue.shift();
 
-    if (message.match(/starts the inning on/i))
-        for (const player of extractPlayers(message, players, 'starts the inning on'))
-            newQueue.push(player);
+    const startsInning = /starts the inning on/i.test(message);
+    const hitsOrWalks = /(singles|doubles|triples|walks|reaches on a fielding error|was hit by the pitch|into a forced out|reaches on a throwing error|reaches on)/i.test(message);
+    const homer = /(homers|grand slam)/i.test(message);
+    const inningEnd = event.outs === null || event.outs === undefined;
 
-    if (message.match(/(singles|doubles|triples|walks|reaches on a fielding error|was hit by the pitch|into a forced out|reaches on a throwing error|reaches on)/i))
-        newQueue.push(event.batter);
+    if (startsInning) {
+        const starters = extractPlayers(message, playerSet, 'starts the inning on');
+        newQueue.push(...starters);
+    }
 
-    if (message.match(/(homers|grand slam)/i))
+    if (hitsOrWalks)
+        newQueue.push(event.batter ? event.batter : 'Unknown');
+
+    if (homer || inningEnd)
         newQueue.length = 0;
 
-    if (event.outs === null || event.outs === undefined)
-        newQueue.length = 0;
-
-    let outs = extractPlayers(message, players, 'out at');
-    outs = [...outs, ...extractPlayers(message, players, 'is caught stealing')];
-    outs = [...outs, ...extractPlayers(message, players, 'steals home')];
+    let outs = extractPlayers(message, playerSet, 'out at');
+    outs = outs.concat(extractPlayers(message, playerSet, 'is caught stealing'));
+    outs = outs.concat(extractPlayers(message, playerSet, 'steals home'));
     for (const player of outs) {
         const index = newQueue.indexOf(player);
         if (index !== -1) newQueue.splice(index, 1);
     }
 
-    let bases: Bases = {
-        first: event.on_1b ? 
-                event.on_2b ? 
-                    event.on_3b ? 
-                        newQueue[2] : 
-                        newQueue[1] :
-                        event.on_3b ?
-                    newQueue[1] : 
-                newQueue[0] : 
-            null,
-        second: event.on_2b ? event.on_3b ? newQueue[1] : newQueue[0] : null,
-        third: event.on_3b ? newQueue[0] : null,
-    };
-    if ((!bases.first && event.on_1b) || (!bases.second && event.on_2b) || (!bases.third && event.on_3b)){
-        bases = {
-            first: event.on_1b ? 'Unknown' : null,
-            second: event.on_2b ? 'Unknown' : null,
-            third: event.on_3b ? 'Unknown' : null, 
-        }
-    }
+    const bases = assignBases(event, newQueue);
 
     return {
-        bases, baseQueue: newQueue
+        bases,
+        baseQueue: newQueue
     };
-}
-
-export default function TestBasesPage() {
-  const [results, setResults] = useState<any[]>([]);
-
-  function handleFileUpload(event: React.ChangeEvent<HTMLInputElement>) {
-    const file = event.target.files?.[0];
-    if (!file) return
-
-    const reader = new FileReader();
-    reader.onload = e => {
-      try {
-        const data = JSON.parse(e.target?.result as string);
-
-        const playerNames: string[] = Array.from(new Set(data.map((entry: any) => entry.batter)));
-        let currentQueue: string[] = [];
-
-        const processed = data.map((entry: any) => {
-          const result = ProcessMessage(entry, playerNames, currentQueue);
-          currentQueue = result.baseQueue;
-          return {
-            message: entry.message,
-            batter: entry.batter,
-            baseQueue: [...result.baseQueue],
-            bases: result.bases
-          }
-        });
-
-        setResults(processed);
-      } catch (err) {
-        alert('Invalid JSON' + err);
-      }
-    }
-
-    reader.readAsText(file);
-  }
-
-  return (
-    <div className="p-6 max-w-4xl mx-auto">
-      <h1 className="text-2xl font-bold mb-4">Base State Tester</h1>
-      <input type="file" accept=".json" onChange={handleFileUpload} className="mb-4" />
-
-      {results.length > 0 && (
-        <div className="space-y-4">
-          {results.map((result, i) => (
-            <div key={i} className="p-4 bg-theme-secondary border rounded">
-              <p><strong>Message:</strong> {result.message}</p>
-              <p><strong>Batter:</strong> {result.batter}</p>
-              <p><strong>Queue:</strong> {JSON.stringify(result.baseQueue)}</p>
-              <p><strong>Bases:</strong></p>
-              <ul className="pl-4">
-                <li>1B: {result.bases.first ?? '—'}</li>
-                <li>2B: {result.bases.second ?? '—'}</li>
-                <li>3B: {result.bases.third ?? '—'}</li>
-              </ul>
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
-  )
 }

@@ -1,5 +1,6 @@
 'use client'
 import type { Metadata } from "next";
+import { GeistMono } from 'geist/font/mono';
 import { GeistSans } from 'geist/font/sans';
 import "./globals.css";
 import { Analytics } from "@vercel/analytics/next"
@@ -12,7 +13,7 @@ import { Navbar } from "@/components/Navbar";
 export default function RootLayout({ children, }: Readonly<{children: React.ReactNode;}>) {
   return (
         <html lang="en">
-            <body className={`${GeistSans.className} min-h-screen`}>
+            <body className={`${GeistSans.className} ${GeistMono.variable} min-h-screen`}>
                 <Navbar />
                 <SettingsProvider>
                     <ThemeUpdater />
