@@ -30,6 +30,9 @@ function isGameOver(event_log: Event[], game: Game) {
 }
 
 function parseEvent(event: Event, players: string[], queue: string[]) {
+    // Likely need to rewrite a base parser, but we'll stick with this one for now. We can always just lookahead one with this queue
+    // Actually yeah, have it process the message after as well so we can see how players will be moving in between. Then we can just lerp them to the next location
+    // Then we can do our own processing here to find out why they got out (forced out, caught stealing, etc) And we can change the animation based on that
     const { bases, baseQueue } = ProcessMessage(event, players, queue);
 }
 
