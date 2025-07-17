@@ -28,15 +28,12 @@ function extractPlayers(message: string, playerList: Set<string>, check: string)
 function assignBases(event: Event, queue: string[]): Bases {
     const { on_1b, on_2b, on_3b } = event;
 
-    let first = null, second = null, third = null;
+    let third = null, second = null, first = null;
+    let qIndex = 0;
 
-    if (on_3b) third = queue[0] ?? 'Unknown';
-    if (on_2b) second = on_3b ? queue[1] ?? 'Unknown' : queue[0] ?? 'Unknown';
-    if (on_1b) first = on_2b ? (on_3b ? queue[2] ?? 'Unknown' : queue[1] ?? 'Unknown') : (queue[0] ?? 'Unknown');
-
-    if (!on_1b) first = null;
-    if (!on_2b) second = null;
-    if (!on_3b) third = null;
+    if (on_3b) third = queue[qIndex++] ?? 'Unknown';
+    if (on_2b) second = queue[qIndex++] ?? 'Unknown';
+    if (on_1b) first = queue[qIndex++] ?? 'Unknown';
 
     return { first, second, third };
 }
