@@ -36,6 +36,9 @@ export async function POST(req: NextRequest) {
         const teamRes = await fetch(`https://mmolb.com/api/team/${teamId}`);
         if (!teamRes.ok) return null;
         const teamData = await teamRes.json();
+        if (!Array.isArray(teamData.Feed) || teamData.Feed.length === 0) {
+          return null;
+        }
         gameId = teamData.Feed[teamData.Feed.length - 1].links[2].id;
       } else {
         const gameData = await gameRes.json();
