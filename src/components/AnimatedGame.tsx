@@ -68,7 +68,6 @@ export default function LivePage({ awayTeam, homeTeam, game, id }: {awayTeam: Te
     const [maxEventIndex, setMaxEventIndex] = useState<number>(0);
     const [liveMode, setLiveMode] = useState<boolean>(true);
     const lastAdvanceTime = useRef(performance.now());
-    const [renderTick, setRenderTick] = useState(0);
 
     // Pulls data from args which are hopefully fetched from /nextapi/gameheader
     // Easier to fetch server side and pull to client component than to fetch on client component
@@ -76,18 +75,15 @@ export default function LivePage({ awayTeam, homeTeam, game, id }: {awayTeam: Te
     const players: string[] = [...Object.values(awayTeam.players), ...Object.values(homeTeam.players)].map(p => `${p.first_name} ${p.last_name}`);
     const initialGameState: GameState = {};
 
-    // Animation helper
-    useEffect(() => {
-        let animationFrame: number;
+    const statesRef = useRef(gameStates);
+    const playersRef = useRef(players);
+    const isPlayingRef = useRef(isPlaying);
+    const liveModeRef = useRef(liveMode);
 
-        const tick = () => {
-            setRenderTick(t => t + 1);
-            animationFrame = requestAnimationFrame(tick);
-        }
-
-        animationFrame = requestAnimationFrame(tick);
-        return () => cancelAnimationFrame(animationFrame);
-    }, []);
+    useEffect(() => { statesRef.current = gameStates; }, [gameStates]);
+    useEffect(() => { playersRef.current = players; }, [players]);
+    useEffect(() => { isPlayingRef.current = isPlaying; }, [isPlaying]);
+    useEffect(() => { liveModeRef.current = liveMode; }, [liveMode]);
 
     // Build all game states on page open (laggy probably)
     useEffect(() => {
@@ -108,72 +104,84 @@ export default function LivePage({ awayTeam, homeTeam, game, id }: {awayTeam: Te
         setGameStates(states);
     }, [events]);
 
-    // 6 second loop that advances event by one and polls (if necessary)
-useEffect(() => {
-    let isMounted = true;
+    // Animation helper
+    useEffect(() => {
+        let isMounted = true;
+        let animationFrame: number;
+        let lastAdvance = performance.now();
 
-    const poll = async () => {
-        if (!isMounted || !gameStates.length) return;
+        async function poll() {
+            if (!isMounted) return;
 
-        const lastState = gameStates[gameStates.length - 1];
-        if (!lastState || lastState.isGameOver) return;
+            const states = statesRef.current;
+            if (!states.length) return;
 
-        const after = (lastState.index ?? 0) + 1;
-        try {
-            const res = await fetch(`/nextapi/game/${id}/live?after=${after}`);
-            if (!res.ok) throw new Error("Failed to fetch live events");
+            const lastState = states[states.length - 1];
+            if (!lastState || lastState.isGameOver) return;
 
-            const newData = await res.json();
-            const newEvents: Event[] = newData.entries;
+            const after = (lastState.index ?? 0) + 1;
+            try {
+                const res = await fetch(`/nextapi/game/${id}/live?after=${after}`);
+                if (!res.ok) throw new Error("Failed to fetch live events");
 
-            if (newEvents && newEvents.length > 0) {
-                setGameStates(prevStates => {
-                    let currentState = { ...prevStates[prevStates.length - 1] };
-                    const newStates: GameState[] = [];
+                const newData = await res.json();
+                const newEvents: Event[] = newData.entries;
 
-                    for (const event of newEvents) {
-                        currentState = parseEvent(currentState, event, players);
-                        newStates.push({ ...currentState });
-                    }
+                if (newEvents && newEvents.length > 0) {
+                    setGameStates(prevStates => {
+                        let currentState = { ...prevStates[prevStates.length - 1] };
+                        const newStates: GameState[] = [];
 
-                    const lastNewState = newStates[newStates.length - 1];
-                    const newIndex = lastNewState?.index ?? prevStates.length;
-                    const newMaxIndex = lastNewState?.isGameOver ? newIndex : Math.max(0, newIndex - 3);
+                        for (const event of newEvents) {
+                            currentState = parseEvent(currentState, event, playersRef.current);
+                            newStates.push({ ...currentState });
+                        }
 
-                    if (newMaxIndex > maxEventIndex)
-                        setMaxEventIndex(newMaxIndex);
-                    if (liveMode)
-                        setEventIndex(newMaxIndex);
+                        const lastNewState = newStates[newStates.length - 1];
+                        const newIndex = lastNewState?.index ?? maxEventIndex;
+                        const newMaxIndex = lastNewState?.isGameOver
+                            ? newIndex
+                            : Math.max(0, newIndex - 3);
 
-                    return [...prevStates, ...newStates];
-                });
+                        if (newMaxIndex > maxEventIndex)
+                            setMaxEventIndex(newMaxIndex);
+                        if (liveModeRef.current)
+                            setEventIndex(newMaxIndex);
+
+                        return [...prevStates, ...newStates];
+                    });
+                }
+            } catch (error) {
+                console.error("Polling error:", error);
             }
-        } catch (error) {
-            console.error("Polling error:", error);
         }
-    };
 
-    const pollInterval = setInterval(poll, 6000);
-    const advanceInterval = setInterval(() => {
-        if (!isPlaying || !gameStates.length) return;
-        lastAdvanceTime.current = performance.now();
+        function advance() {
+            if (!isPlayingRef.current || !statesRef.current.length) return;
 
-        setEventIndex(prevIndex =>
-            prevIndex < maxEventIndex ? prevIndex + 1 : prevIndex
-        );
-    }, 6000);
+            lastAdvanceTime.current = performance.now();
+            setEventIndex(prev => (prev < maxEventIndex ? prev + 1 : prev));
+        }
 
-    return () => {
-        isMounted = false;
-        clearInterval(pollInterval);
-        clearInterval(advanceInterval);
-    };
-    // ✅ Only depend on `id`, `isPlaying`, and `players`
-    // Avoid depending on `gameStates` or `maxEventIndex` or `liveMode`
-}, [id, isPlaying, players]);
+        const tick = () => {
+            const now = performance.now();
+            const delta = now - lastAdvance;
 
+            if (delta >= 5800) {
+                poll();
+                advance();
+                lastAdvance = now;
+            }
 
+            animationFrame = requestAnimationFrame(tick);
+        };
 
+        animationFrame = requestAnimationFrame(tick);
+        return () => {
+            isMounted = false;
+            cancelAnimationFrame(animationFrame);
+        };
+    }, [id, maxEventIndex]);
 
     const currentState = gameStates[eventIndex];
 
@@ -200,7 +208,7 @@ useEffect(() => {
                 <pre>{JSON.stringify(currentState, null, 2)}</pre>
             </div>
             <div className="w-full max-w-[min(100vw,1250px)] aspect-square mx-auto">
-                <FieldBackground gameState={gameStates[eventIndex]} deltaTime={performance.now()-lastAdvanceTime.current}/>
+                <FieldBackground gameState={gameStates[eventIndex]} deltaTime={performance.now() - lastAdvanceTime.current}/>
             </div>
         </div>
     );
@@ -327,7 +335,7 @@ function FieldBackground({ gameState, deltaTime }: {gameState: GameState, deltaT
                         <text x={positions["Batter"][0]} y={positions["Batter"][1] - 10} fontSize={10} textAnchor="middle" fill="black">{gameState.batting}</text>
                     </>)}
                 
-                {(gameState.batting) && (<rect style={{opacity: 1, fill: "red", fillOpacity: 1, stroke: "none", strokeWidth: 3, strokeLinecap: "butt", strokeLinejoin: "miter", strokeMiterlimit: 4, strokeDasharray: "none", strokeOpacity: 1,}} width={3} height={Math.max(100*((deltaTime-4000)/6000), 100)} x={327} y={320} />)}
+                <rect style={{opacity: 1, fill: "red", fillOpacity: 1, stroke: "none", strokeWidth: 3, strokeLinecap: "butt", strokeLinejoin: "miter", strokeMiterlimit: 4, strokeDasharray: "none", strokeOpacity: 1,}} width={3} height={100*(deltaTime/6000)} x={327} y={320} />
                 <circle cx={0} cy={0} r={3} fill="red" stroke="black" /> {/* The B A L E? THE BALE? */}
             </g>
         </svg>
