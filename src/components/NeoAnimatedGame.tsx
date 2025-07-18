@@ -69,6 +69,43 @@ An object that holds all animations that need to play. Then I can just check if 
 * Speed modifiers for rewatching??
 */
 
+type Coords = {
+    x: number;
+    y: number;
+    rotation?: number;
+    scale?: number;
+    opacity?: number;
+};
+
+type AnimationKeyFrameBase = {
+    id: string;
+    startTime: number;
+    endTime: number;
+    from: Partial<Coords>;
+    to: Partial<Coords>;
+    easing?: (t: number) => number;
+};
+
+type MoveKeyFrame = AnimationKeyFrameBase & {
+    type: "Move";
+};
+
+type HoldKeyFrame = AnimationKeyFrameBase & {
+    type: "Hold";
+};
+
+type TextKeyFrame = AnimationKeyFrameBase & {
+    type: "Text";
+    text: string;
+};
+
+type HoldTextKeyFrame = AnimationKeyFrameBase & {
+    type: "HoldText";
+    text: string;
+};
+
+type AnimationKeyFrame = | MoveKeyFrame | HoldKeyFrame | TextKeyFrame | HoldTextKeyFrame;
+
 type AnimatedPlayer = {
     name: string;
     position: string;
@@ -76,23 +113,6 @@ type AnimatedPlayer = {
     fill: string;
     coordinates?: [number, number];
 };
-
-type AllPlayers = {
-    LeftFielder: AnimatedPlayer;
-    CenterFielder: AnimatedPlayer;
-    RightFielder: AnimatedPlayer;
-    FirstBase: AnimatedPlayer;
-    SecondBase: AnimatedPlayer;
-    Shortstop: AnimatedPlayer;
-    ThirdBase: AnimatedPlayer;
-    Pitcher: AnimatedPlayer;
-    Catcher: AnimatedPlayer;
-    Batter: AnimatedPlayer;
-    FirstRunner: AnimatedPlayer;
-    SecondRunner: AnimatedPlayer;
-    ThirdRunner: AnimatedPlayer;
-    OldBatter: AnimatedPlayer;
-}
 
 type GameState = {
     index: number;
@@ -110,15 +130,6 @@ type GameState = {
     baseQueue: string[];
     phase: Phase;
 };
-
-type Animation = {
-    subject: string; // "ball" or {player} or "bat" (maybe more later)
-    start: number; // The deltaTime (0-6000) to start the animation
-    end: number; // ^ Above but end
-    from: [number, number];
-    to: [number, number];
-    done: boolean; // This will speed up checks slightly
-}
 
 const Phases = {
     Pitch: "Pitch",
@@ -150,7 +161,7 @@ const positions: Record<string, [number, number]> = {
     "ThirdRunner": [212, 315],
     "HomeDugout": [475, 400],
     "AwayDugout": [175, 400],
-}
+};
 
 const fielderLabels: Record<string, string> = {
     "CenterFielder": "CF",
@@ -182,10 +193,112 @@ function getPhase(event: Event): Phase {
         case "InningStart": return "InningStart";
         default: return "Other";
     }
-}
+};
 
 function interpolate(a: number, b: number, t: number): number {
     return a + (b - a) * t;
+};
+
+function createMoveKeyFrame(id: string, from: Coords, to: Coords, startTime: number, duration: number, ): MoveKeyFrame {
+    return {
+        id,
+        type: "Move",
+        startTime,
+        endTime: startTime + duration,
+        from,
+        to,
+    }
+}
+
+function createHoldKeyFrame(id: string, coords: Coords, startTime: number, duration: number, ): HoldKeyFrame {
+    return {
+        id,
+        type: "Hold",
+        startTime,
+        endTime: startTime + duration,
+        from: coords,
+        to: coords,
+    }
+}
+
+function createTextKeyFrame(id: string, from: Coords, to: Coords, startTime: number, duration: number, text: string, ): TextKeyFrame {
+    return {
+        id,
+        type: "Text",
+        startTime,
+        endTime: startTime + duration,
+        from,
+        to,
+        text,
+    }
+}
+
+function createHoldTextKeyFrame(id: string, coords: Coords, startTime: number, duration: number, text: string, ): HoldTextKeyFrame {
+    return {
+        id,
+        type: "HoldText",
+        startTime,
+        endTime: startTime + duration,
+        from: coords,
+        to: coords,
+        text,
+    }
+} 
+
+function applyAnimations(frames: AnimationKeyFrame[], time: number) {
+    for (const frame of frames) {
+        if (time < frame.startTime || time > frame.endTime) continue;
+
+        switch (frame.type) {
+            case "Move":
+                applyMove(frame, time);
+                break;
+            case "Hold":
+                applyMove(frame, time);
+                break;
+            case "Text":
+                applyText(frame, time);
+                break;
+            case "HoldText":
+                applyText(frame, time);
+                break;
+        }
+    }
+}
+
+function applyMove(frame: AnimationKeyFrame, time: number) {
+    const t = (time - frame.startTime) / (frame.endTime - frame.startTime);
+    const progress = frame.easing ? frame.easing(t) : t;
+
+    const x = lerp(frame.from.x ?? 0, frame.to.x ?? 0, progress);
+    const y = lerp(frame.from.x ?? 0, frame.to.x ?? 0, progress);
+    const r = lerp(frame.from.rotation ?? 0, frame.to.rotation ?? 0, progress);
+    const s = lerp(frame.from.scale ?? 1, frame.to.scale ?? 1, progress);
+    const o = lerp(frame.from.opacity ?? 1, frame.to.opacity ?? 1, progress);
+
+    const el = document.getElementById(frame.id);
+    if (!el) return;
+
+    el.setAttribute("transform", `translate(${x}, ${y}) rotate(${r}) scale(${s})`);
+    el.setAttribute("opacity", o.toString())
+}
+
+function applyText(frame: TextKeyFrame | HoldTextKeyFrame, time: number) {
+    const t = (time - frame.startTime) / (frame.endTime - frame.startTime);
+    const progress = frame.easing ? frame.easing(t) : t;
+
+    const x = lerp(frame.from.x ?? 0, frame.to.x ?? 0, progress);
+    const y = lerp(frame.from.x ?? 0, frame.to.x ?? 0, progress);
+    const r = lerp(frame.from.rotation ?? 0, frame.to.rotation ?? 0, progress);
+    const s = lerp(frame.from.scale ?? 1, frame.to.scale ?? 1, progress);
+    const o = lerp(frame.from.opacity ?? 1, frame.to.opacity ?? 1, progress);
+
+    const el = document.getElementById(frame.id);
+    if (!el) return;
+
+    el.textContent = frame.text;
+    el.setAttribute("transform", `translate(${x}, ${y}) rotate(${r}) scale(${s})`);
+    el.setAttribute("opacity", o.toString())
 }
 
 function getTeamInitials(team: Team) {
@@ -219,6 +332,10 @@ function getGameState(gameState: GameState, event: Event, players: string[],): G
         outsIncreased: ((gameState.event.outs ?? 0) < (event.outs ?? 0) || (gameState.event.outs === 2 && !event.outs)),
         phase: getPhase(event),
     }
+}
+
+function lerp(a: number, b: number, t: number) {
+    return a + (b-a) * t;
 }
 
 // Well. Let's get to work?
@@ -389,69 +506,9 @@ export default function AnimatedGame({ homeTeam, awayTeam, game, id, }: { homeTe
     </main>);
 }
 
-function DrawPlayer({ player, }: { player: AnimatedPlayer, }) {
-    if (!player.coordinates) return;
-    return (<>
-        <circle cx={player.coordinates[0]} cy={player.coordinates[1]} r={6} fill={player.fill} stroke={player.stroke}/>
-        <text x={player.coordinates[0]} y={player.coordinates[1] - 10} fontSize={10} textAnchor="middle" fill="black">
-            {player.name}
-        </text>
-    </>);
-}
-
-function DrawPlayers({ players, }: { players: AllPlayers, }) {
-    return (<>
-        {Object.values(players).map((p, i) => (
-            <DrawPlayer key={i} player={p} />
-        ))}
-    </>);
-}
-
 // This is the real real hard part...
 function AnimationComponents({ prevGameState, gameState, nextGameState, deltaTime, animationsRef, }: { prevGameState: GameState, gameState: GameState, nextGameState: GameState, deltaTime: number, animationsRef: RefObject<Animation[]>, }) {
-    const homeTeamFielding = gameState.event.inning_side === 0;
-    const fieldingPositions = ["LeftFielder", "CenterFielder", "RightFielder", "FirstBase", "SecondBase", "Shortstop", "ThirdBase", "Catcher", "Pitcher"];
-    const runningPositions = ["BatterLeft", "BatterRight", "FirstRunner", "SecondRunner", "ThirdRunner"]
-    const namedPositions: Record<string, string> = {
-        "BatterLeft": '',
-        "BatterRight": gameState.event.batter ?? '',
-        "FirstRunner": gameState.bases.first ?? '',
-        "SecondRunner": gameState.bases.second ?? '',
-        "ThirdRunner": gameState.bases.third ?? '',
-        "Pitcher": gameState.event.pitcher ?? '',
-    }
-
-    const players: AllPlayers = {...Object.fromEntries(
-        fieldingPositions.map(pos => [
-            pos,
-            {
-                name: namedPositions[pos] ?? fielderLabels[pos],
-                position: pos,
-                fill: homeTeamFielding ? `#${gameState.homeColor}` : `#${gameState.awayColor}`,
-                stroke: homeTeamFielding ? getContrastTextColor(gameState.homeColor) : getContrastTextColor(gameState.awayColor),
-                coordinates: pos != "Pitcher" ? positions[pos] : namedPositions["Pitcher"] ? positions["Pitcher"] : undefined,
-            }
-        ])
-    ), ...Object.fromEntries(
-        runningPositions.map(pos => [
-            pos,
-            {
-                name: namedPositions[pos] ?? '',
-                position: pos,
-                fill: homeTeamFielding ? `#${gameState.awayColor}` : `#${gameState.homeColor}`,
-                stroke: homeTeamFielding ? getContrastTextColor(gameState.awayColor) : getContrastTextColor(gameState.homeColor),
-                coordinates: namedPositions[pos] ? positions[pos] : undefined,
-            }
-        ])
-    )} as AllPlayers;
-
-    if (gameState.phase == Phases.InningStart){
-
-    }
-
-    return (<>
-        <DrawPlayers players={players} />
-    </>);
+    return (<></>)
 }
 
 function MessageBox({ message }: { message: string }) {
