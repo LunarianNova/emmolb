@@ -1,4 +1,4 @@
-import LivePage from '@/components/AnimatedGame';
+import AnimatedGame from '@/components/NeoAnimatedGame';
 import { MapAPIGameResponse } from '@/types/Game';
 import { MapAPITeamResponse } from '@/types/Team';
 
@@ -11,5 +11,5 @@ export default async function LiveGamePage({ params }: { params: { id: string } 
 
     if (!res.ok) throw new Error('Failed to load game + team data');
     const { game, gameId, awayTeam, homeTeam } = await res.json();
-    return <LivePage homeTeam={MapAPITeamResponse(homeTeam)} awayTeam={MapAPITeamResponse(awayTeam)} game={MapAPIGameResponse(game)} id={id} />;
+    return <AnimatedGame homeTeam={MapAPITeamResponse(homeTeam)} awayTeam={MapAPITeamResponse(awayTeam)} game={MapAPIGameResponse(game)} id={id} />;
 }

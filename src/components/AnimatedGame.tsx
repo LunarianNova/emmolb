@@ -163,7 +163,7 @@ export default function LivePage({ awayTeam, homeTeam, game, id }: {awayTeam: Te
         let isMounted = true;
         let animationFrame: number;
         let lastAdvance = performance.now();
-
+        
         async function poll() {
             if (!isMounted) return;
 
