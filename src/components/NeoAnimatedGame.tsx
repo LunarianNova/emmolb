@@ -83,6 +83,8 @@ type AnimationKeyFrameBase = {
     endTime: number;
     from: Partial<Coords>;
     to: Partial<Coords>;
+    fill: string;
+    stroke: string;
     easing?: (t: number) => number;
 };
 
@@ -97,22 +99,16 @@ type HoldKeyFrame = AnimationKeyFrameBase & {
 type TextKeyFrame = AnimationKeyFrameBase & {
     type: "Text";
     text: string;
+    fontSize: number;
 };
 
 type HoldTextKeyFrame = AnimationKeyFrameBase & {
     type: "HoldText";
     text: string;
+    fontSize: number;
 };
 
 type AnimationKeyFrame = | MoveKeyFrame | HoldKeyFrame | TextKeyFrame | HoldTextKeyFrame;
-
-type AnimatedPlayer = {
-    name: string;
-    position: string;
-    stroke: string;
-    fill: string;
-    coordinates?: [number, number];
-};
 
 type GameState = {
     index: number;
@@ -199,7 +195,7 @@ function interpolate(a: number, b: number, t: number): number {
     return a + (b - a) * t;
 };
 
-function createMoveKeyFrame(id: string, from: Coords, to: Coords, startTime: number, duration: number, ): MoveKeyFrame {
+function createMoveKeyFrame(id: string, from: Coords, to: Coords, startTime: number, duration: number, fill: string = "white", stroke: string="black" ): MoveKeyFrame {
     return {
         id,
         type: "Move",
@@ -207,10 +203,12 @@ function createMoveKeyFrame(id: string, from: Coords, to: Coords, startTime: num
         endTime: startTime + duration,
         from,
         to,
+        stroke,
+        fill,
     }
 }
 
-function createHoldKeyFrame(id: string, coords: Coords, startTime: number, duration: number, ): HoldKeyFrame {
+function createHoldKeyFrame(id: string, coords: Coords, startTime: number, duration: number, fill: string = "white", stroke: string="black"): HoldKeyFrame {
     return {
         id,
         type: "Hold",
@@ -218,10 +216,12 @@ function createHoldKeyFrame(id: string, coords: Coords, startTime: number, durat
         endTime: startTime + duration,
         from: coords,
         to: coords,
+        stroke,
+        fill,
     }
 }
 
-function createTextKeyFrame(id: string, from: Coords, to: Coords, startTime: number, duration: number, text: string, ): TextKeyFrame {
+function createTextKeyFrame(id: string, from: Coords, to: Coords, startTime: number, duration: number, text: string, fill: string = "white", stroke: string="black", fontSize: number=12): TextKeyFrame {
     return {
         id,
         type: "Text",
@@ -230,10 +230,13 @@ function createTextKeyFrame(id: string, from: Coords, to: Coords, startTime: num
         from,
         to,
         text,
+        stroke,
+        fill,
+        fontSize
     }
 }
 
-function createHoldTextKeyFrame(id: string, coords: Coords, startTime: number, duration: number, text: string, ): HoldTextKeyFrame {
+function createHoldTextKeyFrame(id: string, coords: Coords, startTime: number, duration: number, text: string, fill: string = "white", stroke: string="black", fontSize: number=12): HoldTextKeyFrame {
     return {
         id,
         type: "HoldText",
@@ -242,8 +245,64 @@ function createHoldTextKeyFrame(id: string, coords: Coords, startTime: number, d
         from: coords,
         to: coords,
         text,
+        stroke,
+        fill,
+        fontSize
     }
 } 
+
+function intializeScene(frames: AnimationKeyFrame[]) {
+    const seenIDs = new Set<string>;
+
+    for (const frame of frames) {
+        if (seenIDs.has(frame.id)) continue;
+        seenIDs.add(frame.id);
+
+        const existing = document.getElementById(frame.id);
+        if (existing) continue;
+
+        let el: SVGElement;
+
+        if (frame.type === "HoldText" || frame.type === "Text") {
+            const group = document.createElementNS("http://www.w3.org/2000/svg", "g");
+            group.setAttribute('id', frame.id);
+            group.setAttribute("transform", `translate(0, 0)`);
+
+            const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+            console.log(text instanceof SVGTextElement);
+            text.textContent = frame.text;
+            text.setAttribute("text-anchor", "middle");
+            text.setAttribute("dominant-baseline", "middle");
+            text.setAttribute("fill", frame.fill || "white");
+            text.setAttribute("stroke", frame.stroke || "none");
+            text.setAttribute("opacity", "0"); // Start hidden
+            text.setAttribute("font-size", String(frame.fontSize));
+
+            group.appendChild(text);
+            
+            el = group;
+        } else {
+            // Assume circle. Can code other stuff into the frame or as a check here later
+            const obj = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+            obj.setAttribute("id", frame.id);
+            obj.setAttribute("r", "6");
+            obj.setAttribute("fill", frame.fill);
+            obj.setAttribute("stroke", frame.stroke);
+            obj.setAttribute("opacity", "0");
+            el = obj;
+        }
+
+        const start = frame.from;
+        const x = start.x ?? 0;
+        const y = start.y ?? 0;
+        const r = start.rotation ?? 0;
+        const s = start.scale ?? 1;
+
+        el.setAttribute("transform", `translate(${x}, ${y}) rotate(${r}) scale(${s})`);
+        const svg = document.getElementById("scene");
+        if (svg) svg.appendChild(el);
+    }
+}
 
 function applyAnimations(frames: AnimationKeyFrame[], time: number) {
     for (const frame of frames) {
@@ -271,7 +330,7 @@ function applyMove(frame: AnimationKeyFrame, time: number) {
     const progress = frame.easing ? frame.easing(t) : t;
 
     const x = lerp(frame.from.x ?? 0, frame.to.x ?? 0, progress);
-    const y = lerp(frame.from.x ?? 0, frame.to.x ?? 0, progress);
+    const y = lerp(frame.from.y ?? 0, frame.to.y ?? 0, progress);
     const r = lerp(frame.from.rotation ?? 0, frame.to.rotation ?? 0, progress);
     const s = lerp(frame.from.scale ?? 1, frame.to.scale ?? 1, progress);
     const o = lerp(frame.from.opacity ?? 1, frame.to.opacity ?? 1, progress);
@@ -288,17 +347,20 @@ function applyText(frame: TextKeyFrame | HoldTextKeyFrame, time: number) {
     const progress = frame.easing ? frame.easing(t) : t;
 
     const x = lerp(frame.from.x ?? 0, frame.to.x ?? 0, progress);
-    const y = lerp(frame.from.x ?? 0, frame.to.x ?? 0, progress);
+    const y = lerp(frame.from.y ?? 0, frame.to.y ?? 0, progress);
     const r = lerp(frame.from.rotation ?? 0, frame.to.rotation ?? 0, progress);
     const s = lerp(frame.from.scale ?? 1, frame.to.scale ?? 1, progress);
     const o = lerp(frame.from.opacity ?? 1, frame.to.opacity ?? 1, progress);
 
     const el = document.getElementById(frame.id);
     if (!el) return;
+    const text = el.querySelector('text');
+    if (text) console.log("Text!");
+    if (!text) return;
 
-    el.textContent = frame.text;
+    text.textContent = frame.text;
     el.setAttribute("transform", `translate(${x}, ${y}) rotate(${r}) scale(${s})`);
-    el.setAttribute("opacity", o.toString())
+    text.setAttribute("opacity", o.toString())
 }
 
 function getTeamInitials(team: Team) {
@@ -338,6 +400,125 @@ function lerp(a: number, b: number, t: number) {
     return a + (b-a) * t;
 }
 
+function generateResetFielders(isHome: boolean, cur: GameState, start: number = 0): AnimationKeyFrame[] {
+    const animations = [...Object.values(inverseFielderLabels).flatMap((p, i) => {
+        const pos = {x: positions[p][0], y: positions[p][1]};
+        const textPos = {x: pos.x, y: pos.y - 20};
+        const fill = isHome ? `#${cur.homeColor}` : `#${cur.awayColor}`;
+        const stroke = getContrastTextColor(isHome ? cur.homeColor : cur.awayColor)
+
+        const move = createHoldKeyFrame(p, pos, start, 100, fill, stroke);
+        const moveText = createHoldTextKeyFrame(`${p}-text`, textPos, start, 100, fielderLabels[p], "black", "black")
+        return [move, moveText];
+    })]
+    return animations
+}
+
+function killObject(id: string, start: number, type: 'Text' | 'Object') {
+    switch (type) {
+        case "Text":
+            return createHoldKeyFrame(id, {x: 0, y: 0, opacity: 0}, start, 200);
+        case "Object":
+            return createHoldTextKeyFrame(id, {x: 0, y: 0, opacity: 0}, start, 200, '');
+    }
+}
+
+function reassignId(oldId: string, newId: string) {
+    const el = document.getElementById(oldId);
+    if (!el) {
+        console.warn(`Element with id '${oldId}' not found.`);
+        return;
+    }
+
+    // Avoid ID collision
+    if (document.getElementById(newId)) {
+        console.warn(`Element with id '${newId}' already exists.`);
+        return;
+    }
+
+    el.setAttribute("id", newId);
+}
+
+function compileAnimationsFromGameState(prev: GameState, cur: GameState, next: GameState) {
+    let animations: AnimationKeyFrame[] = [];
+    const isHome = cur.event.inning_side === 0
+
+    if (cur.phase === 'InningStart') {
+        const dugout = isHome ? "HomeDugout" : "AwayDugout";
+        animations = [...generateResetFielders(isHome, cur, 3000), ...Object.values(inverseFielderLabels).flatMap((p, i) => {
+            const fromPos = {x: positions[dugout][0], y: positions[dugout][1]};
+            const toPos = {x: positions[p][0], y: positions[p][1]};
+            const textFrom = {x: fromPos.x, y: fromPos.y - 20};
+            const textTo = {x: toPos.x, y: toPos.y - 20};
+            const fill = `#${isHome ? cur.homeColor : cur.awayColor}`
+            const stroke = getContrastTextColor(isHome ? cur.homeColor : cur.awayColor);
+
+            const move = createMoveKeyFrame(p, fromPos, toPos, 0, 3000, fill, stroke);
+            const moveText = createTextKeyFrame(`${p}-${isHome}-text`, textFrom, textTo, 0, 3000, fielderLabels[p], "black", "black");
+            return [move, moveText];
+        })];
+    } else if (cur.phase === 'InningEnd') {
+        const dugout = isHome ? "HomeDugout" : "AwayDugout";
+        animations = [...Object.values(inverseFielderLabels).flatMap((p, i) => {
+            const toPos = {x: positions[dugout][0], y: positions[dugout][1]};
+            const fromPos = {x: positions[p][0], y: positions[p][1]};
+            const textFrom = {x: fromPos.x, y: fromPos.y - 20};
+            const textTo = {x: toPos.x, y: toPos.y - 20};
+            const fill = isHome ? `#${cur.homeColor}` : `#${cur.awayColor}`;
+            const stroke = getContrastTextColor(isHome ? cur.homeColor : cur.awayColor);
+
+            const move = createMoveKeyFrame(p, fromPos, toPos, 0, 3000, fill, stroke);
+            const moveText = createTextKeyFrame(`${p}-text`, textFrom, textTo, 0, 3000, fielderLabels[p], "black", "black");
+            const killPlayer = killObject(p, 3300, "Object");
+            const killText = killObject(`${p}-text`, 3300, "Text");
+            return [move, moveText, killPlayer, killText];
+        })]
+    } else if (cur.phase === 'Pitch') {
+        animations = generateResetFielders(isHome, cur);
+
+        const speed = Math.min(120, Math.max(cur.pitchSpeed ?? 80, 80))
+        const duration = 1300 + ((100-speed)*10); // 1.3s +- .2s
+        const fromPos = {x: positions["Pitcher"][0], y: positions["Pitcher"][1]};
+        const toPos = {x: positions["Home"][0], y: positions["Home"][1]};
+        const resultLocation = {x: toPos.x, y: toPos.y - 40};
+        const swingText = (cur.ballsIncreased || cur.strikesIncreased && cur.event.message.includes("looking")) ? "No Swing..." : "A Swing..."
+        let resultText = '';
+
+        if (cur.strikesIncreased)
+            resultText = "STRIKE!"
+            if (cur.event.message.includes('Foul'))
+                resultText = "FOUL!"
+        else if (cur.ballsIncreased)
+            resultText = "BALL!"
+        else if (cur.outsIncreased)
+            resultText = "STRIKEOUT!"
+
+        animations.push(createHoldKeyFrame('Ball', fromPos, 700, 800, "red", "white"));
+        animations.push(createMoveKeyFrame('Ball', fromPos, toPos, 1500, duration, "red", "white"));
+        animations.push(createHoldTextKeyFrame('SwingText', resultLocation, 1500+duration, 4000-(1500+duration), swingText, "white", "white", 20));
+        animations.push(createHoldTextKeyFrame('SwingText', resultLocation, 4000, 1500, "And...", "white", "white", 20));
+        animations.push(createHoldTextKeyFrame('SwingText', resultLocation, 5500, 500, resultText, "white", "white", 20));
+    } else if (cur.phase === 'NowBatting') {
+        const dugout = isHome ? positions["HomeDugout"] : positions["AwayDugout"];
+        const fill = isHome ? `#${cur.homeColor}` : `#${cur.awayColor}`;
+        const stroke = getContrastTextColor(isHome ? cur.homeColor : cur.awayColor);
+
+        animations = generateResetFielders(isHome, cur);
+        if (prev.outsIncreased){
+            reassignId('Batter', 'OldBatter');
+            reassignId('Batter-text', 'OldBatter-text');
+            animations.push(createMoveKeyFrame('OldBatter', {x: positions["BatterLeft"][0], y: positions["BatterLeft"][1]}, {x: dugout[0], y: dugout[1]}, 0, 2500, fill, stroke));
+            animations.push(createTextKeyFrame('OldBatter-text', {x: positions["BatterLeft"][0], y: positions["BatterLeft"][1]-20}, {x: dugout[0], y: dugout[1]-20}, 0, 2500, next.event.batter ?? 'Batter', fill, stroke));
+            animations.push(killObject('OldBatter', 2600, "Object"));
+            animations.push(killObject('OldBatter-text', 2600, "Text"));
+        }
+        animations.push(createMoveKeyFrame('Batter', {x: dugout[0], y: dugout[1]}, {x: positions["BatterLeft"][0], y: positions["BatterLeft"][1]}, 0, 2500, fill, stroke));
+        animations.push(createTextKeyFrame('Batter-text', {x: dugout[0], y: dugout[1]-20}, {x: positions["BatterLeft"][0], y: positions["BatterLeft"][1]-20}, 0, 2500, next.event.batter ?? 'Batter', fill, stroke));
+    }
+
+    return animations;
+}
+
 // Well. Let's get to work?
 export default function AnimatedGame({ homeTeam, awayTeam, game, id, }: { homeTeam: Team; awayTeam: Team; game: Game; id: string; }) {
     const [gameStates, setGameStates] = useState<GameState[]>([]);
@@ -372,7 +553,8 @@ export default function AnimatedGame({ homeTeam, awayTeam, game, id, }: { homeTe
     const liveModeRef = useRef(liveMode);
     const isPlayingRef = useRef(isPlaying);
     const lastAdvanceTime = useRef(performance.now());
-    const animationsRef = useRef<Animation[]>([]);
+    const lastAnimationStateRef = useRef<undefined|number>(undefined);
+    const animationsRef = useRef<AnimationKeyFrame[]>([]);
 
     // Update references every tick
     useEffect(() => { statesRef.current = gameStates; }, [gameStates]);
@@ -477,17 +659,33 @@ export default function AnimatedGame({ homeTeam, awayTeam, game, id, }: { homeTe
         }
     }, [id])
 
+    // Animations (:
+    useEffect(() => {
+        if (!gameStates || gameStates.length === 0) return;
+        if (lastAnimationStateRef.current !== gameStates[eventIndex].index) {
+            const newAnimations = compileAnimationsFromGameState(gameStates[eventIndex-1], gameStates[eventIndex], gameStates[eventIndex+1]);
+            intializeScene(newAnimations);
+            animationsRef.current = newAnimations;
+            lastAnimationStateRef.current = gameStates[eventIndex].index;
+        }
+    }, [gameStates, eventIndex]);
+
     function togglePlay() { setIsPlaying(p => !p); }
     function skipTo(index: number) { 
         setIsPlaying(false); 
         setEventIndex(Math.max(1, Math.min(index, gameStates.length - 1)));
+        lastAdvanceTime.current = performance.now();
     }
+
+    useEffect(() => {
+        applyAnimations(animationsRef.current, performance.now() - lastAdvanceTime.current);
+    }, [renderTick]); // Reruns each frame
 
     if (!gameStates.length || gameStates.length === 0 || eventIndex === 0) return (<Loading />);
 
     return (<main className="mt-16">
         <div className="w-full max-w-[min(100vw,1250px)] mx-auto mt-20">
-            <FieldBackground lastGameState={gameStates[eventIndex-1]} gameState={gameStates[eventIndex]} nextGameState={gameStates[eventIndex+1]} deltaTime={performance.now() - lastAdvanceTime.current} animationsRef={animationsRef} />
+            <FieldBackground lastGameState={gameStates[eventIndex-1]} gameState={gameStates[eventIndex]} nextGameState={gameStates[eventIndex+1]} deltaTime={performance.now() - lastAdvanceTime.current} />
             <div className="controls flex flex-col justify-center items-center gap-4 text-center">
                 {liveMode ? 
                     <div className="text-theme-text font-semibold">"LIVE 🔴"</div> 
@@ -504,11 +702,6 @@ export default function AnimatedGame({ homeTeam, awayTeam, game, id, }: { homeTe
             </div>
         </div>
     </main>);
-}
-
-// This is the real real hard part...
-function AnimationComponents({ prevGameState, gameState, nextGameState, deltaTime, animationsRef, }: { prevGameState: GameState, gameState: GameState, nextGameState: GameState, deltaTime: number, animationsRef: RefObject<Animation[]>, }) {
-    return (<></>)
 }
 
 function MessageBox({ message }: { message: string }) {
@@ -606,12 +799,12 @@ function GameInfo({ gameState }: { gameState: GameState }) {
     </g>)
 }
 
-function FieldBackground({ lastGameState, gameState, nextGameState, deltaTime, animationsRef, }: { lastGameState: GameState, gameState: GameState, nextGameState: GameState, deltaTime: number, animationsRef: RefObject<Animation[]> }) {
+function FieldBackground({ lastGameState, gameState, nextGameState, deltaTime, }: { lastGameState: GameState, gameState: GameState, nextGameState: GameState, deltaTime: number }) {
     // Code borrowed from
     // https://github.com/RangerRick/blobile
     
     return (
-        <svg xmlns="http://www.w3.org/2000/svg" version="1.0" preserveAspectRatio="xMinYMin meet" viewBox="0 0 650 650">
+        <svg id="scene" xmlns="http://www.w3.org/2000/svg" version="1.0" preserveAspectRatio="xMinYMin meet" viewBox="0 0 650 650">
             <filter id="dropShadow">
                 <feGaussianBlur in="SourceAlpha" stdDeviation={3} />
                 <feOffset dx={0} dy={0} />
@@ -673,7 +866,6 @@ function FieldBackground({ lastGameState, gameState, nextGameState, deltaTime, a
                 {/* home border */}
                 <path style={{opacity: 1, fill: "white", fillOpacity: 1, stroke: "none", strokeWidth: 3, strokeLinecap: "butt", strokeLinejoin: "miter", strokeMiterlimit: 4, strokeDasharray: "none", strokeOpacity: 1,}} d="M 295,405 C 295.15103,402.74278 293.1875,403.97917 292.28125,403.46875 C 280.62645,419.16193 280.35712,439.683 291.625,455.65625 C 305.77503,475.71519 333.59731,480.52502 353.65625,466.375 C 373.71519,452.22497 378.52502,424.40269 364.375,404.34375 L 361,405 C 362.65625,407.375 361,405 362.65625,407.375 L 293.875,406.53125 L 295,405 z M 293.875,406.53125 L 362.65625,407.375 C 374.80016,425.99135 370.24983,450.98832 351.9375,463.90625 C 333.20494,477.12061 307.30812,472.67006 294.09375,453.9375 C 283.82751,439.38417 283.83997,421.05606 293.875,406.53125 z" />
             
-                <AnimationComponents prevGameState={lastGameState} gameState={gameState} nextGameState={nextGameState} deltaTime={deltaTime} animationsRef={animationsRef} />
                 <GameInfo gameState={lastGameState}/>
                 <InningInfo gameState={lastGameState}/>
                 <MessageBox message={lastGameState.event.message} />

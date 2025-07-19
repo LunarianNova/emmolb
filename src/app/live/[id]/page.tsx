@@ -2,7 +2,11 @@ import AnimatedGame from '@/components/NeoAnimatedGame';
 import { MapAPIGameResponse } from '@/types/Game';
 import { MapAPITeamResponse } from '@/types/Team';
 
-export default async function LiveGamePage({ params }: { params: { id: string } }) {
+interface PageProps {
+    params: Promise<{ id: string }>;
+}
+
+export default async function LiveGamePage({ params }: PageProps) {
     const { id } = await params;
 
     const res = await fetch(`https://lunanova.space/nextapi/gameheader/${id}`, {

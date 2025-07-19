@@ -3,13 +3,12 @@ const SERVICE_WORKER_FILE_PATH = './sw.js';
 
 export function notificationUnsupported(): boolean {
   const isIos = /iP(ad|hone|od)/.test(navigator.userAgent);
-  return (
-    isIos ||
-    !(
-      'serviceWorker' in navigator &&
-      'PushManager' in window &&
-      'showNotification' in ServiceWorkerRegistration.prototype
-    )
+  return !(
+    !isIos &&
+    'Notification' in window &&
+    'serviceWorker' in navigator &&
+    'PushManager' in window &&
+    'showNotification' in ServiceWorkerRegistration.prototype
   );
 }
 
