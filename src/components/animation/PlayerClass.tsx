@@ -1,43 +1,387 @@
-import { CashewsPlayer } from "@/types/FreeCashews";
+import { getContrastTextColor } from "@/helpers/Colors";
 
-type Handedness = | 'R' | 'L' | 'S'
+type FacingDirection = "front" | "back";
+type Handedness = "L" | "R" | "S";
+type Direction8 =  "N" | "NE" | "E" | "SE" | "S" | "SW" | "W" | "NW" | "None";
 
-class Player {
-    readonly name: string;
-    position: FieldPosition;
+const eyeOffsets: Record<Direction8, {dx: number; dy: number}> = {
+    N:  { dx: 0,   dy: -2 },
+    NE: { dx: 1.5, dy: -1.5 },
+    E:  { dx: 2,   dy: 0 },
+    SE: { dx: 1.5, dy: 1.5 },
+    S:  { dx: 0,   dy: 2 },
+    SW: { dx: -1.5,dy: 1.5 },
+    W:  { dx: -2,  dy: 0 },
+    NW: { dx: -1.5,dy: -1.5 },
+    None: { dx: 0, dy: 0 },
+};
 
-    x: number;
-    y: number;
-    fill: string;
-    stroke: string;
-
-    body: SVGCircleElement;
-    label: SVGTextElement;
-
+interface PlayerOptions {
+    name: string;
+    teamColor: string;
+    position: string;
+    facing?: FacingDirection;
     bats: Handedness;
-    swings: Handedness
+    throws: Handedness;
+    startX: number;
+    startY: number;
+    number?: number;
+}
 
-    cashewsPlayer: CashewsPlayer; // Catch all for the rest of the data if it is ever needed
-    visible: boolean;
+export class Player {
+    group: SVGGElement;
+    name: string;
+    facing: FacingDirection;
+    bats: Handedness;
+    throws: Handedness
+    isMoving: boolean = false;
+    currentX: number;
+    currentY: number;
+    teamColor: string;
 
-    constructor(name: string, position: FieldPosition, fill: string, stroke: string, bats: Handedness, swings: Handedness, cashewsPlayer: CashewsPlayer) {
-        this.name = name;
-        this.position = position;
-        this.fill = fill;
-        this.stroke = stroke;
-        this.bats = bats;
-        this.swings = swings;
-        this.cashewsPlayer = cashewsPlayer;
+    // Elements
+    private eyeLeft: SVGRectElement;
+    private eyeRight: SVGRectElement;
+    private legLeft: SVGRectElement;
+    private legRight: SVGRectElement;
+    private glove: SVGCircleElement;
+    private hat: SVGElement;
+    private label: SVGTextElement;
+    private jerseyNumberLabel: SVGElement;
+    private movingStartTime: number = 0;
 
-        this.x = 0;
-        this.y = 0;
-        this.body = this.createBody();
-        this.label = this.createLabel();
-        this.visible = false;
+    private idleIntervalIDs = {
+        blink: null as number | null,
+        hop: null as number | null,
+    };
+
+    constructor(opts: PlayerOptions) {
+        this.name = opts.name;
+        this.facing = opts.facing ?? "front";
+        this.throws = opts.throws;
+        this.bats = opts.bats;
+        this.currentX = opts.startX;
+        this.currentY = opts.startY;
+        this.teamColor = opts.teamColor;
+
+        // Create group
+        const g = document.createElementNS("http://www.w3.org/2000/svg", "g");
+        g.setAttribute("id", this.name);
+        this.group = g;
+        this.setPosition(opts.startX, opts.startY);
+
+        const hatMain = this.makeRect(-8, -8, 16, 6, opts.teamColor, 2);
+        const brim = this.makeRect(-10, -2, 20, 2, "black");
+
+        this.hat = document.createElementNS("http://www.w3.org/2000/svg", "g");
+        this.hat.appendChild(hatMain);
+        this.hat.appendChild(brim);
+        this.hat.setAttribute("transform", `translate(0, -16)`);
+
+        const head = this.makeRect(-8, -16, 16, 16, "white", 3);
+
+        this.eyeLeft = this.makeRect(-4, -12, 2, 6, "black", 1);
+        this.eyeRight = this.makeRect(2, -12, 2, 6, "black", 1);
+
+        const body = this.makeRect(-6, 0, 12, 20, opts.teamColor, 3);
+
+        this.legLeft = this.makeRect(-5, 20, 4, 10, "black", 2, 2);
+        this.legRight = this.makeRect(1, 20, 4, 10, "black", 2, 2);
+
+        // Glove (only shown conditionally)
+        this.glove = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+        this.glove.setAttribute("r", "5");
+        this.glove.setAttribute("fill", "#a0522d"); // brownish
+        this.glove.style.display = "none";
+        this.glove.setAttribute("x", this.throws === "L" ? "6" : "-6");
+
+        // Little guy's little name
+        this.label = document.createElementNS('http://www.w3.org/2000/svg', "text");
+        this.label.setAttribute("font-size", "12");
+        this.label.setAttribute("fill", "black");
+        this.label.setAttribute("text-anchor", "middle");
+        this.label.setAttribute("x", "0");
+        this.label.setAttribute("y", "-40");
+        this.label.textContent = this.name;
+
+        this.jerseyNumberLabel = document.createElementNS("http://www.w3.org/2000/svg", "text");
+        this.jerseyNumberLabel.setAttribute("font-size", "12");
+        this.jerseyNumberLabel.setAttribute("fill", getContrastTextColor(this.teamColor));
+        this.jerseyNumberLabel.setAttribute("font-weight", "bold");
+        this.jerseyNumberLabel.setAttribute("text-anchor", "middle");
+        this.jerseyNumberLabel.setAttribute('visibility', 'hidden');
+        this.jerseyNumberLabel.setAttribute("x", "0"); // center horizontally
+        this.jerseyNumberLabel.setAttribute("y", "12"); // position roughly mid-body or wherever looks good
+        this.jerseyNumberLabel.textContent = String(opts.number) !== 'undefined' ? String(opts.number) : "";
+
+        // Append all to group
+        g.append(this.hat, head, this.eyeLeft, this.eyeRight, body, this.legLeft, this.legRight, this.glove, this.label, this.jerseyNumberLabel);
+        this.startIdle();
+  }
+
+    private makeRect(x: number, y: number, width: number, height: number, fill: string, rx = 0, ry = 0): SVGRectElement {
+        const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+        rect.setAttribute("x", x.toString());
+        rect.setAttribute("y", y.toString());
+        rect.setAttribute("width", width.toString());
+        rect.setAttribute("height", height.toString());
+        rect.setAttribute("fill", fill);
+        if (rx > 0) rect.setAttribute("rx", rx.toString());
+        if (ry > 0) rect.setAttribute("ry", ry.toString());
+        return rect;
     }
 
-    createBody(): SVGCircleElement {}
-    createLabel(): SVGTextElement {}
+    setPosition(x: number, y: number) {
+        this.currentX = x;
+        this.currentY = y;
 
-    
+        const transform = `translate(${x}, ${y})`;
+
+        this.group.setAttribute("transform", transform);
+    }
+
+    moveTo(x: number, y: number) {
+        this.isMoving = true;
+        this.setPosition(x, y);
+        this.isMoving = false;
+    }
+
+    moveGloveTo(targetX: number, targetY: number) {
+        const offsetX = this.throws === "R" ? -6 : 6;
+        this.glove.setAttribute("cx", (targetX + offsetX).toString());
+        this.glove.setAttribute("cy", targetY.toString());
+        this.glove.style.display = "block";
+    }
+
+    walkTo(targetX: number, targetY: number, speed: number = 100) {
+        if (targetY > this.currentY) this.turnAround("front");
+        else this.turnAround("back");
+
+        this.startWalking();
+
+        const startX = this.currentX;
+        const startY = this.currentY;
+        const dx = targetX - startX;
+        const dy = targetY - startY;
+        const distance = Math.hypot(dx, dy);
+        const duration = distance / speed * 1000;
+
+        const startTime = performance.now();
+
+        const animate = (now: number) => {
+            const elapsed = now - startTime;
+            const progress = Math.min(elapsed / duration, 1);
+            const eased = progress; // Maybe ease this?
+
+            const newX = startX + dx * eased;
+            const newY = startY + dy * eased;
+
+            this.setPosition(newX, newY);
+
+            if (progress < 1) {
+                requestAnimationFrame(animate);
+            } else {
+                this.setPosition(targetX, targetY);
+                this.stopWalking();
+            }
+        };
+
+        requestAnimationFrame(animate);
+    }
+
+
+    hideGlove() {
+        this.glove.style.display = "none";
+    }
+
+    turnAround(direction: FacingDirection) {
+        this.facing = direction;
+        if (this.facing === 'front') {
+            this.jerseyNumberLabel.setAttribute('visibility', 'hidden');
+            this.eyeLeft.setAttribute('visibility', 'visible');
+            this.eyeRight.setAttribute('visibility', 'visible');
+        } else {
+            this.jerseyNumberLabel.setAttribute('visibility', 'visible');
+            this.eyeLeft.setAttribute('visibility', 'hidden');
+            this.eyeRight.setAttribute('visibility', 'hidden');
+        }
+    }
+
+    lookInDirection(direction: Direction8) {
+        const offset = eyeOffsets[direction];
+        if (!offset) return;
+
+        // base eye positions
+        const eyeLeftBaseX = -4;
+        const eyeLeftBaseY = -12;
+        const eyeRightBaseX = 2;
+        const eyeRightBaseY = -12;
+
+        this.eyeLeft.setAttribute("x", (eyeLeftBaseX + offset.dx).toString());
+        this.eyeLeft.setAttribute("y", (eyeLeftBaseY + offset.dy).toString());
+        this.eyeRight.setAttribute("x", (eyeRightBaseX + offset.dx).toString());
+        this.eyeRight.setAttribute("y", (eyeRightBaseY + offset.dy).toString());
+    }
+
+    startIdle() {
+        const blink = () => {
+            this.blinkEyes();
+            const nextBlink = 3000 + Math.random() * 2000;
+            this.idleIntervalIDs.blink = window.setTimeout(blink, nextBlink);
+        };
+
+        const hop = () => {
+            this.startHopIdle();
+            const nextHop = 60000 + Math.random() * 20000;
+            this.idleIntervalIDs.hop = window.setTimeout(hop, nextHop);
+        };
+
+        this.idleIntervalIDs.blink = window.setTimeout(blink, 3000 + Math.random() * 2000);
+        this.idleIntervalIDs.hop = window.setTimeout(hop, 10000 + Math.random() * 100000);
+    }
+
+    stopIdle() {
+        if (this.idleIntervalIDs.blink !== null) {
+            clearTimeout(this.idleIntervalIDs.blink);
+            this.idleIntervalIDs.blink = null;
+        }
+        if (this.idleIntervalIDs.hop !== null) {
+            clearTimeout(this.idleIntervalIDs.hop);
+            this.idleIntervalIDs.hop = null;
+        }
+    }
+
+
+    private blinkEyes() {
+        const blinkDuration = 150;
+
+        this.eyeLeft.setAttribute("y", "-9");   // center: -12 + 3
+        this.eyeLeft.setAttribute("height", "1");
+        this.eyeRight.setAttribute("y", "-9");
+        this.eyeRight.setAttribute("height", "1");
+
+        setTimeout(() => {
+            this.eyeLeft.setAttribute("y", "-12");
+            this.eyeLeft.setAttribute("height", "6");
+            this.eyeRight.setAttribute("y", "-12");
+            this.eyeRight.setAttribute("height", "6");
+        }, blinkDuration);
+    }
+
+    testAnimations() {
+        this.startHopIdle();
+        setTimeout(() => {
+            this.animateGloveSpin(4, 400);
+        }, 10000)
+    }
+
+    startHopIdle() {
+        const hopCount = 3;
+        const hopHeight = 16;
+        const duration = 150;
+        let hop = 0;
+        const doHop = () => {
+            if (hop >= hopCount) return;
+
+            this.animateHop(-hopHeight, duration, () => {
+                this.animateHop(hopHeight, duration, () => {
+                    hop++;
+                    doHop();
+                });
+            });
+        };
+
+        doHop();
+    }
+
+    private animateHop(offsetY: number, duration: number, callback: () => void) {
+        const start = performance.now();
+        const initialY = this.currentY;
+
+        const animate = (now: number) => {
+            const elapsed = now - start;
+            const progress = Math.min(elapsed / duration, 1);
+            const eased = 1 - Math.pow(1 - progress, 3);
+
+            const newY = initialY + offsetY * eased;
+            this.setPosition(this.currentX, newY);
+
+            const hatY = -20 + offsetY * 0.2 * eased;
+            this.hat.setAttribute("transform", `translate(0, ${hatY})`);
+
+            if (progress < 1) {
+                requestAnimationFrame(animate);
+            } else {
+                callback();
+            }
+        };
+
+        requestAnimationFrame(animate);
+    }
+
+    private animateGloveSpin(spins: number = 3, durationPerSpin: number = 500, callback?: () => void) {
+        const totalDuration = spins * durationPerSpin;
+        const start = performance.now();
+
+        const animate = (now: number) => {
+            const elapsed = now - start;
+            const progress = Math.min(elapsed / totalDuration, 1);
+
+            const rotation = 360 * spins * progress;
+
+            this.glove.style.display = "block";
+
+            this.glove.setAttribute("transform", `rotate(${rotation}, ${this.glove.cx.baseVal.value}, ${this.glove.cy.baseVal.value})`);
+
+            if (progress < 1) {
+                requestAnimationFrame(animate);
+            } else {
+                this.glove.style.display = "none";
+                this.glove.removeAttribute("transform");
+                if (callback) callback();
+            }
+        };
+
+        requestAnimationFrame(animate);
+    }
+
+    lookAround8Directions() {
+        const directions: Direction8[] = ["N", "NE", "E", "SE", "S", "SW", "W", "NW", "None"];
+        let i = 0;
+
+        const step = () => {
+            if (i >= directions.length) return;
+            this.lookInDirection(directions[i]);
+            i++;
+            setTimeout(step, 500);
+        };
+
+        step();
+    }
+
+    startWalking(speed: number = 0.010) {
+        if (this.isMoving) return;
+        this.isMoving = true;
+        this.movingStartTime = performance.now();
+        
+        const walkLoop = (now: number) => {
+            if (!this.isMoving) return;
+
+            const elapsed = now - this.movingStartTime;
+            const swing = Math.sin(elapsed * speed) * 3;
+
+            this.legLeft.setAttribute("transform", `translate(0, ${swing})`);
+            this.legRight.setAttribute("transform", `translate(0, ${-swing})`);
+
+            requestAnimationFrame(walkLoop);
+        };
+
+        requestAnimationFrame(walkLoop);
+    }
+
+    stopWalking() {
+        this.isMoving = false;
+        this.legLeft.setAttribute("transform", "translate(0, 0)");
+        this.legRight.setAttribute("transform", "translate(0, 0)");
+    }
 }

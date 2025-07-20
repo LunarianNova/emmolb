@@ -7,14 +7,18 @@ import { Analytics } from "@vercel/analytics/next"
 import { SettingsProvider } from "@/components/Settings";
 import { ThemeUpdater } from "@/components/ThemeUpdater";
 import { Navbar } from "@/components/Navbar";
+import { usePathname } from "next/navigation";
 
 
 
 export default function RootLayout({ children, }: Readonly<{children: React.ReactNode;}>) {
-  return (
+    const pathname = usePathname();
+    const hideNavbar = pathname.includes('playground');
+  
+    return (
         <html lang="en">
             <body className={`${GeistSans.className} ${GeistMono.variable} min-h-screen`}>
-                <Navbar />
+                {!hideNavbar && <Navbar />}                
                 <SettingsProvider>
                     <ThemeUpdater />
                     {children}

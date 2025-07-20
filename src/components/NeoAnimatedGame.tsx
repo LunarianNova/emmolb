@@ -491,7 +491,7 @@ function reassignId(oldId: string, newId: string) {
 
 function garbageCollection(prev: AnimationKeyFrame[], current: AnimationKeyFrame[]): AnimationKeyFrame[] {
     const seenIDs = new Set(current.map(a => a.id));
-    let animations: AnimationKeyFrame[] = [];
+    const animations: AnimationKeyFrame[] = [];
 
     for (const frame of prev)
         if (!seenIDs.has(frame.id)) 
