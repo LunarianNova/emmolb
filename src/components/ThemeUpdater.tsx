@@ -1,4 +1,4 @@
-// Updates the theme every time a page with this component is loaded
+// Updates the theme every time a page with this component is loaded (used in layout.tsx to always update theme)
 'use client';
 import { useEffect } from 'react';
 import { useSettings } from '@/components/Settings';

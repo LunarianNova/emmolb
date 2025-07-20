@@ -7,7 +7,7 @@ import { Event } from "@/types/Event";
 import { Game } from "@/types/Game";
 import { Team } from "@/types/Team";
 import { ProcessMessage } from "./BaseParser";
-import { RefObject, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Loading from "./Loading";
 import { getContrastTextColor } from "@/helpers/Colors";
 
@@ -151,6 +151,7 @@ const positions: Record<string, [number, number]> = {
     "Pitcher": [328.5, 320],
     "Home": [327.8, 428],
     "Catcher": [327.8, 470],
+    "Batter": [327.8, 428],
     "BatterLeft": [307, 428],
     "BatterRight": [347.5, 428],
     "FirstRunner": [443, 315],
@@ -187,9 +188,13 @@ const baseFromFielder: Record<string, string> = {
     "SecondBase": "SecondRunner",
     "ThirdBase": "ThirdRunner",
     "Home": "Home",
+    "CenterFielder": "FirstRunner",
+    "LeftFielder": "FirstRunner",
+    "RightFielder": "FirstRunner",
+    "Pitcher": "FirstRunner"
 }
 
-const basePath = ["FirstRunner", "SecondRunner", "ThirdRunner", "Home"];
+const basePath = ["Batter", "FirstRunner", "SecondRunner", "ThirdRunner", "Home"];
 
 // Pain
 function getPhase(event: Event): Phase {
@@ -285,7 +290,6 @@ function intializeScene(frames: AnimationKeyFrame[]) {
             group.setAttribute("transform", `translate(0, 0)`);
 
             const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
-            console.log(text instanceof SVGTextElement);
             text.textContent = frame.text;
             text.setAttribute("text-anchor", "middle");
             text.setAttribute("dominant-baseline", "middle");
@@ -325,6 +329,8 @@ function applyAnimations(frames: AnimationKeyFrame[], time: number) {
         const frame = frames[i];
 
         if (frame.lifetime && time > frame.lifetime) {
+            console.log(frame);
+            console.log(time);
             destroyElement(frame.id);
             frames.splice(i, 1);
             continue;
@@ -358,6 +364,8 @@ function applyMove(frame: AnimationKeyFrame, time: number) {
     const el = document.getElementById(frame.id);
     if (!el) return;
 
+    el.setAttribute("stroke", frame.stroke);
+    el.setAttribute("fill", frame.fill);
     el.setAttribute("transform", `translate(${x}, ${y}) rotate(${r}) scale(${s})`);
     el.setAttribute("opacity", o.toString())
 }
@@ -378,6 +386,8 @@ function applyText(frame: TextKeyFrame | HoldTextKeyFrame, time: number) {
     if (!text) return;
 
     text.textContent = frame.text;
+    text.setAttribute("stroke", frame.stroke);
+    text.setAttribute("fill", frame.fill);
     el.setAttribute("transform", `translate(${x}, ${y}) rotate(${r}) scale(${s})`);
     text.setAttribute("opacity", o.toString())
 }
@@ -419,7 +429,7 @@ function lerp(a: number, b: number, t: number) {
     return a + (b-a) * t;
 }
 
-function generateResetFielders(isHome: boolean, cur: GameState, start: number = 0): AnimationKeyFrame[] {
+function generateResetFielders(isHome: boolean, cur: GameState, {forcePitcherName=undefined, start=0}: {forcePitcherName?: string; start?: number;} = {}): AnimationKeyFrame[] {
     const animations = [...Object.values(inverseFielderLabels).flatMap((p, i) => {
         const pos = {x: positions[p][0], y: positions[p][1]};
         const textPos = {x: pos.x, y: pos.y - 20};
@@ -427,28 +437,40 @@ function generateResetFielders(isHome: boolean, cur: GameState, start: number = 
         const stroke = getContrastTextColor(isHome ? cur.homeColor : cur.awayColor)
 
         const move = createHoldKeyFrame(p, pos, start, 100, fill, stroke);
-        const moveText = createHoldTextKeyFrame(`${p}-text`, textPos, start, 100, p !== "Pitcher" ? fielderLabels[p] : cur.event.pitcher ?? 'P', "black", "none")
+        const moveText = createHoldTextKeyFrame(`${p}-text`, textPos, start, 100,  p !== "Pitcher" ? fielderLabels[p] : (forcePitcherName ?? cur.event.pitcher ?? 'P'), "black", "none")
         return [move, moveText];
     })]
     return animations
 }
 
-function killObject(id: string, start: number, type: 'Text' | 'Object') {
-    switch (type) {
-        case "Text":
-            return createHoldKeyFrame(id, {x: 0, y: 0, opacity: 0, scale: 0}, start, 200);
-        case "Object":
-            return createHoldTextKeyFrame(id, {x: 0, y: 0, opacity: 0}, start, 200, '');
+function generateResetRunners(isHome: boolean, prev: GameState, {start=0}: {start?: number} = {}): AnimationKeyFrame[] {
+    const baseMap: Record<string, string> = {
+        "first": "FirstRunner",
+        "second": "SecondRunner",
+        "third": "ThirdRunner"
     }
+    return [
+        ...Object.keys(baseMap).flatMap((base, i): AnimationKeyFrame[] | undefined => {
+            const runnerName =  prev.bases[base as keyof Bases];
+            if (!runnerName) return;
+
+            const id = baseMap[base];
+            const pos = positionToXY(id);
+            const fill = `#${isHome ? prev.awayColor : prev.homeColor}`;
+            const stroke = getContrastTextColor(isHome ? prev.awayColor : prev.homeColor);
+
+            const player = createHoldKeyFrame(id, pos, start, 100, fill, stroke);
+            const text = createHoldTextKeyFrame(`${id}-text`, offsetText(pos), start, 100, runnerName)
+
+            return [player, text];
+        })
+    ].filter((x): x is AnimationKeyFrame => x !== undefined);
 }
 
 function destroyElement(id: string) {
     const el = document.getElementById(id);
-    if (el) {
+    if (el)
         el.remove();
-    } else {
-        console.warn(`Element with id '${id}' not found.`);
-    }
 }
 
 function reassignId(oldId: string, newId: string) {
@@ -468,13 +490,12 @@ function reassignId(oldId: string, newId: string) {
 }
 
 function garbageCollection(prev: AnimationKeyFrame[], current: AnimationKeyFrame[]): AnimationKeyFrame[] {
-    const seenIDs = new Set<string>();
+    const seenIDs = new Set(current.map(a => a.id));
     let animations: AnimationKeyFrame[] = [];
 
-    for (const animation of current)
-        if (!seenIDs.has(animation.id)) seenIDs.add(animation.id);
-    for (const animation of prev)
-        if (!seenIDs.has(animation.id)) animations.push(createHoldKeyFrame(animation.id, {x: 0, y:0}, 0, 0, "black", "black", 0));
+    for (const frame of prev)
+        if (!seenIDs.has(frame.id)) 
+            destroyElement(frame.id);
 
     return animations;
 }
@@ -528,6 +549,7 @@ function getHitLocation(msg: string): keyof typeof positions {
     if (msg.includes("to second base")) return "SecondBase";
     if (msg.includes("to third base")) return "ThirdBase";
     if (msg.includes("to the shortstop")) return "Shortstop";
+    if (msg.includes("to the pitcher")) return "Pitcher";
     return "Home";
 }
 
@@ -546,8 +568,11 @@ function createRunnerAnimations(prev: GameState, cur: GameState, throwChain: (ke
     if (out && !outBase) return [];
     const animations: AnimationKeyFrame[] = [];
 
+    const fill = `#${isHome ? cur.awayColor : cur.homeColor}`;
+    const stroke = getContrastTextColor(isHome ? cur.awayColor : cur.homeColor);
+
     // Get positions from name
-    let startBase: keyof typeof positions = 'Home';
+    let startBase: keyof typeof positions = 'Batter';
     if (prev.bases.first === name) startBase = 'FirstRunner';
     else if (prev.bases.second === name) startBase = 'SecondRunner';
     else if (prev.bases.third === name) startBase = 'ThirdRunner';
@@ -582,8 +607,12 @@ function createRunnerAnimations(prev: GameState, cur: GameState, throwChain: (ke
     for (let i = 0; i < runnerPath.length; i++) {
         const from = i === 0 ? positions[startBase] : positions[runnerPath[i - 1]];
         const to = positions[runnerPath[i]];
+        if (runnerPath[i] === 'Home') {
+            animations.push(createMoveKeyFrame(startBase, toVec(to), positionToXY(isHome ? 'AwayDugout' : 'HomeDugout'), runTime+segmentTime+200, 1000, fill, stroke));
+            animations.push(createTextKeyFrame(`${startBase}-text`, offsetText(toVec(to)), offsetText(positionToXY(isHome ? 'AwayDugout' : 'HomeDugout')), runTime+segmentTime+200, 1000, name));
+        }
 
-        animations.push(createMoveKeyFrame(startBase, toVec(from), toVec(to), runTime, segmentTime));
+        animations.push(createMoveKeyFrame(startBase, toVec(from), toVec(to), runTime, segmentTime, fill, stroke));
         animations.push(createTextKeyFrame(`${startBase}-text`, offsetText(toVec(from)), offsetText(toVec(to)), runTime, segmentTime, name));
         runTime += segmentTime;
     }
@@ -592,17 +621,41 @@ function createRunnerAnimations(prev: GameState, cur: GameState, throwChain: (ke
 
     if (out) {
         // Out text
-        animations.push(createTextKeyFrame("OutMarker", endPos, offsetText(endPos), runTime, 500, "OUT!", "red", "red", 20));
-        animations.push(killObject("OutMarker", runTime + 1000, "Text"));
+        animations.push(createTextKeyFrame(`OutMarker-${startBase}`, endPos, offsetText(endPos), runTime, 500, "OUT!", "red", "red", 20, runTime+1000));
 
         // Walk of shame
         const dugout = isHome ? positions["AwayDugout"] : positions["HomeDugout"];
-        animations.push(createMoveKeyFrame(startBase, endPos, toVec(dugout), runTime + 400, 1200));
+        animations.push(createMoveKeyFrame(startBase, endPos, toVec(dugout), runTime + 400, 1200, fill, stroke));
         animations.push(createTextKeyFrame(`${startBase}-text`, offsetText(endPos), offsetText(toVec(dugout)), runTime + 400, 1200, prev.event.batter ?? ''));
     } else {
-        animations.push(createTextKeyFrame("SafeMarker", endPos, offsetText(endPos), runTime, 500, "SAFE!", "red", "red", 20));
-        animations.push(killObject("SafeMarker", runTime + 1000, "Text"));
+        animations.push(createTextKeyFrame(`SafeMarker-${startBase}`, endPos, offsetText(endPos), runTime, 500, "SAFE!", "red", "red", 20, runTime+1000));
     }
+
+    return animations;
+}
+
+function createThrowAnimations(throwPositions: [number, number][], throwTimes: number[], throwChain: string[], isHome: boolean, cur: GameState, startTime: number = 0): AnimationKeyFrame[] {
+    const animations: AnimationKeyFrame[] = [];
+    let time = startTime;
+    const fill = `#${isHome ? cur.homeColor : cur.awayColor}`;
+    const stroke = getContrastTextColor(isHome ? cur.homeColor : cur.awayColor);
+
+    for (let i = 1; i < throwPositions.length; i++) {
+        const from = toVec(throwPositions[i-1]);
+        const to = toVec(throwPositions[i]);
+        const duration = throwTimes[i-1];
+        const walkTime = 400+Math.random()*600; // Catcher takes up to .5s to walk to the ball
+        const arrivalTime = time+duration-Math.random()*1000; // Catcher arrives up to a half-second before the ball
+
+        animations.push(createTextKeyFrame('Ball', from, {x: to.x, y: to.y, rotation: 500 + Math.random() * 1000}, time, duration, '⚾'));
+        animations.push(createMoveKeyFrame(throwChain[i], positionToXY(throwChain[i]), to, arrivalTime-walkTime, walkTime, fill, stroke));
+        animations.push(createTextKeyFrame(`${throwChain[i]}-text`, offsetText(positionToXY(throwChain[i])), offsetText(to), arrivalTime-walkTime, walkTime, fielderLabels[throwChain[i]]));
+        animations.push(createMoveKeyFrame(throwChain[i], to, positionToXY(throwChain[i]), time+duration+walkTime, walkTime, fill, stroke));
+        animations.push(createTextKeyFrame(`${throwChain[i]}-text`, offsetText(to), offsetText(positionToXY(throwChain[i])), time+duration+walkTime, walkTime, fielderLabels[throwChain[i]]));
+        time += duration;
+    }
+
+    animations.push(createTextKeyFrame('Ball', toVec(throwPositions[throwPositions.length-1]), positionToXY("Pitcher"), time+800, 800, '⚾'));
 
     return animations;
 }
@@ -610,7 +663,7 @@ function createRunnerAnimations(prev: GameState, cur: GameState, throwChain: (ke
 function generateInningStartAnimations(prev: GameState, cur: GameState, next: GameState, isHome: boolean): AnimationKeyFrame[] {
     const dugout = isHome ? "HomeDugout" : "AwayDugout";
     return [
-        ...generateResetFielders(isHome, cur, 3000), 
+        ...generateResetFielders(isHome, cur, {forcePitcherName: next.event.pitcher, start: 3000}), 
         ...Object.values(inverseFielderLabels).flatMap((p, i) => {
             const fromPos = positionToXY(dugout);
             const toPos = positionToXY(p);
@@ -633,19 +686,18 @@ function generateInningEndAnimations(prev: GameState, cur: GameState, next: Game
             const fill = `#${isHome ? cur.homeColor : cur.awayColor}`;
             const stroke = getContrastTextColor(isHome ? cur.homeColor : cur.awayColor);
 
-            const move = createMoveKeyFrame(p, fromPos, toPos, 0, 3000, fill, stroke);
-            const moveText = createTextKeyFrame(`${p}-text`, offsetText(fromPos), offsetText(toPos), 0, 3000, p !== "Pitcher" ? fielderLabels[p] : cur.event.pitcher ?? 'P');
+            const move = createMoveKeyFrame(p, fromPos, toPos, 0, 3000, fill, stroke, 3300);
+            const moveText = createTextKeyFrame(`${p}-text`, offsetText(fromPos), offsetText(toPos), 0, 3000, p !== "Pitcher" ? fielderLabels[p] : cur.event.pitcher ?? 'P', "black", "none", 12, 3300);
 
-            const killPlayer = killObject(p, 3300, "Object");
-            const killText = killObject(`${p}-text`, 3300, "Text");
-
-            return [move, moveText, killPlayer, killText];
+            return [move, moveText];
         })  
     ];
 }
 
-function generatePitchAnimations(prev: GameState, cur: GameState, next: GameState, isHome: boolean): AnimationKeyFrame[] {
-    const animations = generateResetFielders(isHome, cur);
+function generatePitchAnimations(prev: GameState, cur: GameState, next: GameState, isHome: boolean,): AnimationKeyFrame[] {
+    const animations = [...generateResetFielders(isHome, cur), ...generateResetRunners(isHome, prev)];
+    animations.push(createHoldKeyFrame('Batter', positionToXY("BatterLeft"), 0, 3000, `#${isHome ? cur.awayColor : cur.homeColor}`, getContrastTextColor(isHome ? cur.awayColor : cur.homeColor)));
+    animations.push(createHoldTextKeyFrame('Batter-text', offsetText(positionToXY("BatterLeft")), 0, 3000, cur.event.batter ?? ''));
 
     const speed = Math.min(120, Math.max(cur.pitchSpeed ?? 80, 80))
     const duration = 1300 + ((100-speed)*10); // 1.3s +- .2s
@@ -680,7 +732,7 @@ function generateNowBattingAnimations(prev: GameState, cur: GameState, next: Gam
     const fill = isHome ? `#${cur.awayColor}` : `#${cur.homeColor}`;
     const stroke = getContrastTextColor(isHome ? cur.awayColor : cur.homeColor);
 
-    const animations = generateResetFielders(isHome, cur);
+    const animations = [...generateResetFielders(isHome, cur), ...generateResetRunners(isHome, prev)];
     if (prev.event.message.includes('struck out')){
         reassignId('Batter', 'OldBatter');
         reassignId('Batter-text', 'OldBatter-text');
@@ -694,47 +746,65 @@ function generateNowBattingAnimations(prev: GameState, cur: GameState, next: Gam
 }
 
 function generateFieldingAnimations(prev: GameState, cur: GameState, next: GameState, isHome: boolean): AnimationKeyFrame[] {
-    const animations: AnimationKeyFrame[] = [];
+    const animations: AnimationKeyFrame[] = [...generateResetFielders(isHome, cur), ...generateResetRunners(isHome, prev)];
+    const batterName = prev.event.batter ?? '';
 
     const hitLocation = getHitLocation(prev.event.message); // Positions-friendly key of the ball's first destination
     const throwChain = parseThrowChain(cur.event.message, hitLocation); // Get the order in which ball moves (["Home", "Shortstop", "FirstBase"])
     const throwTimes = Array(throwChain.length - 1).fill(0).map(() => 1000 + Math.random() * 500); // 1-1.5s per throw
-    const throwPositions = throwChain.map(loc => jitterPosition(positions[loc])); // Slightly randomize the ball around its location
+    const throwPositions = [positions[throwChain[0]], ...throwChain.slice(1).map(loc => jitterPosition(positions[loc]))]; // Slightly randomize the ball around its location (exluding home)
     const totalThrowTime = throwTimes.reduce((a, b) => a + b, 0);
 
-    // Map bases keys to 2D positions
-    const baseKeyMap: Record<'first'|'second'|'third', keyof typeof positions> = {
-        first: 'FirstRunner',
-        second: 'SecondRunner',
-        third: 'ThirdRunner',
-    };
-
     // Parse message to find where people got out. Assumes 'XXXX out at YYYYY
-    function parseOuts(message: string): {name: string, base: keyof typeof positions}[] {
-        const outs: {name: string, base: keyof typeof positions}[] = [];
+    function parseOuts(message: string, batterName: string): { name: string, base: keyof typeof positions }[] {
+        const outs: { name: string, base: keyof typeof positions }[] = [];
 
-        const regex = /([\w\s'.-]+?) out at (\w+)/gi;
-        let match: RegExpExecArray | null;
-        while ((match = regex.exec(message)) !== null) { // We love the walrus operator
-            const [_, rawName, rawBase] = match;
-            const name = rawName.trim();
-            const baseName = rawBase.trim().toLowerCase();
+        // All of this is for the weird batting formatting
+        const outPatterns = [
+            { regex: new RegExp(`${batterName} (lines|flies|pops|grounds) out`, 'i'), base: 'FirstBase' },
+            { regex: new RegExp(`${batterName} out at (first|second|third|home)`, 'i') },
+            { regex: /double play.*out at (first|second|third|home)/gi },
+            { regex: /triple play.*out at (first|second|third|home)/gi }
+        ];
 
-            let base: keyof typeof positions = "Home";
-            if (baseName.startsWith('first')) base = 'FirstRunner';
-            else if (baseName.startsWith('second')) base = 'SecondRunner';
-            else if (baseName.startsWith('third')) base = 'ThirdRunner';
-            outs.push({ name, base });
+        for (const pattern of outPatterns) {
+            const match = pattern.regex.exec(message);
+            if (match) {
+                let base = match[1]?.toLowerCase() as string;
+                if (!base) base = 'FirstRunner'; // default for batter if not specified
+                const outBase = {
+                    first: 'FirstRunner',
+                    second: 'SecondRunner',
+                    third: 'ThirdRunner',
+                    home: 'Home'
+                }[base] as keyof typeof positions;
+                outs.push({ name: batterName, base: outBase });
+            }
         }
+
+        // XXX out at YYY for base runners
+        const runnerOuts = [...message.matchAll(/([\w.'-]+) out at (first|second|third|home)/gi)];
+        for (const [, name, base] of runnerOuts) {
+            outs.push({
+                name,
+                base: {
+                    first: 'FirstRunner',
+                    second: 'SecondRunner',
+                    third: 'ThirdRunner',
+                    home: 'Home'
+                }[base.toLowerCase()] as keyof typeof positions
+            });
+        }
+
         return outs;
     }
 
-    const outs = parseOuts(cur.event.message);
+    const outs = parseOuts(cur.event.message, batterName);
 
     (['first', 'second', 'third'] as const).forEach(base => {
         const prevName = prev.bases[base];
         const curName = cur.bases[base];
-        if (prevName && prevName !== cur.bases[base]) {
+        if (prevName && prevName !== curName) {
             const isOut = outs.some(out => out.name === prevName); // some runs this code like map, and returns a boolean
             const outBase = outs.find(out => out.name === prevName)?.base;
             animations.push(...createRunnerAnimations(prev, cur, throwChain, throwTimes, totalThrowTime, isHome, prevName, isOut, outBase));
@@ -742,10 +812,12 @@ function generateFieldingAnimations(prev: GameState, cur: GameState, next: GameS
     });
 
     // Batter separate
-    const batterName = prev.event.batter ?? '';
-    const batterOut = outs.some(out => out.name === batterName);
-    const batterOutBase = outs.find(out => out.name === batterName)?.base ?? 'FirstRunner';
+    const batterOut = outs.some(out => out.name === batterName) || cur.event.message.includes('out,');
+    const batterOutBase = outs.find(out => out.name === batterName)?.base ?? throwChain[throwChain.length-1];
     animations.push(...createRunnerAnimations(prev, cur, throwChain, throwTimes, totalThrowTime, isHome, batterName, batterOut, batterOut ? batterOutBase : 'Home'));
+
+    // Balls
+    animations.push(...createThrowAnimations(throwPositions, throwTimes, throwChain, isHome, cur));
 
     return animations;
 }
@@ -768,187 +840,6 @@ function compileAnimationsFromGameState(prev: GameState, cur: GameState, next: G
             return [];
     }
 }
-
-// function compileAnimationsFromGameState(prev: GameState, cur: GameState, next: GameState) {
-//     let animations: AnimationKeyFrame[] = [];
-//     const isHome = cur.event.inning_side === 0
-
-//     if (cur.phase === 'InningStart') {
-//         const dugout = isHome ? "HomeDugout" : "AwayDugout";
-//         animations = [...generateResetFielders(isHome, cur, 3000), ...Object.values(inverseFielderLabels).flatMap((p, i) => {
-//             const fromPos = {x: positions[dugout][0], y: positions[dugout][1]};
-//             const toPos = {x: positions[p][0], y: positions[p][1]};
-//             const textFrom = {x: fromPos.x, y: fromPos.y - 20};
-//             const textTo = {x: toPos.x, y: toPos.y - 20};
-//             const fill = `#${isHome ? cur.homeColor : cur.awayColor}`
-//             const stroke = getContrastTextColor(isHome ? cur.homeColor : cur.awayColor);
-
-//             const move = createMoveKeyFrame(p, fromPos, toPos, 0, 3000, fill, stroke);
-//             const moveText = createTextKeyFrame(`${p}-text`, textFrom, textTo, 0, 3000, p !== "Pitcher" ? fielderLabels[p] : next.event.pitcher ?? 'P', "black", "none");
-//             return [move, moveText];
-//         })];
-//     } else if (cur.phase === 'InningEnd') {
-//         const dugout = isHome ? "HomeDugout" : "AwayDugout";
-//         animations = [...Object.values(inverseFielderLabels).flatMap((p, i) => {
-//             const toPos = {x: positions[dugout][0], y: positions[dugout][1]};
-//             const fromPos = {x: positions[p][0], y: positions[p][1]};
-//             const textFrom = {x: fromPos.x, y: fromPos.y - 20};
-//             const textTo = {x: toPos.x, y: toPos.y - 20};
-//             const fill = isHome ? `#${cur.homeColor}` : `#${cur.awayColor}`;
-//             const stroke = getContrastTextColor(isHome ? cur.homeColor : cur.awayColor);
-
-//             const move = createMoveKeyFrame(p, fromPos, toPos, 0, 3000, fill, stroke);
-//             const moveText = createTextKeyFrame(`${p}-text`, textFrom, textTo, 0, 3000, p !== "Pitcher" ? fielderLabels[p] : cur.event.pitcher ?? 'P', "black", "none");
-//             const killPlayer = killObject(p, 3300, "Object");
-//             const killText = killObject(`${p}-text`, 3300, "Text");
-//             return [move, moveText, killPlayer, killText];
-//         })]
-//     } else if (cur.phase === 'Pitch') {
-//         animations = generateResetFielders(isHome, cur);
-
-//         const speed = Math.min(120, Math.max(cur.pitchSpeed ?? 80, 80))
-//         const duration = 1300 + ((100-speed)*10); // 1.3s +- .2s
-//         const fromPos = {x: positions["Pitcher"][0], y: positions["Pitcher"][1], rotation: 0};
-//         const toPos = {x: positions["Home"][0], y: positions["Home"][1], rotation: 1080};
-//         const resultLocation = {x: toPos.x, y: toPos.y - 40};
-//         const swingText = (cur.ballsIncreased || cur.strikesIncreased && cur.event.message.includes("looking")) ? "No Swing..." : "A Swing..."
-//         let resultText = '';
-
-//         if (cur.strikesIncreased)
-//             resultText = "STRIKE!";
-//             if (cur.event.message.includes('Foul'))
-//                 resultText = "FOUL!";
-//         else if (cur.ballsIncreased)
-//             resultText = "BALL!";
-//         else if (cur.outsIncreased)
-//             resultText = "STRIKEOUT!";
-//         else if (cur.event.message.includes('hit by pitch'))
-//             resultText = "HBP!";
-
-//         if (prev.event.message.includes('Foul'))
-//             animations.push(foulBallAnimation("R"));
-//         animations.push(createHoldTextKeyFrame('Ball', fromPos, 700, 800, "⚾", "red", "white"));
-//         animations.push(createTextKeyFrame('Ball', fromPos, toPos, 1500, duration, "⚾", "red", "white"));
-//         animations.push(createHoldTextKeyFrame('SwingText', resultLocation, 1500+duration, 4000-(1500+duration), swingText, "white", "white", 20));
-//         animations.push(createHoldTextKeyFrame('SwingText', resultLocation, 4000, 1500, "And...", "white", "white", 20));
-//         animations.push(createHoldTextKeyFrame('SwingText', resultLocation, 5500, 500, resultText, "white", "white", 20));
-//     } else if (cur.phase === 'NowBatting') {
-//         const dugout = isHome ? positions["AwayDugout"] : positions["HomeDugout"];
-//         const fill = isHome ? `#${cur.awayColor}` : `#${cur.homeColor}`;
-//         const stroke = getContrastTextColor(isHome ? cur.awayColor : cur.homeColor);
-
-//         animations = generateResetFielders(isHome, cur);
-//         if (prev.event.message.includes('struck out')){
-//             reassignId('Batter', 'OldBatter');
-//             reassignId('Batter-text', 'OldBatter-text');
-//             animations.push(createMoveKeyFrame('OldBatter', {x: positions["BatterLeft"][0], y: positions["BatterLeft"][1]}, {x: dugout[0], y: dugout[1]}, 0, 2500, fill, stroke, 2700));
-//             animations.push(createTextKeyFrame('OldBatter-text', {x: positions["BatterLeft"][0], y: positions["BatterLeft"][1]-20}, {x: dugout[0], y: dugout[1]-20}, 0, 2500, prev.event.batter ?? 'Batter', "black", "none", 12, 2700));
-//         }
-//         animations.push(createMoveKeyFrame('Batter', {x: dugout[0], y: dugout[1]}, {x: positions["BatterLeft"][0], y: positions["BatterLeft"][1]}, 0, 2500, fill, stroke));
-//         animations.push(createTextKeyFrame('Batter-text', {x: dugout[0], y: dugout[1]-20}, {x: positions["BatterLeft"][0], y: positions["BatterLeft"][1]-20}, 0, 2500, next.event.batter ?? 'Batter', "black", "none"));
-//     } else if (cur.phase === 'Field') {
-//         let hitLocation = '';
-//         const outCount = (cur.event.message.match(/\bout\b/gi) || []).length;
-//         if (prev.event.message.includes("to center field"))
-//             hitLocation = "CenterFielder";
-//         else if (prev.event.message.includes("to left field"))
-//             hitLocation = "LeftFielder";
-//         else if (prev.event.message.includes("to right field"))
-//             hitLocation = "RightFielder";
-//         else if (prev.event.message.includes("to first base"))
-//             hitLocation = "FirstBase";
-//         else if (prev.event.message.includes("to second base"))
-//             hitLocation = "SecondBase";
-//         else if (prev.event.message.includes("to third base"))
-//             hitLocation = "ThirdBase";
-//         else if (prev.event.message.includes("to the shortstop"))
-//             hitLocation = "Shortstop";
-
-//         let throwChain: (keyof typeof positions)[] = ["Home", hitLocation];
-//         let throwTimes: number[] = [1000+Math.random()*500];
-//         let throwPositions: [number, number][] = [];
-
-//         if (cur.event.message.includes("to")) {
-//             const [_, throwPart] = cur.event.message.split(",", 2);
-//             const matches = [...(throwPart?.matchAll(/\b([1-3][B]|SS|[LRC]F)\b/g) ?? [])].slice(1);
-//             throwChain = [...throwChain, ...matches.map(match => inverseFielderLabels[match[1]]).filter(pos => !!pos)]; // Remove undefined
-//         }
-//         for (let i = 0; i < throwChain.length-2; i++)
-//             throwTimes.push(1000+Math.random()*500)
-//         for (const loc of throwChain)
-//             throwPositions.push(jitterPosition(positions[loc]));
-
-//         for (let i = 0; i < throwTimes.length; i++){
-//             const startPos = {x: throwPositions[i][0], y: throwPositions[i][1], rotation: 0};
-//             const endPos = {x: throwPositions[i+1][0], y: throwPositions[i+1][1], rotation: 600+Math.random()*1800};
-//             const sumTime = throwTimes.slice(0, i).reduce((a, b) => a + b, 0); // Sum all previous indexes
-
-//             const catcherStart = {x: positions[throwChain[i+1]][0], y: positions[throwChain[i+1]][1]};
-//             const catcherMoveTime = 200 + Math.random()*500;
-//             const catcherResetStart = sumTime+throwTimes[i]+Math.random()*300;
-
-//             const catcherText = fielderLabels[throwChain[i+1]];
-//             const catcherTextStart = getTextOffset(catcherStart)
-//             const catcherTextEnd = getTextOffset(endPos);
-
-//             animations.push(createTextKeyFrame('Ball', startPos, endPos, sumTime, throwTimes[i], "⚾")); // Move Ball
-//             animations.push(createMoveKeyFrame(throwChain[i+1], catcherStart, endPos, sumTime+(Math.random()*300), catcherMoveTime)); // Move Players
-//             animations.push(createTextKeyFrame(`${throwChain[i+1]}-text`, catcherTextStart, catcherTextEnd, sumTime+(Math.random()*300), catcherMoveTime, catcherText, "black", "none")); // Move Player Text
-
-//             // Reset player
-//             animations.push(createMoveKeyFrame(throwChain[i+1], endPos, catcherStart, catcherResetStart, 200));
-//             animations.push(createTextKeyFrame(`${throwChain[i+1]}-text`, catcherTextEnd, catcherTextStart, catcherResetStart, 200, catcherText, "black", "none"));
-//         }
-//         // Reset Ball
-//         const totalThrowTime = throwTimes.reduce((a, b) => a + b, 0);
-
-//         const catcherStart = {x: positions[throwChain[throwChain.length-1]][0], y: positions[throwChain[throwChain.length-1]][1]};
-//         const endPos = {x: throwPositions[throwPositions.length-1][0], y: throwPositions[throwPositions.length-1][1]};
-//         const plate = {x: positions["Pitcher"][0], y: positions["Pitcher"][1], rotation: 0};
-//         animations.push(createTextKeyFrame('Ball', endPos, catcherStart, totalThrowTime, 200, "⚾"));
-//         animations.push(createTextKeyFrame('Ball', catcherStart, {x: plate.x, y: plate.y, rotation: 600+Math.random()*1800}, totalThrowTime + 600, 1000+Math.random()*400, "⚾"));
-
-//         // Handle bases (the hard part)
-//         const runStartDelay = 200 + Math.random()*200;
-//         const safetyBuffer = 200+Math.random()*200; // Arrive 0.2-0.4s after the ball
-//         const runnerTotalTime = totalThrowTime + safetyBuffer - runStartDelay;
-
-//         // Batter got out
-//         if (!cur.baseQueue.includes(prev.event.batter ?? '')) {
-//             const outBase = baseFromFielder[throwChain[throwChain.length - 1]];
-//             const outBaseIndex = basePath.indexOf(outBase);
-//             const batterRunPath = basePath.slice(0, outBaseIndex + 1);
-
-//             const segmentCount = batterRunPath.length;
-//             const baseDurations: number[] = Array(segmentCount).fill(runnerTotalTime / segmentCount); // Equal timing (for now)
-
-//             let runTime = runStartDelay;
-
-//             for (let i = 0; i < segmentCount; i++) {
-//                 const from = i === 0 ? positions["Home"] : positions[batterRunPath[i - 1]];
-//                 const to = positions[batterRunPath[i]];
-//                 const duration = baseDurations[i];
-
-//                 animations.push(createMoveKeyFrame('Batter', { x: from[0], y: from[1] }, { x: to[0], y: to[1] }, runTime, duration));
-//                 animations.push(createTextKeyFrame('Batter-text', getTextOffset({ x: from[0], y: from[1] }), getTextOffset({ x: to[0], y: to[1] }), runTime, duration, prev.event.batter ?? ''));
-//                 runTime += duration;
-//             }
-
-//             const outPos = positions[outBase];
-//             animations.push(createTextKeyFrame("OutMarker", { x: outPos[0], y: outPos[1] }, getTextOffset({ x: outPos[0], y: outPos[1] }), runTime, 500, "OUT!", "red", "red", 20));
-//             animations.push(killObject("OutMarker", runTime+1000, "Text")); // Kill text
-
-//             // Walk of shame
-//             const dugout = isHome ? positions["AwayDugout"] : positions["HomeDugout"];
-//             animations.push(createMoveKeyFrame('Batter', { x: outPos[0], y: outPos[1] }, {x: dugout[0], y: dugout[1]}, runTime+400, 1200));
-//             animations.push(createTextKeyFrame('Batter-text', getTextOffset({ x: outPos[0], y: outPos[1] }), getTextOffset({x: dugout[0], y: dugout[1]}), runTime+400, 1200, prev.event.batter ?? ''));
-
-
-//         }
-//     }
-
-//     return animations;
-// }
 
 // Well. Let's get to work?
 export default function AnimatedGame({ homeTeam, awayTeam, game, id, }: { homeTeam: Team; awayTeam: Team; game: Game; id: string; }) {
@@ -984,6 +875,9 @@ export default function AnimatedGame({ homeTeam, awayTeam, game, id, }: { homeTe
     const liveModeRef = useRef(liveMode);
     const isPlayingRef = useRef(isPlaying);
     const lastAdvanceTime = useRef(performance.now());
+    const lastAdvanceRef = useRef(performance.now());
+    const pauseTimeRef = useRef<number | null>(null);
+    const deltaTimeRef = useRef<number>(0);
     const lastAnimationStateRef = useRef<undefined|number>(undefined);
     const animationsRef = useRef<AnimationKeyFrame[]>([]);
 
@@ -1018,7 +912,7 @@ export default function AnimatedGame({ homeTeam, awayTeam, game, id, }: { homeTe
     useEffect(() => {
         let isMounted = true;
         let animationFrame: number;
-        let lastAdvance = performance.now();
+        lastAdvanceRef.current = performance.now();
 
         // Fetch new events
         async function poll() {
@@ -1071,12 +965,24 @@ export default function AnimatedGame({ homeTeam, awayTeam, game, id, }: { homeTe
 
         const tick = () => {
             const now = performance.now();
-            const delta = now - lastAdvance;
 
-            if (delta >= 6000) {
-                poll();
-                advance();
-                lastAdvance = now;
+            if (!isPlayingRef.current) {
+                // If it paused, keep updating pauseTime
+                if (pauseTimeRef.current === null) pauseTimeRef.current = now;
+            } else {
+                // Was paused, shift lastAdvance
+                if (pauseTimeRef.current !== null) {
+                    const pauseDuration = now - pauseTimeRef.current
+                    lastAdvanceRef.current += pauseDuration;
+                    pauseTimeRef.current = null;
+                }
+                deltaTimeRef.current = now - lastAdvanceRef.current;
+
+                if (deltaTimeRef.current >= 6000) {
+                    poll();
+                    advance();
+                    lastAdvanceRef.current = now;
+                }
             }
 
             setRenderTick(t => t + 1);
@@ -1107,17 +1013,20 @@ export default function AnimatedGame({ homeTeam, awayTeam, game, id, }: { homeTe
         setIsPlaying(false); 
         setEventIndex(Math.max(1, Math.min(index, gameStates.length - 1)));
         lastAdvanceTime.current = performance.now();
+        lastAdvanceRef.current = performance.now();
+        deltaTimeRef.current = 0;
+        if (pauseTimeRef.current) pauseTimeRef.current = performance.now();
     }
 
     useEffect(() => {
-        applyAnimations(animationsRef.current, performance.now() - lastAdvanceTime.current);
+        applyAnimations(animationsRef.current, deltaTimeRef.current);
     }, [renderTick]); // Reruns each frame
 
     if (!gameStates.length || gameStates.length === 0 || eventIndex === 0) return (<Loading />);
 
     return (<main className="mt-16">
         <div className="w-full max-w-[min(100vw,1250px)] mx-auto mt-20">
-            <FieldBackground lastGameState={gameStates[eventIndex-1]} gameState={gameStates[eventIndex]} nextGameState={gameStates[eventIndex+1]} deltaTime={performance.now() - lastAdvanceTime.current} />
+            <FieldBackground lastGameState={gameStates[eventIndex-1]} gameState={gameStates[eventIndex]} nextGameState={gameStates[eventIndex+1]} deltaTime={deltaTimeRef.current} />
             <div className="controls flex flex-col justify-center items-center gap-4 text-center">
                 {liveMode ? 
                     <div className="text-theme-text font-semibold">"LIVE 🔴"</div> 
