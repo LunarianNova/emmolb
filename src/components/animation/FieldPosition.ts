@@ -1,0 +1,1 @@
+type FieldPosition = | "Pitcher" | "Catcher" | "FirstBaseman" | "SecondBaseman" | "Shortstop" | "ThirdBaseman" | "LeftFielder" | "CenterFielder" | "RightFielder" | "FirstRunner" | "SecondRunner" | "ThirdRunner" | "Batter" | "Unknown";
