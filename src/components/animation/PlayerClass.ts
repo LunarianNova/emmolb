@@ -30,7 +30,7 @@ interface PlayerOptions {
     number?: number;
 }
 
-export class Player {
+export class AnimatedPlayer {
     group: SVGGElement;
     name: string;
     team: 'AWAY' | 'HOME';

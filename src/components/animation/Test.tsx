@@ -1,5 +1,5 @@
 'use client'
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Scoreboard } from "./Scoreboard";
 import { Announcer } from "./Announcer";
 import { Vector2 } from "@/types/Vector2";
@@ -10,13 +10,15 @@ import GameInfo from "./GameInfo";
 import { Event } from "@/types/Event";
 import Loading from "../Loading";
 import { usePolling } from "@/hooks/Poll";
-import { Player } from "./PlayerClass";
+import { AnimatedPlayer } from "./PlayerClass";
 import { positions } from "./Constants";
+import { Player } from "@/types/Player";
+import { Navbar } from "../Navbar";
 
-function createPlayersForPositions(team: 'HOME' | 'AWAY', teamColor: string): Player[] {
+function createPlayersForPositions(team: 'HOME' | 'AWAY', teamColor: string): AnimatedPlayer[] {
     const pos = ['Pitcher', 'FirstBaseman', 'SecondBaseman', 'ThirdBaseman', 'Shortstop', 'CenterFielder', 'LeftFielder', 'RightFielder']
     return pos.map((positionName, i) => {
-        const p =new Player({
+        const p =new AnimatedPlayer({
             teamColor,
             position: positionName,
             team,
@@ -34,27 +36,41 @@ export default function GameField({homeTeam, awayTeam, game, id,}: {homeTeam: Te
     const svgRef = useRef<SVGSVGElement>(null);
 
     const [eventLog, setEventLog] = useState<Event[]>(game.event_log);
+    const [players, setPlayers] = useState<Player[]>([]);
+
+    const playerIds = useMemo(
+        () => [
+            ...homeTeam.players.map((p) => p.player_id),
+            ...awayTeam.players.map((p) => p.player_id),
+        ],
+        [homeTeam.players, awayTeam.players]
+    );
 
     useEffect(() => {
-        if (!svgRef.current) return;
+        if (playerIds.length === 0) return;
+        async function api() {
+            const playersRes = await fetch(`/nextapi/players?ids=${playerIds.join(',')}`);
+            if (!playersRes.ok) throw new Error('Failed to load player data');
+            const response = await playersRes.json();
+            const players: Player[] = response.players;
+            setPlayers(players);
+        }
 
-        // Clear previous announcer if any
+        api();
+    }, [playerIds])
+
+    useEffect(() => {
+        if (!svgRef.current || players.length === 0 || eventLog.length === 0) return;
+
         const existing = svgRef.current.querySelector("#Announcer");
         if (existing) return;
 
-        const players = createPlayersForPositions('AWAY', '#ba56cd');
-        players.forEach(p => {
-            svgRef.current?.appendChild(p.group);
-            p.walkOn();
-            setTimeout(() => {p.walkOff();},10000)
-        });
-
-        // Instantiate announcer class and mount it
-        const announcer = new Announcer({position: new Vector2(-180, 490)});
+        const announcer = new Announcer({ position: new Vector2(-180, 490) });
         svgRef.current.appendChild(announcer.group);
         announcer.startBlinking();
-        announcer.sayMessage("Today's game is looking like a good one. If only my programmers would actually make the game live! But they're too busy redesigning me!");
-    }, []);
+        announcer.sayMessage("Today's game is looking like a good one...");
+    }, [players.length, eventLog.length]);
+
 
     usePolling({
         interval: 6000,
@@ -76,7 +92,7 @@ export default function GameField({homeTeam, awayTeam, game, id,}: {homeTeam: Te
         }
     });
 
-    if (!eventLog || eventLog.length === 0) return (<Loading />)
+    if (!eventLog || eventLog.length === 0 || players.length === 0) return (<><Navbar /><Loading /></>)
 
     const lastEvent = eventLog[eventLog.length-1];
 
