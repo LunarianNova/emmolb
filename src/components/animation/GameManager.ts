@@ -54,6 +54,7 @@ export class GameManager {
         const next = this.eventLog[this.eventIndex + 1] || null;
 
         this.handleEvent({prev, cur, next});
+        this.eventIndex++;
 
         this.intervalID = window.setTimeout(() => {
             if (this.isPlaying) this.processNextEvent();
@@ -67,5 +68,6 @@ export class GameManager {
             this.fieldingTeam.endFieldingInning();
             const _ = this.fieldingTeam === this.awayTeam ? this.homeTeam.startFieldingInning() : this.awayTeam.startFieldingInning();
         }
+        this.announcer.sayMessage(prev?.message ?? '');
     }
 }

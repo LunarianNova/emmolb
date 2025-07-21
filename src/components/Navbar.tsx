@@ -134,6 +134,7 @@ export function Navbar() {
                 <Link href='https://discord.gg/cr3tRG2xqq' className='block'>MMOLB Discord</Link>
                 <Link href='https://reddit.com/r/MMOLB' className='block'>MMOLB Reddit</Link>
                 <Link href='https://ko-fi.com/echoviax' className='block'>Buy us a Coffee</Link>
+                <Link href='https://github.com/LunarianNova/emmolb' className='block'>Github Repo</Link>
               </div>
             </details>
 
@@ -249,6 +250,14 @@ export function Navbar() {
                 className="block w-full text-left px-3 py-2 rounded link-hover transition cursor-pointer"
               >
                 MMOLB Reddit
+              </Link>
+              <Link
+                href="https://github.com/LunarianNova/emmolb"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block w-full text-left px-3 py-2 rounded link-hover transition cursor-pointer"
+              >
+                Github Repo
               </Link>
             </div>
           </div>

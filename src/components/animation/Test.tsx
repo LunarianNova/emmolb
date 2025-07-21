@@ -77,6 +77,7 @@ export default function GameField({homeTeam, awayTeam, game, id,}: {homeTeam: Te
 
         const gameManager = new GameManager({homeTeam: homeTeamManager, awayTeam: awayTeamManager, announcer, eventLog, game})
         setGameManager(gameManager);
+        gameManager.start();
 
     }, [players, eventLog, homeTeam, awayTeam, game]);
 
@@ -84,7 +85,7 @@ export default function GameField({homeTeam, awayTeam, game, id,}: {homeTeam: Te
     usePolling({
         interval: 6000,
         pollFn: async () => {
-            const after = (eventLog.length).toString();
+            const after = (eventLog.length+1).toString();
             const res = await fetch(`/nextapi/game/${id}/live?after=${after}`);
             if (!res.ok) throw new Error("Failed to fetch events");
             return res.json();
