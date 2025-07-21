@@ -1,4 +1,6 @@
 import { getContrastTextColor } from "@/helpers/Colors";
+import { positions } from "./Constants";
+import { Vector2 } from "@/types/Vector2";
 
 type FacingDirection = "front" | "back";
 type Handedness = "L" | "R" | "S";
@@ -19,13 +21,12 @@ const eyeOffsets: Record<Direction8, {dx: number; dy: number}> = {
 interface PlayerOptions {
     name: string;
     teamColor: string;
-    position: string;
+    position: keyof typeof positions;
     team: 'AWAY' | 'HOME';
     facing?: FacingDirection;
     bats: Handedness;
     throws: Handedness;
-    startX: number;
-    startY: number;
+    startPos: Vector2;
     number?: number;
 }
 
@@ -33,12 +34,12 @@ export class Player {
     group: SVGGElement;
     name: string;
     team: 'AWAY' | 'HOME';
+    position: keyof typeof positions;
     facing: FacingDirection;
     bats: Handedness;
     throws: Handedness
     isMoving: boolean = false;
-    currentX: number;
-    currentY: number;
+    posVector: Vector2;
     teamColor: string;
 
     // Elements
@@ -63,15 +64,15 @@ export class Player {
         this.facing = opts.facing ?? "front";
         this.throws = opts.throws;
         this.bats = opts.bats;
-        this.currentX = opts.startX;
-        this.currentY = opts.startY;
+        this.posVector = opts.startPos;
         this.teamColor = opts.teamColor;
+        this.position = opts.position;
 
         // Create group
         const g = document.createElementNS("http://www.w3.org/2000/svg", "g");
         g.setAttribute("id", this.name);
         this.group = g;
-        this.setPosition(opts.startX, opts.startY);
+        this.setPosition(this.posVector);
 
         const hatMain = this.makeRect(-8, -8, 16, 6, opts.teamColor, 2);
         const brim = this.makeRect(-10, -2, 20, 2, "black");
@@ -134,64 +135,100 @@ export class Player {
         return rect;
     }
 
-    setPosition(x: number, y: number) {
-        this.currentX = x;
-        this.currentY = y;
+    setPosition(target: Vector2) {
+        this.posVector = target;
 
-        const transform = `translate(${x}, ${y})`;
+        const transform = `translate(${target.x}, ${target.y})`;
 
         this.group.setAttribute("transform", transform);
     }
 
-    moveTo(x: number, y: number) {
-        this.isMoving = true;
-        this.setPosition(x, y);
-        this.isMoving = false;
-    }
-
-    moveGloveTo(targetX: number, targetY: number) {
+    moveGloveTo(target: Vector2) {
         const offsetX = this.throws === "R" ? -6 : 6;
-        this.glove.setAttribute("cx", (targetX + offsetX).toString());
-        this.glove.setAttribute("cy", targetY.toString());
+        this.glove.setAttribute("cx", (target.x + offsetX).toString());
+        this.glove.setAttribute("cy", target.y.toString());
         this.glove.style.display = "block";
     }
 
-    walkTo(targetX: number, targetY: number, speed: number = 100) {
-        if (targetY > this.currentY) this.turnAround("front");
-        else this.turnAround("back");
+    walkTo(target: Vector2, speed: number = 100): Promise<void> {
+        return new Promise(resolve => {
+            if (target.y >= this.posVector.y) this.turnAround("front");
+            else this.turnAround("back");
 
-        this.startWalking();
+            this.startWalking();
 
-        const startX = this.currentX;
-        const startY = this.currentY;
-        const dx = targetX - startX;
-        const dy = targetY - startY;
-        const distance = Math.hypot(dx, dy);
-        const duration = distance / speed * 1000;
+            const startX = this.posVector.x;
+            const startY = this.posVector.y;
+            const dx = target.x - startX;
+            const dy = target.y - startY;
+            const distance = Math.hypot(dx, dy);
+            const duration = distance / speed * 1000;
 
-        const startTime = performance.now();
+            const startTime = performance.now();
 
-        const animate = (now: number) => {
-            const elapsed = now - startTime;
-            const progress = Math.min(elapsed / duration, 1);
-            const eased = progress; // Maybe ease this?
+            const animate = (now: number) => {
+                const elapsed = now - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                const eased = progress; // Maybe ease this?
 
-            const newX = startX + dx * eased;
-            const newY = startY + dy * eased;
+                const newX = startX + dx * eased;
+                const newY = startY + dy * eased;
 
-            this.setPosition(newX, newY);
+                this.setPosition(new Vector2(newX, newY));
 
-            if (progress < 1) {
-                requestAnimationFrame(animate);
-            } else {
-                this.setPosition(targetX, targetY);
-                this.stopWalking();
-            }
-        };
+                if (progress < 1) {
+                    requestAnimationFrame(animate);
+                } else {
+                    this.setPosition(target);
+                    this.stopWalking();
+                    resolve();
+                }
+            };
 
-        requestAnimationFrame(animate);
+            requestAnimationFrame(animate);
+        });
     }
 
+    getWalkLinePos(vector: Vector2) {
+        const walkLine = new Vector2(400, 525);
+        let slope = 1;
+        if (this.team === 'AWAY') slope = -1;
+
+        const destination = new Vector2(walkLine.x + (walkLine.y-vector.y)*slope, vector.y);
+        return destination;
+    }
+
+    hide() {
+        this.group.setAttribute('opacity', '0');
+    }
+
+    show () {
+        this.group.setAttribute('opacity', '1');
+    }
+
+    async walkOff() {
+        const walkspeed = 80 + Math.random() * 40;
+        await this.walkTo(this.getWalkLinePos(this.posVector), walkspeed);
+        if (this.team === 'AWAY') {
+            await this.walkTo(this.getWalkLinePos(positions['AwayDugout']), walkspeed);
+            await this.walkTo(positions['AwayDugout'], walkspeed);
+        }
+        else if (this.team === 'HOME') {
+            await this.walkTo(this.getWalkLinePos(positions['HomeDugout']), walkspeed);
+            await this.walkTo(positions['HomeDugout'], walkspeed);
+        }
+        this.hide();
+    }
+
+    async walkOn() {
+        this.show();
+        const walkspeed = 80 + Math.random() * 40;
+        if (this.team === 'AWAY') this.setPosition(positions['AwayDugout']);
+        else if (this.team === 'HOME') this.setPosition(positions['HomeDugout']);
+        await this.walkTo(this.getWalkLinePos(this.posVector), walkspeed);
+        await this.walkTo(this.getWalkLinePos(positions[this.position]), walkspeed);
+        await this.walkTo(positions[this.position], walkspeed)
+    }
 
     hideGlove() {
         this.glove.style.display = "none";
@@ -299,7 +336,7 @@ export class Player {
 
     private animateHop(offsetY: number, duration: number, callback: () => void) {
         const start = performance.now();
-        const initialY = this.currentY;
+        const initialY = this.posVector.y;
 
         const animate = (now: number) => {
             const elapsed = now - start;
@@ -307,7 +344,7 @@ export class Player {
             const eased = 1 - Math.pow(1 - progress, 3);
 
             const newY = initialY + offsetY * eased;
-            this.setPosition(this.currentX, newY);
+            this.setPosition(new Vector2(this.posVector.x, newY));
 
             const hatY = -20 + offsetY * 0.2 * eased;
             this.hat.setAttribute("transform", `translate(0, ${hatY})`);

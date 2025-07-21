@@ -10,6 +10,25 @@ import GameInfo from "./GameInfo";
 import { Event } from "@/types/Event";
 import Loading from "../Loading";
 import { usePolling } from "@/hooks/Poll";
+import { Player } from "./PlayerClass";
+import { positions } from "./Constants";
+
+function createPlayersForPositions(team: 'HOME' | 'AWAY', teamColor: string): Player[] {
+    const pos = ['Pitcher', 'FirstBaseman', 'SecondBaseman', 'ThirdBaseman', 'Shortstop', 'CenterFielder', 'LeftFielder', 'RightFielder']
+    return pos.map((positionName, i) => {
+        const p =new Player({
+            teamColor,
+            position: positionName,
+            team,
+            bats: Math.random() > 0.5 ? 'R' : 'L',
+            throws: Math.random() > 0.5 ? 'R' : 'L',
+            startPos: Vector2.zero(),
+            name: `${positionName}`,
+        });
+        p.hide();
+        return p;
+    });
+}
 
 export default function GameField({homeTeam, awayTeam, game, id,}: {homeTeam: Team; awayTeam: Team; game: Game; id: string;}) {
     const svgRef = useRef<SVGSVGElement>(null);
@@ -21,7 +40,14 @@ export default function GameField({homeTeam, awayTeam, game, id,}: {homeTeam: Te
 
         // Clear previous announcer if any
         const existing = svgRef.current.querySelector("#Announcer");
-        if (existing) existing.remove();
+        if (existing) return;
+
+        const players = createPlayersForPositions('AWAY', '#ba56cd');
+        players.forEach(p => {
+            svgRef.current?.appendChild(p.group);
+            p.walkOn();
+            setTimeout(() => {p.walkOff();},10000)
+        });
 
         // Instantiate announcer class and mount it
         const announcer = new Announcer({position: new Vector2(-180, 490)});
@@ -44,7 +70,7 @@ export default function GameField({homeTeam, awayTeam, game, id,}: {homeTeam: Te
             }
         },
         shouldStop: (newData) => {
-            if (game.state === 'Complete') return true;
+                if (game.state === 'Complete') return true;
             const last = newData.entries?.[newData.entries.length - 1];
             return last?.event === "Recordkeeping";
         }
