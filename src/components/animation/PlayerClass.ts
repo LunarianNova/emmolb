@@ -20,6 +20,7 @@ interface PlayerOptions {
     name: string;
     teamColor: string;
     position: string;
+    team: 'AWAY' | 'HOME';
     facing?: FacingDirection;
     bats: Handedness;
     throws: Handedness;
@@ -31,6 +32,7 @@ interface PlayerOptions {
 export class Player {
     group: SVGGElement;
     name: string;
+    team: 'AWAY' | 'HOME';
     facing: FacingDirection;
     bats: Handedness;
     throws: Handedness
@@ -57,6 +59,7 @@ export class Player {
 
     constructor(opts: PlayerOptions) {
         this.name = opts.name;
+        this.team = opts.team;
         this.facing = opts.facing ?? "front";
         this.throws = opts.throws;
         this.bats = opts.bats;
