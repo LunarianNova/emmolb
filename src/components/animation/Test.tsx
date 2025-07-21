@@ -15,6 +15,7 @@ import { positions } from "./Constants";
 import { MapAPIPlayerResponse, Player } from "@/types/Player";
 import { Navbar } from "../Navbar";
 import { TeamManager } from "./TeamManager";
+import { GameManager } from "./GameManager";
 
 function createPlayersForPositions(team: 'HOME' | 'AWAY', teamColor: string): AnimatedPlayer[] {
     const pos = ['Pitcher', 'FirstBaseman', 'SecondBaseman', 'ThirdBaseman', 'Shortstop', 'CenterFielder', 'LeftFielder', 'RightFielder']
@@ -36,6 +37,7 @@ function createPlayersForPositions(team: 'HOME' | 'AWAY', teamColor: string): An
 export default function GameField({homeTeam, awayTeam, game, id,}: {homeTeam: Team; awayTeam: Team; game: Game; id: string;}) {
     const svgRef = useRef<SVGSVGElement>(null);
 
+    const [gameManager, setGameManager] = useState<GameManager>();
     const [eventLog, setEventLog] = useState<Event[]>(game.event_log);
     const [players, setPlayers] = useState<Player[]>([]);
 
@@ -63,21 +65,20 @@ export default function GameField({homeTeam, awayTeam, game, id,}: {homeTeam: Te
     useEffect(() => {
         if (!svgRef.current || players.length === 0 || eventLog.length === 0) return;
 
-        const existing = svgRef.current.querySelector("#Announcer");
-        if (existing) return;
-
-        const homeTeamManager = new TeamManager({teamName: homeTeam.name, teamColor: `#${homeTeam.color}`, side: 'HOME', roster: players.filter((p) => p.team_id === homeTeam.id)});
-        const awayTeamManager = new TeamManager({teamName: awayTeam.name, teamColor: `#${awayTeam.color}`, side: 'AWAY', roster: players.filter((p) => p.team_id === awayTeam.id)});
-
-        homeTeamManager.allPlayers.map((p) => svgRef.current!.appendChild(p.group))
-
-        homeTeamManager.startFieldingInning();
+        const rerun = svgRef.current.querySelector("#Announcer");
+        if (rerun) return;
 
         const announcer = new Announcer({ position: new Vector2(-180, 490) });
+        const homeTeamManager = new TeamManager({teamName: homeTeam.name, teamColor: `#${homeTeam.color}`, side: 'HOME', roster: players.filter((p) => p.team_id === homeTeam.id)});
+        const awayTeamManager = new TeamManager({teamName: awayTeam.name, teamColor: `#${awayTeam.color}`, side: 'AWAY', roster: players.filter((p) => p.team_id === awayTeam.id)});
+        homeTeamManager.allPlayers.map((p) => svgRef.current!.appendChild(p.group))
+        awayTeamManager.allPlayers.map((p) => svgRef.current!.appendChild(p.group))
         svgRef.current.appendChild(announcer.group);
-        announcer.startBlinking();
-        announcer.sayMessage("Today's game is looking like a good one...");
-    }, [players, eventLog.length, homeTeam, awayTeam]);
+
+        const gameManager = new GameManager({homeTeam: homeTeamManager, awayTeam: awayTeamManager, announcer, eventLog, game})
+        setGameManager(gameManager);
+
+    }, [players, eventLog, homeTeam, awayTeam, game]);
 
 
     usePolling({
@@ -91,6 +92,7 @@ export default function GameField({homeTeam, awayTeam, game, id,}: {homeTeam: Te
         onData: (newData) => {
             if (newData.entries?.length) {
                 setEventLog(prev => ([...prev, ...newData.entries]));
+                if (gameManager) gameManager.updateEventLog(eventLog);
             }
         },
         shouldStop: (newData) => {

@@ -135,6 +135,7 @@ export class Announcer {
 
         (this as any).messageDiv = div;
         g.append(this.character, messageBox);
+        this.startBlinking();
     }
 
     setPosition(position: Vector2) {

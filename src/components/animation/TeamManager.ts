@@ -95,7 +95,7 @@ export class TeamManager {
 
     switchPitcher(newPitcher: string) {
         this.currentPitcher?.walkOff();
-        this.currentPitcher = this.playersByName[newPitcher];
-        this.currentPitcher.walkOn();
+        this.currentPitcher = this.playersByName[newPitcher] ?? null;
+        this.currentPitcher?.walkOn();
     }
 }
