@@ -101,7 +101,7 @@ export class Player {
         this.label.setAttribute("fill", "black");
         this.label.setAttribute("text-anchor", "middle");
         this.label.setAttribute("x", "0");
-        this.label.setAttribute("y", "-40");
+        this.label.setAttribute("y", "-30");
         this.label.textContent = this.name;
 
         this.jerseyNumberLabel = document.createElementNS("http://www.w3.org/2000/svg", "text");
