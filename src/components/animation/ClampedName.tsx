@@ -1,7 +1,11 @@
 // It's bad I know
+import { getContrastTextColor } from "@/helpers/Colors";
+import { Team } from "@/types/Team";
 import { useRef, useEffect, useState } from "react";
 
-export function ClampedName({x, y, text, emoji, color,}: {x: number; y: number; text: string; emoji: string; color: string;}) {
+export function ClampedName({x, y, team,}: {x: number; y: number; team: Team;}) {
+    const name = `${team.location} ${team.name}` 
+
     const textRef = useRef<HTMLDivElement>(null);
     const [isOneLine, setIsOneLine] = useState(false);
 
@@ -13,15 +17,15 @@ export function ClampedName({x, y, text, emoji, color,}: {x: number; y: number; 
             }
         });
         return () => cancelAnimationFrame(handle);
-    }, [text]);
+    }, [name]);
 
     const height = 20;
     const textYOffset = 0;
 
     return (
-        <>
+        <g>
             <text x={x + 20} y={y + 12} fontSize={20} dominantBaseline="middle" textAnchor="middle">
-                {emoji}
+                {team.emoji}
             </text>
 
             <foreignObject x={x + 40} y={y + textYOffset} width={155} height={height}>
@@ -30,7 +34,7 @@ export function ClampedName({x, y, text, emoji, color,}: {x: number; y: number; 
                     height: "100%",
                     fontSize: 12,
                     fontFamily: "geist, sans-serif",
-                    color: color,
+                    color: getContrastTextColor(team.color),
                     lineHeight: "10px",
                     textAlign: "center",
                     overflow: "hidden",
@@ -45,9 +49,9 @@ export function ClampedName({x, y, text, emoji, color,}: {x: number; y: number; 
                     : { display: "-webkit-box",
                         WebkitLineClamp: 2,
                         WebkitBoxOrient: "vertical",}),}}>
-                    {text}
+                    {name}
                 </div>
             </foreignObject>
-        </>
+        </g>
     );
 }

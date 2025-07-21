@@ -1,4 +1,4 @@
-import AnimatedGame from '@/components/NeoAnimatedGame';
+import GameField from '@/components/animation/Test';
 import { MapAPIGameResponse } from '@/types/Game';
 import { MapAPITeamResponse } from '@/types/Team';
 
@@ -15,5 +15,5 @@ export default async function LiveGamePage({ params }: PageProps) {
 
     if (!res.ok) throw new Error('Failed to load game + team data');
     const { game, gameId, awayTeam, homeTeam } = await res.json();
-    return <AnimatedGame homeTeam={MapAPITeamResponse(homeTeam)} awayTeam={MapAPITeamResponse(awayTeam)} game={MapAPIGameResponse(game)} id={id} />;
+    return <GameField homeTeam={MapAPITeamResponse(homeTeam)} awayTeam={MapAPITeamResponse(awayTeam)} game={MapAPIGameResponse(game)} id={id} />;
 }

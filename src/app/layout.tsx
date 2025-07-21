@@ -13,7 +13,7 @@ import { usePathname } from "next/navigation";
 
 export default function RootLayout({ children, }: Readonly<{children: React.ReactNode;}>) {
     const pathname = usePathname();
-    const hideNavbar = pathname.includes('playground');
+    const hideNavbar = pathname.includes('live');
   
     return (
         <html lang="en">
