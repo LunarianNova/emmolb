@@ -12,6 +12,7 @@ export const positions: Record<string, Vector2> = {
     'LeftHandedBatter': new Vector2(432, 500),
     'RightHandedBatter': new Vector2(368, 500),
     'Home': new Vector2(400, 500),
+    'Catcher': new Vector2(400, 560),
     'First': new Vector2(541.5, 325),
     'Second': new Vector2(400, 190),
     'Third': new Vector2(256.5, 325),

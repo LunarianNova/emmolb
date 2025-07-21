@@ -3,7 +3,6 @@ import { positions } from "./Constants";
 import { Vector2 } from "@/types/Vector2";
 
 type FacingDirection = "front" | "back";
-type Handedness = "L" | "R" | "S";
 type Direction8 =  "N" | "NE" | "E" | "SE" | "S" | "SW" | "W" | "NW" | "None";
 
 const eyeOffsets: Record<Direction8, {dx: number; dy: number}> = {
@@ -24,8 +23,8 @@ interface PlayerOptions {
     position: keyof typeof positions;
     team: 'AWAY' | 'HOME';
     facing?: FacingDirection;
-    bats: Handedness;
-    throws: Handedness;
+    bats: "L" | "R" | "S";
+    throws: "L" | "R" | "S";
     startPos: Vector2;
     number?: number;
 }
@@ -36,8 +35,8 @@ export class AnimatedPlayer {
     team: 'AWAY' | 'HOME';
     position: keyof typeof positions;
     facing: FacingDirection;
-    bats: Handedness;
-    throws: Handedness
+    bats: "L" | "R" | "S";
+    throws: "L" | "R" | "S";
     isMoving: boolean = false;
     posVector: Vector2;
     teamColor: string;
@@ -49,7 +48,7 @@ export class AnimatedPlayer {
     private legRight: SVGRectElement;
     private glove: SVGCircleElement;
     private hat: SVGElement;
-    private label: SVGTextElement;
+    private label: SVGElement;
     private jerseyNumberLabel: SVGElement;
     private movingStartTime: number = 0;
 
@@ -100,14 +99,33 @@ export class AnimatedPlayer {
         this.glove.setAttribute("x", this.throws === "L" ? "6" : "-6");
 
         // Little guy's little name
-        this.label = document.createElementNS('http://www.w3.org/2000/svg', "text");
-        this.label.setAttribute("font-size", "12");
-        this.label.setAttribute("fill", "black");
-        this.label.setAttribute("text-anchor", "middle");
-        this.label.setAttribute("x", "0");
-        this.label.setAttribute("y", "-30");
-        this.label.textContent = this.name;
+        const labelGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+        const label = document.createElementNS('http://www.w3.org/2000/svg', "text"); 
+        const labelBackground = document.createElementNS('http://www.w3.org/2000/svg', "rect");
+        labelBackground.setAttribute("fill", "white");
+        labelBackground.setAttribute("fill-opacity", "0.5");
+        labelBackground.setAttribute("rx", "4");
+        labelBackground.setAttribute("ry", "4");
+        label.setAttribute("font-size", "12");
+        label.setAttribute("fill", "black");
+        label.setAttribute("text-anchor", "middle");
+        label.setAttribute("x", "0");
+        label.setAttribute("y", "-30");
+        label.textContent = this.name;
+        labelGroup.append(label, labelBackground);
+        this.label = labelGroup;
 
+        requestAnimationFrame(() => {
+            const bbox = label.getBBox();
+            labelBackground.setAttribute("x", (bbox.x - 4).toString());
+            labelBackground.setAttribute("y", (bbox.y - 2).toString());
+            labelBackground.setAttribute("width", (bbox.width + 8).toString());
+            labelBackground.setAttribute("height", (bbox.height + 4).toString());
+
+            // Move background behind text
+            labelGroup.insertBefore(labelBackground, label);
+        });
+        
         this.jerseyNumberLabel = document.createElementNS("http://www.w3.org/2000/svg", "text");
         this.jerseyNumberLabel.setAttribute("font-size", "12");
         this.jerseyNumberLabel.setAttribute("fill", getContrastTextColor(this.teamColor));
@@ -226,8 +244,12 @@ export class AnimatedPlayer {
         if (this.team === 'AWAY') this.setPosition(positions['AwayDugout']);
         else if (this.team === 'HOME') this.setPosition(positions['HomeDugout']);
         await this.walkTo(this.getWalkLinePos(this.posVector), walkspeed);
-        await this.walkTo(this.getWalkLinePos(positions[this.position]), walkspeed);
+        const linePos = this.getWalkLinePos(positions[this.position]);
+        if ((linePos.x < positions[this.position].x && this.team === 'HOME') || (linePos.x > positions[this.position].x && this.team === 'AWAY'))
+            linePos.x = positions[this.position].x; // Don't walk past position
+        await this.walkTo(linePos, walkspeed);
         await this.walkTo(positions[this.position], walkspeed)
+        if (this.position === 'Catcher') this.turnAround("back");
     }
 
     hideGlove() {

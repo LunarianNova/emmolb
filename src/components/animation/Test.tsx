@@ -12,8 +12,9 @@ import Loading from "../Loading";
 import { usePolling } from "@/hooks/Poll";
 import { AnimatedPlayer } from "./PlayerClass";
 import { positions } from "./Constants";
-import { Player } from "@/types/Player";
+import { MapAPIPlayerResponse, Player } from "@/types/Player";
 import { Navbar } from "../Navbar";
+import { TeamManager } from "./TeamManager";
 
 function createPlayersForPositions(team: 'HOME' | 'AWAY', teamColor: string): AnimatedPlayer[] {
     const pos = ['Pitcher', 'FirstBaseman', 'SecondBaseman', 'ThirdBaseman', 'Shortstop', 'CenterFielder', 'LeftFielder', 'RightFielder']
@@ -52,7 +53,7 @@ export default function GameField({homeTeam, awayTeam, game, id,}: {homeTeam: Te
             const playersRes = await fetch(`/nextapi/players?ids=${playerIds.join(',')}`);
             if (!playersRes.ok) throw new Error('Failed to load player data');
             const response = await playersRes.json();
-            const players: Player[] = response.players;
+            const players: Player[] = response.players.map((p: any) => (MapAPIPlayerResponse(p)));
             setPlayers(players);
         }
 
@@ -65,11 +66,18 @@ export default function GameField({homeTeam, awayTeam, game, id,}: {homeTeam: Te
         const existing = svgRef.current.querySelector("#Announcer");
         if (existing) return;
 
+        const homeTeamManager = new TeamManager({teamName: homeTeam.name, teamColor: `#${homeTeam.color}`, side: 'HOME', roster: players.filter((p) => p.team_id === homeTeam.id)});
+        const awayTeamManager = new TeamManager({teamName: awayTeam.name, teamColor: `#${awayTeam.color}`, side: 'AWAY', roster: players.filter((p) => p.team_id === awayTeam.id)});
+
+        homeTeamManager.allPlayers.map((p) => svgRef.current!.appendChild(p.group))
+
+        homeTeamManager.startFieldingInning();
+
         const announcer = new Announcer({ position: new Vector2(-180, 490) });
         svgRef.current.appendChild(announcer.group);
         announcer.startBlinking();
         announcer.sayMessage("Today's game is looking like a good one...");
-    }, [players.length, eventLog.length]);
+    }, [players, eventLog.length, homeTeam, awayTeam]);
 
 
     usePolling({
