@@ -238,18 +238,35 @@ export class AnimatedPlayer {
         this.hide();
     }
 
-    async walkOn() {
+    async walkOn(overridePos?: string) {
         this.show();
+        
+        let destination: Vector2 = Vector2.zero();
+        if (overridePos) destination = positions[overridePos];
+        else {
+            if (this.position !== 'Batter') destination = positions[this.position];
+            else {
+                if (this.bats === 'L') destination = positions['LeftHandedBatter'];
+                else if (this.bats === 'R') destination = positions['RightHandedBatter'];
+                else destination = Math.random() > 0.5 ? positions['LeftHandedBatter'] : positions['RightHandedBatter']; 
+            }
+        }
+
         const walkspeed = 80 + Math.random() * 40;
+
         if (this.team === 'AWAY') this.setPosition(positions['AwayDugout']);
         else if (this.team === 'HOME') this.setPosition(positions['HomeDugout']);
+
         await this.walkTo(this.getWalkLinePos(this.posVector), walkspeed);
-        const linePos = this.getWalkLinePos(positions[this.position]);
-        if ((linePos.x < positions[this.position].x && this.team === 'HOME') || (linePos.x > positions[this.position].x && this.team === 'AWAY'))
-            linePos.x = positions[this.position].x; // Don't walk past position
+
+        const linePos = this.getWalkLinePos(destination);
+        if ((linePos.x < destination.x && this.team === 'HOME') || (linePos.x > destination.x && this.team === 'AWAY'))
+            linePos.x = destination.x; // Don't walk past destination
         await this.walkTo(linePos, walkspeed);
-        await this.walkTo(positions[this.position], walkspeed)
-        if (this.position === 'Catcher') this.turnAround("back");
+        await this.walkTo(destination, walkspeed)
+
+        // Only two players to face away
+        if (this.position === 'Catcher' || this.position === 'Batter') this.turnAround("back");
     }
 
     hideGlove() {
@@ -339,17 +356,16 @@ export class AnimatedPlayer {
 
     startHopIdle() {
         const hopCount = 3;
-        const hopHeight = 16;
-        const duration = 150;
+        const hopHeight = 12;
+        const duration = 300;
         let hop = 0;
         const doHop = () => {
             if (hop >= hopCount) return;
+            if (this.isMoving) return;
 
-            this.animateHop(-hopHeight, duration, () => {
-                this.animateHop(hopHeight, duration, () => {
-                    hop++;
-                    doHop();
-                });
+            this.animateHop(hopHeight, duration, () => {
+                hop++;
+                doHop();
             });
         };
 
@@ -363,19 +379,21 @@ export class AnimatedPlayer {
         const animate = (now: number) => {
             const elapsed = now - start;
             const progress = Math.min(elapsed / duration, 1);
-            const eased = 1 - Math.pow(1 - progress, 3);
+            
+            const eased = 1 - Math.pow(2 * progress - 1, 2);
 
-            const newY = initialY + offsetY * eased;
+            const displacement = -offsetY * eased; // Up is negative in this application. I don't want to get into left vs. right hand arguments right now, so I won't state my opinion. I will imply it however
+            const newY = initialY + displacement;
             this.setPosition(new Vector2(this.posVector.x, newY));
 
-            const hatY = -20 + offsetY * 0.2 * eased;
+            const hatY = -20 + displacement*0.2;
             this.hat.setAttribute("transform", `translate(0, ${hatY})`);
 
             if (progress < 1) {
-                this.setPosition(new Vector2(this.posVector.x, initialY));
-                this.hat.setAttribute("transform", `translate(0, -20)`);
                 requestAnimationFrame(animate);
             } else {
+                this.setPosition(new Vector2(this.posVector.x, initialY));
+                this.hat.setAttribute("transform", `translate(0, -16)`);
                 callback();
             }
         };

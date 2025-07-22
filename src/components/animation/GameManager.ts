@@ -13,6 +13,7 @@ export class GameManager {
     private intervalID: number | null = null;
     private isPlaying: boolean = false;
     private fieldingTeam: TeamManager | null = null;
+    private battingTeam: TeamManager | null = null;
 
     constructor({homeTeam, awayTeam, game, eventLog, announcer,}: {homeTeam: TeamManager; awayTeam: TeamManager, game: Game, eventLog: Event[]; announcer: Announcer;}) {
         this.homeTeam = homeTeam;
@@ -67,11 +68,20 @@ export class GameManager {
 
     private handleEvent({prev, cur, next}: {prev: Event | null, cur: Event, next: Event | null}) {
         this.fieldingTeam = cur.inning_side === 0 ? this.homeTeam : this.awayTeam;
+        this.battingTeam = cur.inning_side === 0 ? this.awayTeam : this.homeTeam;
+
         if (cur.pitcher !== prev?.pitcher) this.fieldingTeam.switchPitcher(cur.pitcher ?? '');
-        if (cur.event === 'InningEnd' || cur.event === 'PlayBall') {
-            this.fieldingTeam.endFieldingInning();
-            const _ = this.fieldingTeam === this.awayTeam ? this.homeTeam.startFieldingInning() : this.awayTeam.startFieldingInning();
+        if (cur.batter !== prev?.batter) this.battingTeam.switchBatter(cur.batter ?? '');
+
+        switch (cur.event) {
+            case 'InningEnd':
+            case 'PlayBall':  // 'PlayBall' to catch the first inning's start
+                this.fieldingTeam.endFieldingInning();
+                this.battingTeam.startFieldingInning();
+                break;
         }
-        this.announcer.sayMessage({text: prev?.message ?? "Hello, and thank you for using my viewer. If you're on mobile, it is fully intended to be viewed in landscape mode. Report any bugs in the offical MMOLB Discord please.", duration: 4000});
+
+        // Default message shows on page load
+        this.announcer.sayMessage({text: prev?.message ?? "Howdy! If you're on mobile, this page is fully intended to be viewed in landscape mode. Report any bugs in the offical MMOLB Discord please.", duration: 4000});
     }
 }

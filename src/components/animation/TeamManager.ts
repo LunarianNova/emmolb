@@ -37,9 +37,7 @@ export class TeamManager {
     allPlayers: AnimatedPlayer[];
 
     currentPitcher?: AnimatedPlayer;
-
-    batterLeft?: AnimatedPlayer;
-    batterRight?: AnimatedPlayer;
+    currentBatter?: AnimatedPlayer;
 
     firstBaseRunner?: AnimatedPlayer;
     secondBaseRunner?: AnimatedPlayer;
@@ -97,5 +95,17 @@ export class TeamManager {
         this.currentPitcher?.walkOff();
         this.currentPitcher = this.playersByName[newPitcher] ?? null;
         this.currentPitcher?.walkOn();
+    }
+
+    async switchBatter(newBatter: string) {
+        this.currentBatter?.walkOff();
+        this.currentBatter = this.playersByName[newBatter] ?? null;
+
+        let pos: string;
+        if (this.currentBatter?.bats === 'R') pos = 'RightHandedBatter';
+        else if (this.currentBatter?.bats === 'L') pos = 'LeftHandedBatter';
+        else pos = Math.random() >= 0.5 ? 'RightHandedBatter' : 'LeftHandedBatter'; 
+        await this.currentBatter?.walkOn(pos);
+        this.currentBatter?.turnAround("back");
     }
 }
