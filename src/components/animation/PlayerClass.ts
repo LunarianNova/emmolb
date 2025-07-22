@@ -372,6 +372,8 @@ export class AnimatedPlayer {
             this.hat.setAttribute("transform", `translate(0, ${hatY})`);
 
             if (progress < 1) {
+                this.setPosition(new Vector2(this.posVector.x, initialY));
+                this.hat.setAttribute("transform", `translate(0, -20)`);
                 requestAnimationFrame(animate);
             } else {
                 callback();

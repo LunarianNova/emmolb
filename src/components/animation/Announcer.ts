@@ -184,10 +184,11 @@ export class Announcer {
     // Duration: ms the message should take to say (calculate cps)
     sayMessage({text, cps=30, duration,}: {text: string; cps?: number; duration?: number;}) {
         text = text.replace(/<[^>]*>/g, '');
+        const totalChars = text.length;
 
         if (duration)
-            cps = text.length / (duration/1000);
-            if (cps < 30) cps = 30;
+            cps = totalChars / (duration/1000);
+        if (cps < 30) cps = 30;
 
         const speed = 1000 / cps;
         this.message = text;
@@ -195,14 +196,22 @@ export class Announcer {
         div.innerHTML = '';
         this.startBobbing();
 
-        let i = 0;
-        const interval = setInterval(() => {
-            div.innerHTML += text[i++];
-            if (i >= text.length) {
-                clearInterval(interval);
+        const start = performance.now();
+
+        const step = (now: number) => {
+            const elapsed = now - start;
+            const expectedChars = Math.floor(elapsed/speed);
+
+            if (expectedChars >= totalChars) {
+                div.innerHTML = text;
                 this.stopBobbing();
+                return;
             }
-        }, speed);
+
+            div.innerHTML = text.slice(0, expectedChars);
+            requestAnimationFrame(step);
+        }
+        requestAnimationFrame(step);
     }
 
     stopBobbing() {
