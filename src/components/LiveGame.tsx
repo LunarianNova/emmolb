@@ -15,6 +15,8 @@ import { Game, MapAPIGameResponse } from '@/types/Game';
 import { Event } from '@/types/Event';
 import { CashewsPlayers } from '@/types/FreeCashews';
 import CashewsPlayerStats from './CashewsPlayerStats';
+import { BatterGameStats, GameStats, PitcherGameStats } from '@/types/GameStats';
+import { getContrastTextColor } from '@/helpers/Colors';
 
 type EventBlockGroup = {
     emoji?: string;
@@ -50,6 +52,7 @@ export default function LiveGame({ awayTeamArg, homeTeamArg, initialDataArg, gam
     const [lastEvent, setLastEvent] = useState(initialData.event_log[initialData.event_log.length - 1]);
     const [data, setData] = useState(initialData);
     const [showDetailedStats, setShowDetailedStats] = useState(false);
+    const [gameStats, setGameStats] = useState(GameStats())
     const players: Record<string, any> = {};
     const homePlayers: string[] = [];
     const awayPlayers: string[] = [];
@@ -59,12 +62,18 @@ export default function LiveGame({ awayTeamArg, homeTeamArg, initialDataArg, gam
         const fullName = `${player.first_name} ${player.last_name}`
         players[fullName] = player;
         awayPlayers.push(fullName);
+        if (player.position_type == 'Batter') {
+            gameStats.batters[fullName] = BatterGameStats();
+        }
     }
 
     for (const player of homeTeam.players) {
         const fullName = `${player.first_name} ${player.last_name}`
         players[fullName] = player;
         homePlayers.push(fullName);
+        if (player.position_type == 'Batter') {
+            gameStats.batters[fullName] = BatterGameStats();
+        }
     }
     
     const lastEventIndexRef = useRef(lastEvent.index);
@@ -235,11 +244,13 @@ export default function LiveGame({ awayTeamArg, homeTeamArg, initialDataArg, gam
     let currentQueue: string[] = [];
     let lastBases: Bases = { first: null, second: null, third: null }; 
 
+    gameStats.reset();
     for (const event of eventLog) {
-        const result = ProcessMessage(event, [...awayPlayers, ...homePlayers], currentQueue);
+        const result = ProcessMessage(event, [...awayPlayers, ...homePlayers], gameStats, currentQueue);
         currentQueue = result.baseQueue;
         lastBases = result.bases;
     }
+    const innings = Array.from({length: Math.max(gameStats.away.runsByInning.length, 9)}, (element, index) => index);
 
     return (
         <>
@@ -248,6 +259,41 @@ export default function LiveGame({ awayTeamArg, homeTeamArg, initialDataArg, gam
         <CopiedPopup />
         <div className="min-h-screen bg-theme-background text-theme-text font-sans p-4 pt-20 max-w-3xl mx-auto h-full">
             <GameHeaderEvent awayTeam={awayTeam} event={lastEvent} homeTeam={homeTeam} game={data} />
+
+            <table>
+                <thead>
+                    <tr>
+                        <th></th>
+                        {innings.map(index => <th className="p-1">{index + 1}</th>)}
+                        <th className="p-1">R</th>
+                        <th className="p-1">H</th>
+                        <th className="p-1">E</th>
+                        <th className="p-1">LOB</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td className="p-1" style={{backgroundColor: "#"+awayTeam.color, color: getContrastTextColor(awayTeam.color) || 'rgb(0,0,0)'}}>{awayTeam.emoji} {awayTeam.abbreviation}</td>
+                        {innings.map(index =>
+                            <td className="p-1">{index < gameStats.away.runsByInning.length ? gameStats.away.runsByInning[index] : ''}</td>
+                        )}
+                        <td className="p-1">{lastEvent.away_score}</td>
+                        <td className="p-1">{gameStats.away.hits}</td>
+                        <td className="p-1">{gameStats.away.errors}</td>
+                        <td className="p-1">{gameStats.away.leftOnBase}</td>
+                    </tr>
+                    <tr>
+                        <td className="p-1" style={{backgroundColor: "#"+homeTeam.color, color: getContrastTextColor(homeTeam.color) || 'rgb(0,0,0)'}}>{homeTeam.emoji} {homeTeam.abbreviation}</td>
+                        {innings.map(index =>
+                            <td className="p-1">{index < gameStats.home.runsByInning.length ? gameStats.home.runsByInning[index] : ''}</td>
+                        )}
+                        <td className="p-1">{lastEvent.home_score}</td>
+                        <td className="p-1">{gameStats.home.hits}</td>
+                        <td className="p-1">{gameStats.home.errors}</td>
+                        <td className="p-1">{gameStats.home.leftOnBase}</td>
+                    </tr>
+                </tbody>
+            </table>
 
             <GameStateDisplay
                 event={lastEvent}
