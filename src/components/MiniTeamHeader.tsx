@@ -2,9 +2,10 @@ import { getContrastTextColor } from "@/helpers/Colors";
 import { Team } from "@/types/Team";
 import Link from "next/link";
 
-export default function MiniTeamHeader({team, index}: { team: Team, index?: number }) {
+export default function MiniTeamHeader({team, leader, index}: { team: Team, leader?: Team, index?: number }) {
     if (!team) return null;
     if (!('color' in team)) return null;
+    const gamesBehind = (leader) ? (leader.record.regular_season.wins - team.record.regular_season.wins + team.record.regular_season.losses - leader.record.regular_season.losses) / 2 : null;
     return (
         <Link href={`/team/${team.id}`} className='block'>
             <div className='flex justify-between items-center p-2 rounded cursor-pointer transition h-12' style={{background: `#${team.color}`, color: getContrastTextColor(team.color)}}>
@@ -18,6 +19,11 @@ export default function MiniTeamHeader({team, index}: { team: Team, index?: numb
                     <span className="ml-1">
                         ({team.record.regular_season.run_differential > 0 ? '+' : ''}{team.record.regular_season.run_differential})
                     </span>
+                    {leader && (
+                        <span className="ml-1">
+                            {gamesBehind == 0 ? '—' : gamesBehind + ' GB'}
+                        </span>
+                    )}
                 </span>
             </div>
         </Link>

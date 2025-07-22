@@ -65,7 +65,7 @@ export default function LeaguePage({ id }: { id: string }) {
                                             <div className="flex-grow border-t-2 border-theme-text"></div>
                                         </div>
                                     )}
-                                    <MiniTeamHeader team={team} index={index + 1} />
+                                    <MiniTeamHeader team={team} leader={teams[0]} index={index + 1} />
                                 </div>
                             ))}
                         </div>
