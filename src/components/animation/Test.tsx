@@ -98,7 +98,7 @@ export default function GameField({homeTeam, awayTeam, game, id,}: {homeTeam: Te
         let timeout: NodeJS.Timeout;
 
         function fetchLastEvent() {
-            if (gameManager) setLastEvent(eventLog[gameManager.getEventIndex()-2] ?? eventLog[0]); // Fetch first on fallback because otherwise it'll show way later data
+            if (gameManager) setLastEvent(eventLog[gameManager.getEventIndex()-1] ?? eventLog[0]); // Fetch first on fallback because otherwise it'll show way later data
             else setLastEvent(eventLog[eventLog.length - 1]);
 
             timeout = setTimeout(fetchLastEvent, 100);

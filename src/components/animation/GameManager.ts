@@ -4,7 +4,7 @@ import { Game } from "@/types/Game";
 import { Announcer } from "./Announcer";
 import { Bases } from "@/types/Bases";
 import { ProcessMessage } from "../BaseParser";
-import { positions } from "./Constants";
+import { inverseFielderLabels, positions } from "./Constants";
 import { Ball } from "./Ball";
 import { RefObject } from "react";
 import { Vector2 } from "@/types/Vector2";
@@ -167,17 +167,45 @@ export class GameManager {
         }, 6000);
     }
 
+    private createBall(startPos: Vector2): Ball {
+        const ball = new Ball(startPos);
+        this.svgRef.current?.appendChild(ball.group);
+        return ball;
+    }
+
     private async foulBallAnimation(hand: 'L' | 'R') {
         const foulPositions: Record<string, Vector2> = {'L': new Vector2(-150, -10), 'R': new Vector2(1150, -10)};
-        const ball = new Ball(positions['Home']);
-        this.svgRef.current?.appendChild(ball.group);
+        const ball = this.createBall(positions['Home']);
         const hitPos = Math.random() >= 0.3 ? foulPositions[hand] : foulPositions[hand === 'L' ? 'R' : 'L'];
         await ball.throwTo(new Vector2((hitPos.x-30)+Math.random()*60), 100+Math.random()*50);
         this.svgRef.current?.removeChild(ball.group);
     }
 
-    private async processHitBall() {
+    private parseThrowChain(msg: string, start: keyof typeof positions): (keyof typeof positions)[] {
+        const chain: (keyof typeof positions)[] = ["Home", start];
+        const [, throwPart] = msg.split(",", 2);
+        const matches = [...(throwPart?.matchAll(/\b([1-3][B]|SS|[LRC]F)\b/g) ?? [])].slice(1); // Remove the duplicate 'start' position
+        for (const match of matches) {
+            const pos = inverseFielderLabels[match[1]];
+            if (pos) chain.push(pos); // Only add defined ones
+        }
+        return chain;
+    }
 
+
+    private async processHitBall(index: number) {
+        const curEvent = this.eventLog[index];
+        const nextEvent = this.eventLog[index+1];
+        if (!curEvent || !nextEvent) return;
+
+        const ball = this.createBall(positions['Home']);
+        const hitLocation = this.getHitLocation(curEvent.message);
+        const throwChain = this.parseThrowChain(curEvent.message, hitLocation);
+
+        for (const location of throwChain) {
+            await ball.throwTo(positions[location]);
+        }
+        this.svgRef.current?.removeChild(ball.group);
     }
 
     private getHitLocation(msg: string): keyof typeof positions {
@@ -232,22 +260,21 @@ export class GameManager {
                 this.fieldingTeam.endFieldingInning();
                 this.battingTeam.startFieldingInning();
                 break;
-            case 'Field': {
-                this.advanceBases(cur.index);
-                break;
-            }
             case 'Pitch': {
                 if (cur.message.includes('steals')) this.advanceBases(cur.index);
-                const ball = new Ball(positions['Pitcher']);
-                this.svgRef.current?.appendChild(ball.group);
+                const ball = this.createBall(positions['Pitcher']);
                 await ball.throwTo(positions['Home']);
                 this.svgRef.current?.removeChild(ball.group);
                 if (cur.message.includes('Foul')) this.foulBallAnimation(this.battingTeam.currentBatter?.posVector === positions['LeftHandedBatter'] ? 'L' : 'R');
+                if (cur.message.includes('hits')) {
+                    this.processHitBall(cur.index);
+                    this.advanceBases(next?.index ?? 0);
+                }
             }
         }
 
         // Default message shows on page load
-        this.announcer.sayMessage({text: prev?.message ?? "Howdy! If you're on mobile, this page is fully intended to be viewed in landscape mode. Report any bugs in the offical MMOLB Discord please.", duration: 4000});
+        this.announcer.sayMessage({text: cur.message ?? "Howdy! If you're on mobile, this page is fully intended to be viewed in landscape mode. Report any bugs in the offical MMOLB Discord please.", duration: 4000});
     }
 
     private runParallel(tasks: (() => Promise<void>)[]) {
