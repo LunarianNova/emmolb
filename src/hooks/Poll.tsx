@@ -5,11 +5,12 @@ type PollingOptions<T> = {
     pollFn: () => Promise<T>;
     onData: (data: T) => void;
     shouldStop?: (data: T) => boolean;
+    killCon?: () => boolean;
     maxFailures?: number;
     maxRepeat?: number;
 };
 
-export function usePolling<T>({interval, pollFn, onData, shouldStop = () => false, maxFailures = 5, maxRepeat = 5,}: PollingOptions<T>) {
+export function usePolling<T>({interval, pollFn, onData, shouldStop = () => false, killCon = () => false, maxFailures = 5, maxRepeat = 5,}: PollingOptions<T>) {
     const pollingRef = useRef<NodeJS.Timeout | null>(null);
     const failureCountRef = useRef(0);
     const lastResultRef = useRef<string | null>(null);
@@ -20,6 +21,7 @@ export function usePolling<T>({interval, pollFn, onData, shouldStop = () => fals
 
         async function poll() {
             if (!isMounted) return;
+            if (killCon()) {stopPolling(); return;}
 
             try {
                 const result = await pollFn();

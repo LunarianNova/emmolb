@@ -85,9 +85,12 @@ export default function GameField({homeTeam, awayTeam, game, id,}: {homeTeam: Te
             }
         },
         shouldStop: (newData) => {
-                if (game.state === 'Complete') return true;
+            if (game.state === 'Complete') return true;
             const last = newData.entries?.[newData.entries.length - 1];
             return last?.event === "Recordkeeping";
+        },
+        killCon: () => {
+            return eventLog[eventLog.length - 1].event === 'Recordkeeping';
         }
     });
 
@@ -110,14 +113,21 @@ export default function GameField({homeTeam, awayTeam, game, id,}: {homeTeam: Te
     return (
         <svg ref={svgRef} id={id} width="100%" height="100vh" viewBox="-200 0 1200 600" style={{ background: "#242424" }}>
             <Field />
-            
+
             <AnimationControls 
-                onRewind={() => gameManager?.skipTo(gameManager.getEventIndex()-1)} 
+                onRewind={() => {
+                    gameManager?.skipTo(gameManager.getEventIndex()-1);
+                    setIsPlaying(gameManager?.getIsPlaying() ?? false);
+                }}
                 onPause={() => {
                     gameManager?.togglePause(); 
-                    setIsPlaying(gameManager?.getIsPlaying() ?? false)
+                    setIsPlaying(gameManager?.getIsPlaying() ?? false);
                 }} 
-                onForward={() => gameManager?.skipTo(gameManager.getEventIndex()+1)} isPaused={!isPlaying}
+                onForward={() => {
+                    gameManager?.skipTo(gameManager.getEventIndex()+1);
+                    setIsPlaying(gameManager?.getIsPlaying() ?? false);
+                }} 
+                isPaused={!isPlaying}
             />
 
             <GameInfo homeTeam={homeTeam} awayTeam={awayTeam} stadium={homeTeam.ballpark_name ?? ''} />
