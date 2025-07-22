@@ -19,3 +19,25 @@ export const positions: Record<string, Vector2> = {
     'AwayDugout': new Vector2(300, 470),
     'HomeDugout': new Vector2(500, 470),
 }
+
+export const fielderLabels: Record<string, string> = {
+    "CenterFielder": "CF",
+    "LeftFielder": "LF",
+    "RightFielder": "RF",
+    "FirstBase": "1B",
+    "SecondBase": "2B",
+    "Shortstop": "SS",
+    "ThirdBase": "3B",
+    "Pitcher": "P"
+};
+
+export const inverseFielderLabels: Record<string, string> = {
+    "CF": "CenterFielder",
+    "LF": "LeftFielder",
+    "RF": "RightFielder",
+    "1B": "FirstBase",
+    "2B": "SecondBase",
+    "SS": "Shortstop",
+    "3B": "ThirdBase",
+    "P": "Pitcher"
+};

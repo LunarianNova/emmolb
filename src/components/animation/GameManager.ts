@@ -8,6 +8,14 @@ import { inverseFielderLabels, positions } from "./Constants";
 import { Ball } from "./Ball";
 import { RefObject } from "react";
 import { Vector2 } from "@/types/Vector2";
+import { capitalize } from "@/helpers/StringHelper";
+import { AnimatedPlayer } from "./PlayerClass";
+
+const fullBasePath: Record<string, string[]> = {
+    first: ['second', 'third', 'home'],
+    second: ['third', 'home'],
+    third: ['home'],
+};
 
 export class GameManager {
     homeTeam: TeamManager;
@@ -83,9 +91,7 @@ export class GameManager {
         const baseOrder = ['first', 'second', 'third'];
         const positionOrder = ['First', 'Second', 'Third', 'Home'];
 
-        function capitalize(s: string): string {
-            return s.charAt(0).toUpperCase() + s.slice(1);
-        }
+
 
         for (const base of baseOrder) {
             const baseStateKey = base as keyof Bases;
@@ -208,6 +214,100 @@ export class GameManager {
         this.svgRef.current?.removeChild(ball.group);
     }
 
+    getPlayerByName(name: string | undefined) {
+        if (!name) return undefined;
+        return this.battingTeam?.playersByName[name] ?? this.fieldingTeam?.playersByName[name];
+    }
+
+    parseOuts(message: string): { name: string, base: keyof typeof positions }[] {
+        const batterName = this.battingTeam?.currentBatter?.name ?? '';
+        const outs: { name: string, base: keyof typeof positions }[] = [];
+
+        // All of this is for the weird batting formatting
+        const outPatterns = [
+            { regex: new RegExp(`${batterName} (lines|flies|pops|grounds) out`, 'i'), base: 'FirstBase' },
+            { regex: new RegExp(`${batterName} out at (first|second|third|home)`, 'i') },
+            { regex: /double play.*out at (first|second|third|home)/gi },
+            { regex: /triple play.*out at (first|second|third|home)/gi }
+        ];
+
+        for (const pattern of outPatterns) {
+            const match = pattern.regex.exec(message);
+            if (match) {
+                let base = match[1]?.toLowerCase() as string;
+                if (!base) base = 'First'; // default for batter if not specified
+                const outBase = capitalize(base) as keyof typeof positions;
+                outs.push({ name: batterName, base: outBase });
+            }
+        }
+
+        // XXX out at YYY for base runners
+        const runnerOuts = [...message.matchAll(/([\w.'-]+) out at (first|second|third|home)/gi)];
+        for (const [, name, base] of runnerOuts) {
+            outs.push({
+                name,
+                base: capitalize(base) as keyof typeof positions
+            });
+        }
+
+        return outs;
+    }
+
+    private resolvePlay(index: number) {
+        const curEvent = this.eventLog[index];
+        const nextEvent = this.eventLog[index + 1];
+        const curBases = this.baseStates[index].bases;
+        const nextBases = this.baseStates[index + 1].bases;
+        const outs = this.parseOuts(nextEvent.message);
+        const throwChain = this.parseThrowChain(nextEvent.message, 'Home');
+        const ball = this.createBall(positions['Pitcher']);
+
+        // Okay. I've tried this many times before, but it evidently is not working. So I'll do the age-old whiteboarding/pseudocode/rubber duck/sanity check approach
+
+        /*
+        Hello and welcome back to the daily sanity check, starring your host, as always, me! Luna! I named myself after the moon because sometimes I wish I was as removed from the events that take place on Earth as the moon is.
+        Today's sanity check is on the meat of this application. How can I line up the ball throws and the base running while still keeping them unique and realistic? I have 12 seconds (two phases) to cover base movement and ball throwing.
+        
+        I'm working with 9 things to start
+        - The Current Event (a 'Pitch')
+        - The Next Event (a 'Field')
+        - Current Bases
+        - Next Bases
+        - Outs {name: string, base: string as keyof Bases}
+        - ThrowChain: A string array of all the locations the ball must visit, in order
+        
+        Two options for how we start this. 
+        We can either make all the walking animations and then use their lengths to calculate when the ball should be thrown
+        Or... We can calculate the ball throws and then use that to find how long the base walks should be.
+        In terms of realism, it's likely better to go with the first option. Going with the first option means we always know where the ball will be at a given moment
+        We can use our knowledge of the ball's location to make it look like the runners are 'judging' whether they should run or not before they run.
+        For example, If a runner advances from first to third throughout the entire play, and we know the ball goes from LF to RF. They can stand on second and not run until the ball is mid-throw to RF.
+
+        So we'll need to start by calculating the throw times. BUT the issue now is assuming the fielders don't always catch the ball. But, actually, it seems that if they don't catch the ball it's considered an error?
+        Well if it is an error, we already know MMOLB parses and tells us about those. So we can parse their message and determine who catches the ball and who doesn't, based on if anyone errors.
+
+        Okay, so now we assume a max of 12 seconds for 4 total base runs. We won't ever have someone advance all 4 bases in one hit while there is passing going on, but let's assume we will.
+        2s to run to each base
+        1s of contemplation
+        4 bases
+        12 total seconds maximum (not including the pitch, blah blah)
+        So ball passes should take probably 2-3 seconds each? With some time after the catch for the catcher to presumably get the ball out of their glove, decide who to pass to next, and then actually make that pass.
+        Average base distance is 200px, and we'll say it's about 300-400 for the distance the ball will travel each pitch. So a ball covering 1.5-2x the distance in the same time, plus some down time for getting the ball out of the glove and so on.
+        That means the players are running at 100pps, which is the default speed. This math is good and nice and I like it!
+
+        So, let's assume the runners will run before the pass happens that gets them out. Maybe they start running like as the ball hits the air, but then realize too late that they'll get out.
+        I'm saying this because it makes it easy to calculate. *where is the ball? lf. where is the ball? lf. where is the ball? in-air (to 2B). okay, now have the first runner think they can make it to second and start sprinting. Oh no, they're out*
+
+        So what will I need to implement this?
+        A function that can calculate the time it will take to pass a ball from x to y
+        A function that can take a current time, end time, and distance, then calculate the speed the runner should run (tell it the runner should arrive 200ms before or after the ball, etc).
+        Distance function (builtin to Vector2. As long as my math there is right)
+        some other stuff. I'm not good at writing things out ahead of time
+
+        So that is my daily sanity check. Now to implement what is written here
+        */
+    }
+
     private getHitLocation(msg: string): keyof typeof positions {
         if (msg.includes("to center field")) return "CenterFielder";
         if (msg.includes("to left field")) return "LeftFielder";
@@ -261,14 +361,17 @@ export class GameManager {
                 this.battingTeam.startFieldingInning();
                 break;
             case 'Pitch': {
-                if (cur.message.includes('steals')) this.advanceBases(cur.index);
-                const ball = this.createBall(positions['Pitcher']);
-                await ball.throwTo(positions['Home']);
-                this.svgRef.current?.removeChild(ball.group);
-                if (cur.message.includes('Foul')) this.foulBallAnimation(this.battingTeam.currentBatter?.posVector === positions['LeftHandedBatter'] ? 'L' : 'R');
-                if (cur.message.includes('hits')) {
-                    this.processHitBall(cur.index);
-                    this.advanceBases(next?.index ?? 0);
+                if (next?.event === 'Field') this.resolvePlay(cur.index);
+                else {
+                    if (cur.message.includes('steals')) this.advanceBases(cur.index);
+                    const ball = this.createBall(positions['Pitcher']);
+                    await ball.throwTo(positions['Home']);
+                    this.svgRef.current?.removeChild(ball.group);
+                    if (cur.message.includes('Foul')) this.foulBallAnimation(this.battingTeam.currentBatter?.posVector === positions['LeftHandedBatter'] ? 'L' : 'R');
+                    // if (cur.message.includes('hits')) {
+                    //     this.processHitBall(cur.index);
+                    //     this.advanceBases(next?.index ?? 0);
+                    // }
                 }
             }
         }
