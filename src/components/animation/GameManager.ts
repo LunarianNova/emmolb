@@ -5,6 +5,9 @@ import { Announcer } from "./Announcer";
 import { Bases } from "@/types/Bases";
 import { ProcessMessage } from "../BaseParser";
 import { positions } from "./Constants";
+import { Ball } from "./Ball";
+import { RefObject } from "react";
+import { Vector2 } from "@/types/Vector2";
 
 export class GameManager {
     homeTeam: TeamManager;
@@ -12,6 +15,7 @@ export class GameManager {
     game: Game;
     eventLog: Event[];
     announcer: Announcer;
+    private svgRef: RefObject<SVGSVGElement | null>
     private eventIndex: number = 0;
     private intervalID: number | null = null;
     private isPlaying: boolean = false;
@@ -21,12 +25,13 @@ export class GameManager {
     private players: string[] = [];
     private animationQueue: Promise<void> = Promise.resolve();
 
-    constructor({homeTeam, awayTeam, game, eventLog, announcer,}: {homeTeam: TeamManager; awayTeam: TeamManager, game: Game, eventLog: Event[]; announcer: Announcer;}) {
+    constructor({homeTeam, awayTeam, game, eventLog, announcer, svgRef,}: {homeTeam: TeamManager; awayTeam: TeamManager, game: Game, eventLog: Event[]; announcer: Announcer; svgRef: RefObject<SVGSVGElement | null>;}) {
         this.homeTeam = homeTeam;
         this.awayTeam = awayTeam;
         this.game = game;
         this.eventLog = eventLog;
         this.announcer = announcer;
+        this.svgRef = svgRef;
 
         this.players = [...this.homeTeam.allPlayers.map((p) => (p.name)), ...this.awayTeam.allPlayers.map((p) => (p.name))];
         this.processBases();
@@ -162,7 +167,59 @@ export class GameManager {
         }, 6000);
     }
 
-    private handleEvent({prev, cur, next}: {prev: Event | null, cur: Event, next: Event | null}) {
+    private async foulBallAnimation(hand: 'L' | 'R') {
+        const foulPositions: Record<string, Vector2> = {'L': new Vector2(-150, -10), 'R': new Vector2(1150, -10)};
+        const ball = new Ball(positions['Home']);
+        this.svgRef.current?.appendChild(ball.group);
+        const hitPos = Math.random() >= 0.3 ? foulPositions[hand] : foulPositions[hand === 'L' ? 'R' : 'L'];
+        await ball.throwTo(new Vector2((hitPos.x-30)+Math.random()*60), 100+Math.random()*50);
+        this.svgRef.current?.removeChild(ball.group);
+    }
+
+    private async processHitBall() {
+
+    }
+
+    private getHitLocation(msg: string): keyof typeof positions {
+        if (msg.includes("to center field")) return "CenterFielder";
+        if (msg.includes("to left field")) return "LeftFielder";
+        if (msg.includes("to right field")) return "RightFielder";
+        if (msg.includes("to first base")) return "FirstBaseman";
+        if (msg.includes("to second base")) return "SecondBaseman";
+        if (msg.includes("to third base")) return "ThirdBaseman";
+        if (msg.includes("to the shortstop")) return "Shortstop";
+        if (msg.includes("to the pitcher")) return "Pitcher";
+        return "Home";
+    }
+
+    private advanceBases(index: number) {
+        if (!this.battingTeam || !this.fieldingTeam) return;
+
+        const prevBases = this.baseStates[index-1];
+        const curBases = this.baseStates[index];
+        this.battingTeam.currentBatter = undefined;
+        this.battingTeam.firstBaseRunner = curBases.bases.first ? this.battingTeam.playersByName[curBases.bases.first] : undefined;
+        this.battingTeam.secondBaseRunner = curBases.bases.second ? this.battingTeam.playersByName[curBases.bases.second] : undefined;
+        this.battingTeam.thirdBaseRunner = curBases.bases.third ? this.battingTeam.playersByName[curBases.bases.third] : undefined;
+
+        if (!prevBases || !curBases) return;
+        const paths = this.getBasePaths(prevBases.bases, curBases.bases);
+
+        const tasks = Object.entries(paths).map(([playerName, path]) => async () => {
+            const player = this.battingTeam?.playersByName[playerName];
+            if (!player) return;
+
+            for (const base of path) {
+                await player.walkTo(positions[base]);
+            }
+            player.turnAround('front');
+            if (path[path.length - 1] === 'Home') await player.walkOff();
+        });
+
+        this.runParallel(tasks);
+    }
+
+    private async handleEvent({prev, cur, next}: {prev: Event | null, cur: Event, next: Event | null}) {
         this.fieldingTeam = cur.inning_side === 0 ? this.homeTeam : this.awayTeam;
         this.battingTeam = cur.inning_side === 0 ? this.awayTeam : this.homeTeam;
 
@@ -176,28 +233,16 @@ export class GameManager {
                 this.battingTeam.startFieldingInning();
                 break;
             case 'Field': {
-                const prevBases = this.baseStates[prev?.index ?? 0];
-                const curBases = this.baseStates[cur.index];
-                this.battingTeam.currentBatter = undefined;
-                this.battingTeam.firstBaseRunner = curBases.bases.first ? this.battingTeam.playersByName[curBases.bases.first] : undefined;
-                this.battingTeam.secondBaseRunner = curBases.bases.second ? this.battingTeam.playersByName[curBases.bases.second] : undefined;
-                this.battingTeam.thirdBaseRunner = curBases.bases.third ? this.battingTeam.playersByName[curBases.bases.third] : undefined;
-
-                if (!prevBases || !curBases) break;
-                const paths = this.getBasePaths(prevBases.bases, curBases.bases);
-
-                const tasks = Object.entries(paths).map(([playerName, path]) => async () => {
-                    const player = this.battingTeam?.playersByName[playerName];
-                    if (!player) return;
-
-                    for (const base of path) {
-                        await player.walkTo(positions[base]);
-                    }
-                    player.turnAround('front');
-                });
-
-                this.runParallel(tasks);
+                this.advanceBases(cur.index);
                 break;
+            }
+            case 'Pitch': {
+                if (cur.message.includes('steals')) this.advanceBases(cur.index);
+                const ball = new Ball(positions['Pitcher']);
+                this.svgRef.current?.appendChild(ball.group);
+                await ball.throwTo(positions['Home']);
+                this.svgRef.current?.removeChild(ball.group);
+                if (cur.message.includes('Foul')) this.foulBallAnimation(this.battingTeam.currentBatter?.posVector === positions['LeftHandedBatter'] ? 'L' : 'R');
             }
         }
 

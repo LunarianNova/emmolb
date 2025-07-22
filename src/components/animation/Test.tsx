@@ -59,7 +59,7 @@ export default function GameField({homeTeam, awayTeam, game, id,}: {homeTeam: Te
         awayTeamManager.allPlayers.map((p) => svgRef.current!.appendChild(p.group))
         svgRef.current.appendChild(announcer.group);
 
-        const gameManager = new GameManager({homeTeam: homeTeamManager, awayTeam: awayTeamManager, announcer, eventLog, game})
+        const gameManager = new GameManager({homeTeam: homeTeamManager, awayTeam: awayTeamManager, announcer, eventLog, game, svgRef});
         setGameManager(gameManager);
         setIsPlaying(true);
         gameManager.start();

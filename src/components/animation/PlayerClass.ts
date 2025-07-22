@@ -47,6 +47,7 @@ export class AnimatedPlayer {
     private legLeft: SVGRectElement;
     private legRight: SVGRectElement;
     private glove: SVGCircleElement;
+    private bat: SVGElement;
     private hat: SVGElement;
     private label: SVGElement;
     private jerseyNumberLabel: SVGElement;
@@ -137,8 +138,22 @@ export class AnimatedPlayer {
         this.jerseyNumberLabel.setAttribute("y", "12"); // position roughly mid-body or wherever looks good
         this.jerseyNumberLabel.textContent = String(opts.number) !== 'undefined' ? String(opts.number) : "";
 
+        this.bat = document.createElementNS("http://www.w3.org/2000/svg", "image");
+        this.bat.setAttributeNS(null, "href", "/Baseball_bat.svg");
+        this.bat.setAttribute("class", "bat");
+        this.bat.setAttribute("visibility", "hidden");
+        this.bat.setAttribute("width", "20");
+        this.bat.setAttribute("height", "60");
+
+        const xOffset = this.bats === 'L' ? -25 : 15;
+        const yOffset = -50;
+
+        this.bat.setAttribute("x", xOffset.toString());
+        this.bat.setAttribute("y", yOffset.toString());
+        this.bat.setAttribute("transform-origin", `${xOffset + 10} ${yOffset + 30}`);
+
         // Append all to group
-        g.append(this.hat, head, this.eyeLeft, this.eyeRight, body, this.legLeft, this.legRight, this.glove, this.label, this.jerseyNumberLabel);
+        g.append(this.hat, head, this.eyeLeft, this.eyeRight, body, this.legLeft, this.legRight, this.glove, this.label, this.jerseyNumberLabel, this.bat);
         this.startIdle();
   }
 
@@ -167,6 +182,13 @@ export class AnimatedPlayer {
         this.glove.setAttribute("cx", (target.x + offsetX).toString());
         this.glove.setAttribute("cy", target.y.toString());
         this.glove.style.display = "block";
+    }
+
+    getWalkDuration(target: Vector2, speed = 100): number {
+        const dx = target.x - this.posVector.x;
+        const dy = target.y - this.posVector.y;
+        const distance = Math.hypot(dx, dy);
+        return (distance / speed) * 1000;
     }
 
     walkTo(target: Vector2, speed: number = 100): Promise<void> {
