@@ -45,7 +45,7 @@ export default function LeaguePage({ id }: { id: string }) {
     const firstTeamGamesPlayed = teams[0].record.regular_season.wins + teams[0].record.regular_season.losses;
     const gamesLeft = totalGamesInSeason - firstTeamGamesPlayed;
 
-    const cutoffIndex = teams.findIndex(team => (teams[0].record.regular_season.wins - team.record.regular_season.wins) > gamesLeft);
+    const cutoffIndex = teams.findIndex(team => (teams[0].record.regular_season.wins - team.record.regular_season.wins + team.record.regular_season.losses - teams[0].record.regular_season.losses) / 2 > gamesLeft);
 
     return (
         <main className="mt-16">
