@@ -10,33 +10,15 @@ import GameInfo from "./GameInfo";
 import { Event } from "@/types/Event";
 import Loading from "../Loading";
 import { usePolling } from "@/hooks/Poll";
-import { AnimatedPlayer } from "./PlayerClass";
-import { positions } from "./Constants";
 import { MapAPIPlayerResponse, Player } from "@/types/Player";
 import { Navbar } from "../Navbar";
 import { TeamManager } from "./TeamManager";
 import { GameManager } from "./GameManager";
 
-function createPlayersForPositions(team: 'HOME' | 'AWAY', teamColor: string): AnimatedPlayer[] {
-    const pos = ['Pitcher', 'FirstBaseman', 'SecondBaseman', 'ThirdBaseman', 'Shortstop', 'CenterFielder', 'LeftFielder', 'RightFielder']
-    return pos.map((positionName, i) => {
-        const p =new AnimatedPlayer({
-            teamColor,
-            position: positionName,
-            team,
-            bats: Math.random() > 0.5 ? 'R' : 'L',
-            throws: Math.random() > 0.5 ? 'R' : 'L',
-            startPos: Vector2.zero(),
-            name: `${positionName}`,
-        });
-        p.hide();
-        return p;
-    });
-}
-
 export default function GameField({homeTeam, awayTeam, game, id,}: {homeTeam: Team; awayTeam: Team; game: Game; id: string;}) {
     const svgRef = useRef<SVGSVGElement>(null);
 
+    const [lastEvent, setLastEvent] = useState<Event | null>(null);
     const [gameManager, setGameManager] = useState<GameManager>();
     const [eventLog, setEventLog] = useState<Event[]>(game.event_log);
     const [players, setPlayers] = useState<Player[]>([]);
@@ -92,8 +74,11 @@ export default function GameField({homeTeam, awayTeam, game, id,}: {homeTeam: Te
         },
         onData: (newData) => {
             if (newData.entries?.length) {
-                setEventLog(prev => ([...prev, ...newData.entries]));
-                if (gameManager) gameManager.updateEventLog(eventLog);
+                setEventLog(prev => {
+                    const updated = [...prev, ...newData.entries];
+                    if (gameManager) gameManager.updateEventLog(updated);
+                    return updated;
+                });
             }
         },
         shouldStop: (newData) => {
@@ -103,16 +88,30 @@ export default function GameField({homeTeam, awayTeam, game, id,}: {homeTeam: Te
         }
     });
 
-    if (!eventLog || eventLog.length === 0 || players.length === 0) return (<><Navbar /><Loading /></>)
+    useEffect(() => {
+        let timeout: NodeJS.Timeout;
 
-    const lastEvent = eventLog[eventLog.length-1];
+        function fetchLastEvent() {
+            if (gameManager) setLastEvent(eventLog[gameManager.getEventIndex()-2] ?? eventLog[0]); // Fetch first on fallback because otherwise it'll show way later data
+            else setLastEvent(eventLog[eventLog.length - 1]);
+
+            timeout = setTimeout(fetchLastEvent, 500);
+        }
+
+        fetchLastEvent();
+        return () => clearTimeout(timeout);
+    }, [gameManager, eventLog]);
+
+    if (!eventLog || eventLog.length === 0 || players.length === 0) return (<><Navbar /><Loading /></>)
 
     return (
         <svg ref={svgRef} id={id} width="100%" height="100vh" viewBox="-200 0 1200 600" style={{ background: "#242424" }}>
             <Field />
             <GameInfo homeTeam={homeTeam} awayTeam={awayTeam} stadium={homeTeam.ballpark_name ?? ''} />
-            <Scoreboard position={new Vector2(-180, 20)} titles={["AWAY", "INNG", "HOME"]} values={[String(lastEvent.away_score), lastEvent.event === 'Recordkeeping' ? 'FIN' : `${lastEvent.inning_side === 0 ? "▲" : "▼"}${lastEvent.inning}`, String(lastEvent.home_score)]}/>
-            <Scoreboard position={new Vector2(-60, 20)} titles={["BALL", "STRK", "OUT"]} values={[String(lastEvent.balls ?? '-'), String(lastEvent.strikes ?? '-'), String(lastEvent.outs ?? '-')]}/>
+            {lastEvent && (<>
+                <Scoreboard position={new Vector2(-180, 20)} titles={["AWAY", "INNG", "HOME"]} values={[String(lastEvent.away_score), lastEvent.event === 'Recordkeeping' ? 'FIN' : `${lastEvent.inning_side === 0 ? "▲" : "▼"}${lastEvent.inning}`, String(lastEvent.home_score)]}/>
+                <Scoreboard position={new Vector2(-60, 20)} titles={["BALL", "STRK", "OUT"]} values={[String(lastEvent.balls ?? '-'), String(lastEvent.strikes ?? '-'), String(lastEvent.outs ?? '-')]}/>
+            </>)}
         </svg>
     );
 }

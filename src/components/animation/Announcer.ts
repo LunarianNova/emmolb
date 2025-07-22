@@ -180,7 +180,16 @@ export class Announcer {
     }
 
 
-    sayMessage(text: string, speed: number=30) {
+    // CPS: Characters Per Second
+    // Duration: ms the message should take to say (calculate cps)
+    sayMessage({text, cps=30, duration,}: {text: string; cps?: number; duration?: number;}) {
+        text = text.replace(/<[^>]*>/g, '');
+
+        if (duration)
+            cps = text.length / (duration/1000);
+            if (cps < 30) cps = 30;
+
+        const speed = 1000 / cps;
         this.message = text;
         const div = (this as any).messageDiv as HTMLDivElement;
         div.innerHTML = '';
