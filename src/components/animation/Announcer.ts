@@ -220,6 +220,9 @@ export class Announcer {
             div.innerHTML = text.slice(0, expectedChars);
             requestAnimationFrame(step);
         }
+        setTimeout(() => { // Force kill bobbing when tabbing back in
+            if (!this.messageCancelled) this.stopBobbing();
+        }, duration ?? (1000 * totalChars / cps));
         requestAnimationFrame(step);
     }
 
