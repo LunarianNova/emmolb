@@ -1,6 +1,8 @@
 import { Player } from "@/types/Player";
 import { AnimatedPlayer } from "./PlayerClass";
 import { Vector2 } from "@/types/Vector2";
+import { Bases } from "@/types/Bases";
+import { positions } from "./Constants";
 
 const apiToPosition: Record<string, string> = {
     'C': 'Catcher',
@@ -97,15 +99,69 @@ export class TeamManager {
         this.currentPitcher?.walkOn();
     }
 
+    hardSwitchPitcher(newPitcher: string) {
+        this.currentPitcher?.hide();
+        this.currentPitcher = this.playersByName[newPitcher] ?? null;
+        this.currentPitcher?.show();
+        this.currentPitcher?.setPosition(positions['Pitcher']);
+    }
+
+    resetPlayers(isFielding: boolean) {
+        if (isFielding) {
+            fieldingPositions.map((pos) => {
+                const player = this.playersByPosition[pos];
+                player.show();
+                player.setPosition(positions[pos]);
+                player.turnAround('front');
+            });
+            this.currentPitcher?.show();
+            this.currentPitcher?.setPosition(positions['Pitcher']);
+            this.playersByPosition['Catcher'].turnAround('back');
+        }
+        else {
+            this.allPlayers.map((p) => p.hide());
+            this.firstBaseRunner?.show();
+            this.secondBaseRunner?.show();
+            this.thirdBaseRunner?.show();
+            this.currentBatter?.show();
+            this.firstBaseRunner?.setPosition(positions['First']);
+            this.secondBaseRunner?.setPosition(positions['Second']);
+            this.thirdBaseRunner?.setPosition(positions['Third']);
+            this.currentBatter?.setPosition(this.getBatterPosition().position);
+            this.firstBaseRunner?.turnAround('front');
+            this.secondBaseRunner?.turnAround('front');
+            this.thirdBaseRunner?.turnAround('front');
+            this.currentBatter?.turnAround("back");
+        }
+    }
+
+    getBatterPosition(): {label: string, position: Vector2} {
+        if (this.currentBatter?.bats === 'R') return {label: 'RightHandedBatter', position: positions['RightHandedBatter']};
+        else if (this.currentBatter?.bats === 'L') return {label: 'LeftHandedBatter', position: positions['LeftHandedBatter']};
+        else return Math.random() >= 0.5 ? {label: 'RightHandedBatter', position: positions['RightHandedBatter']} : {label: 'LeftHandedBatter', position: positions['LeftHandedBatter']}; 
+    }
+
+    setBases(bases: Bases) {
+        this.firstBaseRunner = bases.first ? this.playersByName[bases.first] : undefined;
+        this.secondBaseRunner = bases.second ? this.playersByName[bases.second] : undefined;
+        this.thirdBaseRunner = bases.third ? this.playersByName[bases.third] : undefined;
+    }
+
     async switchBatter(newBatter: string) {
         this.currentBatter?.walkOff();
         this.currentBatter = this.playersByName[newBatter] ?? null;
 
-        let pos: string;
-        if (this.currentBatter?.bats === 'R') pos = 'RightHandedBatter';
-        else if (this.currentBatter?.bats === 'L') pos = 'LeftHandedBatter';
-        else pos = Math.random() >= 0.5 ? 'RightHandedBatter' : 'LeftHandedBatter'; 
-        await this.currentBatter?.walkOn(pos);
+        const pos = this.getBatterPosition();
+        await this.currentBatter?.walkOn(pos.label);
+        this.currentBatter?.turnAround("back");
+    }
+
+    hardSwitchBatter(newBatter: string) {
+        this.currentBatter?.hide();
+        this.currentBatter = this.playersByName[newBatter] ?? null;
+
+        const pos = this.getBatterPosition();
+        this.currentBatter?.setPosition(pos.position);
         this.currentBatter?.turnAround("back");
     }
 }

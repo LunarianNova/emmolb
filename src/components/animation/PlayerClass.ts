@@ -102,12 +102,13 @@ export class AnimatedPlayer {
         const labelGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
         const label = document.createElementNS('http://www.w3.org/2000/svg', "text"); 
         const labelBackground = document.createElementNS('http://www.w3.org/2000/svg', "rect");
-        labelBackground.setAttribute("fill", "white");
+        labelBackground.setAttribute("fill", this.teamColor);
         labelBackground.setAttribute("fill-opacity", "0.5");
         labelBackground.setAttribute("rx", "4");
         labelBackground.setAttribute("ry", "4");
+        label.setAttribute('font-family', 'geist, sans-serif');
         label.setAttribute("font-size", "12");
-        label.setAttribute("fill", "black");
+        label.setAttribute("fill", getContrastTextColor(this.teamColor));
         label.setAttribute("text-anchor", "middle");
         label.setAttribute("x", "0");
         label.setAttribute("y", "-30");

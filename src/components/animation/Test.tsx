@@ -14,10 +14,12 @@ import { MapAPIPlayerResponse, Player } from "@/types/Player";
 import { Navbar } from "../Navbar";
 import { TeamManager } from "./TeamManager";
 import { GameManager } from "./GameManager";
+import AnimationControls from "./Controls";
 
 export default function GameField({homeTeam, awayTeam, game, id,}: {homeTeam: Team; awayTeam: Team; game: Game; id: string;}) {
     const svgRef = useRef<SVGSVGElement>(null);
 
+    const [isPlaying, setIsPlaying] = useState<boolean>(false);
     const [lastEvent, setLastEvent] = useState<Event | null>(null);
     const [gameManager, setGameManager] = useState<GameManager>();
     const [eventLog, setEventLog] = useState<Event[]>(game.event_log);
@@ -59,6 +61,7 @@ export default function GameField({homeTeam, awayTeam, game, id,}: {homeTeam: Te
 
         const gameManager = new GameManager({homeTeam: homeTeamManager, awayTeam: awayTeamManager, announcer, eventLog, game})
         setGameManager(gameManager);
+        setIsPlaying(true);
         gameManager.start();
 
     }, [players, eventLog, homeTeam, awayTeam, game]);
@@ -95,7 +98,7 @@ export default function GameField({homeTeam, awayTeam, game, id,}: {homeTeam: Te
             if (gameManager) setLastEvent(eventLog[gameManager.getEventIndex()-2] ?? eventLog[0]); // Fetch first on fallback because otherwise it'll show way later data
             else setLastEvent(eventLog[eventLog.length - 1]);
 
-            timeout = setTimeout(fetchLastEvent, 500);
+            timeout = setTimeout(fetchLastEvent, 100);
         }
 
         fetchLastEvent();
@@ -107,6 +110,16 @@ export default function GameField({homeTeam, awayTeam, game, id,}: {homeTeam: Te
     return (
         <svg ref={svgRef} id={id} width="100%" height="100vh" viewBox="-200 0 1200 600" style={{ background: "#242424" }}>
             <Field />
+            
+            <AnimationControls 
+                onRewind={() => gameManager?.skipTo(gameManager.getEventIndex()-1)} 
+                onPause={() => {
+                    gameManager?.togglePause(); 
+                    setIsPlaying(gameManager?.getIsPlaying() ?? false)
+                }} 
+                onForward={() => gameManager?.skipTo(gameManager.getEventIndex()+1)} isPaused={!isPlaying}
+            />
+
             <GameInfo homeTeam={homeTeam} awayTeam={awayTeam} stadium={homeTeam.ballpark_name ?? ''} />
             {lastEvent && (<>
                 <Scoreboard position={new Vector2(-180, 20)} titles={["AWAY", "INNG", "HOME"]} values={[String(lastEvent.away_score), lastEvent.event === 'Recordkeeping' ? 'FIN' : `${lastEvent.inning_side === 0 ? "▲" : "▼"}${lastEvent.inning}`, String(lastEvent.home_score)]}/>

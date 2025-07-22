@@ -19,6 +19,7 @@ export class Announcer {
 
     private bobbingInterval?: NodeJS.Timeout;
     private blinkInterval?: NodeJS.Timeout;
+    private messageCancelled: boolean = false;
 
     constructor(opts: AnnouncerProps) {
         this.position = opts.position;
@@ -179,12 +180,19 @@ export class Announcer {
         }, 120);
     }
 
+    setMessage(text: string) {
+        this.messageCancelled = true;
+        this.stopBobbing();
+        const div = (this as any).messageDiv as HTMLDivElement;
+        div.innerHTML = text;
+    }
 
     // CPS: Characters Per Second
     // Duration: ms the message should take to say (calculate cps)
     sayMessage({text, cps=30, duration,}: {text: string; cps?: number; duration?: number;}) {
         text = text.replace(/<[^>]*>/g, '');
         const totalChars = text.length;
+        this.messageCancelled = false;
 
         if (duration)
             cps = totalChars / (duration/1000);
@@ -199,6 +207,7 @@ export class Announcer {
         const start = performance.now();
 
         const step = (now: number) => {
+            if (!this.bobbingInterval || this.messageCancelled) return;
             const elapsed = now - start;
             const expectedChars = Math.floor(elapsed/speed);
 
