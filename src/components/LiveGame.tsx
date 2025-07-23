@@ -53,7 +53,6 @@ export default function LiveGame({ awayTeamArg, homeTeamArg, initialDataArg, gam
     const [lastEvent, setLastEvent] = useState(initialData.event_log[initialData.event_log.length - 1]);
     const [data, setData] = useState(initialData);
     const [showDetailedStats, setShowDetailedStats] = useState(false);
-    const [gameStats, setGameStats] = useState(GameStats())
     const players: Record<string, any> = {};
     const homePlayers: string[] = [];
     const awayPlayers: string[] = [];
@@ -240,7 +239,7 @@ export default function LiveGame({ awayTeamArg, homeTeamArg, initialDataArg, gam
     let currentQueue: Baserunner[] = [];
     let lastBases: Bases = { first: null, second: null, third: null }; 
 
-    gameStats.reset();
+    const gameStats = GameStats();
     for (const event of eventLog) {
         const result = ProcessMessage(event, [...awayPlayers, ...homePlayers], gameStats, currentQueue);
         currentQueue = result.baseQueue;

@@ -48,7 +48,6 @@ export type ExpandedScoreboard = {
 }
 
 export type GameStats = {
-    reset(): void;
     away: ExpandedScoreboard;
     home: ExpandedScoreboard;
     batters: Record<string, BatterGameStats>;
@@ -74,26 +73,6 @@ export function GameStats(): GameStats {
             pitchingOrder: []
         },
         batters: {},
-        pitchers: {},
-        reset() {
-            this.away = {
-                runsByInning: [],
-                hits: 0,
-                errors: 0,
-                leftOnBase: 0,
-                battingOrder: [],
-                pitchingOrder: []
-            };
-            this.home = {
-                runsByInning: [],
-                hits: 0,
-                errors: 0,
-                leftOnBase: 0,
-                battingOrder: [],
-                pitchingOrder: []
-            }
-            this.batters = {}
-            this.pitchers = {}
-        }
+        pitchers: {}
     };
 }
