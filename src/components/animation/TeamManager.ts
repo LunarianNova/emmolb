@@ -1,3 +1,5 @@
+// TeamManager.ts
+
 import { Player } from "@/types/Player";
 import { AnimatedPlayer } from "./PlayerClass";
 import { Vector2 } from "@/types/Vector2";

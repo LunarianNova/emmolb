@@ -39,6 +39,14 @@ export class Ball {
         this.pos = pos;
     }
 
+    hide() {
+        this.group.setAttribute('opacity', '0');
+    }
+
+    show () {
+        this.group.setAttribute('opacity', '1');
+    }
+
     async moveTo(target: Vector2, speed = 125): Promise<void> {
         const dx = target.x - this.pos.x;
         const dy = target.y - this.pos.y;
