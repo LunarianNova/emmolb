@@ -259,7 +259,7 @@ export class GameManager {
         const curBases = this.baseStates[index].bases;
         const nextBases = this.baseStates[index + 1].bases;
         const outs = this.parseOuts(nextEvent.message);
-        const throwChain = this.parseThrowChain(nextEvent.message, 'Home');
+        const throwChain = this.parseThrowChain(nextEvent.message, this.getHitLocation(curEvent.message));
         const ball = this.createBall(positions['Pitcher']);
 
         // Okay. I've tried this many times before, but it evidently is not working. So I'll do the age-old whiteboarding/pseudocode/rubber duck/sanity check approach
@@ -306,6 +306,93 @@ export class GameManager {
 
         So that is my daily sanity check. Now to implement what is written here
         */
+
+        const baseToFielder: Record<string, keyof typeof positions> = {
+            first: 'FirstBaseman',
+            second: 'SecondBaseman',
+            third: 'ThirdBaseman',
+            home: 'Catcher',
+        };
+
+        const fullBasePath: Record<string, string[]> = {
+            first: ['second', 'third', 'home'],
+            second: ['third', 'home'],
+            third: ['home'],
+        };
+
+        function computePath(from: string, to: string): string[] {
+            const bases = fullBasePath[from];
+            const index = bases.indexOf(to);
+            if (index === -1) return [capitalize(to)];
+            return [capitalize(from), ...bases.slice(0, index + 1).map(b => capitalize(b))];
+        }
+
+        function calculateThrowSpeed(from: Vector2, to: Vector2, minTime: number = 1200): number {
+            const distance = Vector2.distance(from, to);
+            const maxSpeed = 250;
+            const rawSpeed = distance / (minTime / 1000);
+            return Math.min(rawSpeed, maxSpeed);
+        }
+
+        function jitteredLocation(originalPos: Vector2): Vector2 {
+            return new Vector2(originalPos.x + (Math.random()-0.5)*80, originalPos.y + (Math.random()-0.5)*80);
+        }
+
+        const throwSegments: {fromPos: keyof typeof positions; toPos: keyof typeof positions; from: Vector2; to: Vector2; dist: number; speed: number; duration: number; holdTime: number;}[] = [];
+        for (let i = 1; i < throwChain.length; i++) {
+            const fromPos = throwChain[i-1];
+            const toPos = throwChain[i];
+            const from = throwSegments[i-2]?.to ?? positions[fromPos];
+            const to = jitteredLocation(positions[toPos]);
+            const speed = calculateThrowSpeed(from, to, 1000 + Math.random() * 400);
+            const dist = Vector2.distance(from, to);
+            const duration = (dist / speed) * 1000;
+            const holdTime = 250 + Math.random() * 200;
+            throwSegments.push({fromPos, toPos, from, to, dist, speed, duration, holdTime});
+        }
+
+        let cumulativeTime = 0;
+        const throwTimeline = throwSegments.map(seg => {
+            const start = cumulativeTime;
+            const catchTime = cumulativeTime + seg.duration;
+            const end = catchTime + seg.holdTime;
+            cumulativeTime = end
+            return {...seg, start, end};
+        })
+
+        const playerPaths: {player: string; basePath: string[]; isOut: boolean;}[] = [];
+        for (const base of ['first', 'second', 'third'] as const) {
+            const curPlayer = curBases[base];
+            if (!curPlayer) continue;
+
+            const newBase = Object.entries(nextBases).find(([_, baseman]) => baseman === curPlayer)?.[0] ?? null;
+            const isOut = outs.some(o => o.name === curPlayer);
+            let path: string[] = [];
+
+            if (isOut) {
+                const outBase = outs.find(o => o.name === curPlayer)!.base;
+                path = computePath(base, outBase.toLowerCase());
+            } else if (newBase) {
+                path = computePath(base, newBase);
+            } else {
+                path = computePath(base, 'home'); // Assume they scored I guess? They aren't out and also aren't on a base
+            }
+
+            playerPaths.push({player: curPlayer, basePath: path, isOut});
+        }
+
+        const runnerTimings: {player: string; path: string[]; startTimes: number[]; speeds: number[];}[] = [];
+        for (const {player, basePath, isOut} of playerPaths) {
+            const timings: number[] = [];
+            const speeds: number[] = [];
+
+            if (isOut) {
+                const finalBase = basePath[basePath.length - 1].toLowerCase();
+                const fielder = baseToFielder[finalBase];
+                const throwEvent = throwTimeline.find(({ toPos }) => toPos === fielder);
+                const outTime = throwEvent ? throwEvent.end : undefined;
+            }
+        }
     }
 
     private getHitLocation(msg: string): keyof typeof positions {

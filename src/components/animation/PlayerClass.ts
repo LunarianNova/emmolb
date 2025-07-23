@@ -247,6 +247,12 @@ export class AnimatedPlayer {
         this.group.setAttribute('opacity', '1');
     }
 
+    async returnToPosition() {
+        const walkspeed = 80 + Math.random() * 40;
+        await this.walkTo(positions[this.position], walkspeed);
+        this.turnAround('front');
+    }
+
     async walkOff() {
         const walkspeed = 80 + Math.random() * 40;
         await this.walkTo(this.getWalkLinePos(this.posVector), walkspeed);

@@ -24,20 +24,22 @@ export const fielderLabels: Record<string, string> = {
     "CenterFielder": "CF",
     "LeftFielder": "LF",
     "RightFielder": "RF",
-    "FirstBase": "1B",
-    "SecondBase": "2B",
+    "FirstBaseman": "1B",
+    "SecondBaseman": "2B",
     "Shortstop": "SS",
-    "ThirdBase": "3B",
-    "Pitcher": "P"
+    "ThirdBaseman": "3B",
+    "Pitcher": "P",
+    "Catcher": "C",
 };
 
 export const inverseFielderLabels: Record<string, string> = {
     "CF": "CenterFielder",
     "LF": "LeftFielder",
     "RF": "RightFielder",
-    "1B": "FirstBase",
-    "2B": "SecondBase",
+    "1B": "FirstBaseman",
+    "2B": "SecondBaseman",
     "SS": "Shortstop",
-    "3B": "ThirdBase",
-    "P": "Pitcher"
+    "3B": "ThirdBaseman",
+    "P": "Pitcher",
+    "C": "Catcher",
 };
