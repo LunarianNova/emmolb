@@ -18,6 +18,7 @@ import CashewsPlayerStats from './CashewsPlayerStats';
 import { GameStats } from '@/types/GameStats';
 import { BoxScore } from './BoxScore';
 import { ExpandedScoreboard } from './ExpandedScoreboard';
+import { usePolling } from '@/hooks/Poll';
 
 type EventBlockGroup = {
     emoji?: string;
@@ -85,77 +86,30 @@ export default function LiveGame({ awayTeamArg, homeTeamArg, initialDataArg, gam
         lastEventIndexRef.current = lastEvent.index;
     }, [lastEvent]);
 
-    useEffect(() => {
-        let isMounted = true;
-
-        async function poll() {
-            if (!isMounted) return;
-            if (data.state === "Complete") {
-                if (pollingRef.current) {
-                    clearInterval(pollingRef.current);
-                    pollingRef.current = null;
-                    console.log("Polling stopped: game complete.");
-                }
-                return;
+    usePolling({
+        interval: 6000,
+        pollFn: async () => {
+            const after = (eventLog.length+1).toString();
+            const res = await fetch(`/nextapi/game/${gameId}/live?after=${after}`);
+            if (!res.ok) throw new Error("Failed to fetch events");
+            return res.json();
+        },
+        onData: (newData) => {
+            if (newData.entries?.length) {
+                setEventLog(prev => {
+                    const updated = [...prev, ...newData.entries];
+                    return updated;
+                });
             }
-
-            const after = (lastEventIndexRef.current + 1).toString();
-
-            // Track repeated 'after' param requests
-            if (lastAfterRef.current === after) {
-                repeatedAfterCountRef.current++;
-            } else {
-                repeatedAfterCountRef.current = 0;
-                lastAfterRef.current = after;
-            }
-
-            if (repeatedAfterCountRef.current >= 5) {
-                if (pollingRef.current) {
-                    clearInterval(pollingRef.current);
-                    pollingRef.current = null;
-                    console.warn("Polling halted: repeated same 'after' param 5 times.");
-                }
-                return;
-            }
-
-            try {
-                const res = await fetch(`/nextapi/game/${gameId}/live?after=${after}`);
-                if (!res.ok) throw new Error('Failed to fetch live events');
-
-                const newData = await res.json();
-                failureCountRef.current = 0;
-
-                if (newData.entries && newData.entries.length > 0) {
-                    setEventLog(prev => [...prev, ...newData.entries]);
-                    setLastEvent(newData.entries[newData.entries.length - 1]);
-                }
-
-                if (newData.State === "Complete") {
-                    if (pollingRef.current) {
-                        clearInterval(pollingRef.current);
-                        pollingRef.current = null;
-                    }
-                }
-            } catch (error) {
-                console.error(error);
-                failureCountRef.current++;
-                if (failureCountRef.current >= 5) {
-                    console.warn("Polling halted after repeated failures.");
-                    if (pollingRef.current) {
-                        clearInterval(pollingRef.current);
-                        pollingRef.current = null;
-                    }
-                }
-            }
+        },
+        shouldStop: (newData) => {
+            const last = newData.entries?.[newData.entries.length - 1];
+            return last?.event === "Recordkeeping";
+        },
+        killCon: () => {
+            return eventLog[eventLog.length - 1].event === 'Recordkeeping';
         }
-
-        pollingRef.current = setInterval(poll, 6000);
-
-        return () => {
-            isMounted = false;
-            if (pollingRef.current) clearInterval(pollingRef.current);
-        };
-    }, [gameId]);
+    });
 
     function getBlockMetadata(message: string): { emoji?: string; title?: string, titleColor?: string, onClick?: () => void } | null {
         if (message.includes('Now batting')) {
@@ -241,7 +195,8 @@ export default function LiveGame({ awayTeamArg, homeTeamArg, initialDataArg, gam
 
     const gameStats = GameStats();
     for (const event of eventLog) {
-        const result = ProcessMessage(event, [...awayPlayers, ...homePlayers], gameStats, currentQueue);
+        console.log(event, currentQueue, gameStats);
+        const result = ProcessMessage(event, [...awayPlayers, ...homePlayers], currentQueue, gameStats);
         currentQueue = result.baseQueue;
         lastBases = result.bases;
     }

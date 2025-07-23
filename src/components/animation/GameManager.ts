@@ -3,19 +3,13 @@ import { TeamManager } from "./TeamManager";
 import { Game } from "@/types/Game";
 import { Announcer } from "./Announcer";
 import { Bases } from "@/types/Bases";
-import { ProcessMessage } from "../BaseParser";
+import { Baserunner, ProcessMessage } from "../BaseParser";
 import { inverseFielderLabels, positions } from "./Constants";
 import { Ball } from "./Ball";
 import { RefObject } from "react";
 import { Vector2 } from "@/types/Vector2";
 import { capitalize } from "@/helpers/StringHelper";
 import { AnimatedPlayer } from "./PlayerClass";
-
-const fullBasePath: Record<string, string[]> = {
-    first: ['second', 'third', 'home'],
-    second: ['third', 'home'],
-    third: ['home'],
-};
 
 export class GameManager {
     homeTeam: TeamManager;
@@ -29,7 +23,7 @@ export class GameManager {
     private isPlaying: boolean = false;
     private fieldingTeam: TeamManager | null = null;
     private battingTeam: TeamManager | null = null;
-    private baseStates: {bases: Bases, baseQueue: string[]}[] = [];
+    private baseStates: {bases: Bases, baseQueue: Baserunner[]}[] = [];
     private players: string[] = [];
     private animationQueue: Promise<void> = Promise.resolve();
 

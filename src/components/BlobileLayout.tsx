@@ -2,8 +2,9 @@ import { useEffect, useRef, useState } from "react";
 import MiniTeamHeader from "./MiniTeamHeader";
 import { MapAPITeamResponse } from "@/types/Team";
 import { Bases } from "@/types/Bases";
-import { ProcessMessage } from "./BaseParser";
+import { Baserunner, ProcessMessage } from "./BaseParser";
 import { Event } from "@/types/Event";
+import { usePolling } from "@/hooks/Poll";
 
 function getTeamInitials(team: any) {
   if (!team) return "";
@@ -27,88 +28,39 @@ export function FullBlobileDisplay({ gameId, awayTeam, homeTeam, game}: {gameId:
     const [eventLog, setEventLog] = useState<Event[]>(game.EventLog);
     const [lastEvent, setLastEvent] = useState(game.EventLog[game.EventLog.length - 1]);
     const lastEventIndexRef = useRef(game.EventLog.length-1);
-    const failureCountRef = useRef(0);
-    const repeatedAfterCountRef = useRef(0);
-    const lastAfterRef = useRef<string | null>(null);
-    const pollingRef = useRef<NodeJS.Timeout | null>(null);
         
     useEffect(() => {
       lastEventIndexRef.current = lastEvent.index;
     }, [lastEvent]);
     
-    useEffect(() => {
-      let isMounted = true;
-    
-      async function poll() {
-        if (!isMounted) return;
-        if (game.State === "Complete") {
-          if (pollingRef.current) {
-            clearInterval(pollingRef.current);
-            pollingRef.current = null;
-            console.log("Polling stopped: game complete.");
-          }
-          return;
-        }
-    
-        const after = (lastEventIndexRef.current + 1).toString();
-    
-        // Track repeated 'after' param requests
-        if (lastAfterRef.current === after) {
-          repeatedAfterCountRef.current++;
-        } else {
-          repeatedAfterCountRef.current = 0;
-          lastAfterRef.current = after;
-        }
-    
-        if (repeatedAfterCountRef.current >= 5) {
-          if (pollingRef.current) {
-            clearInterval(pollingRef.current);
-            pollingRef.current = null;
-            console.warn("Polling halted: repeated same 'after' param 5 times.");
-          }
-          return;
-        }
-    
-        try {
-          const res = await fetch(`/nextapi/game/${gameId}/live?after=${after}`);
-          if (!res.ok) throw new Error('Failed to fetch live events');
-    
-          const newData = await res.json();
-          failureCountRef.current = 0;
-    
-          if (newData.entries && newData.entries.length > 0) {
-            setEventLog(prev => [...prev, ...newData.entries]);
-            setLastEvent(newData.entries[newData.entries.length - 1]);
-          }
-    
-          if (newData.State === "Complete") {
-            if (pollingRef.current) {
-              clearInterval(pollingRef.current);
-              pollingRef.current = null;
+    usePolling({
+        interval: 6000,
+        pollFn: async () => {
+            const after = (eventLog.length+1).toString();
+            const res = await fetch(`/nextapi/game/${gameId}/live?after=${after}`);
+            if (!res.ok) throw new Error("Failed to fetch events");
+            return res.json();
+        },
+        onData: (newData) => {
+            if (newData.entries?.length) {
+                setEventLog(prev => {
+                    const updated = [...prev, ...newData.entries];
+                    return updated;
+                });
+                setLastEvent(newData.entries[newData.entries.length - 1]);
             }
-          }
-        } catch (error) {
-          console.error(error);
-          failureCountRef.current++;
-          if (failureCountRef.current >= 5) {
-            console.warn("Polling halted after repeated failures.");
-            if (pollingRef.current) {
-              clearInterval(pollingRef.current);
-              pollingRef.current = null;
-            }
-          }
+        },
+        shouldStop: (newData) => {
+            if (game.state === 'Complete') return true;
+            const last = newData.entries?.[newData.entries.length - 1];
+            return last?.event === "Recordkeeping";
+        },
+        killCon: () => {
+            return eventLog[eventLog.length - 1].event === 'Recordkeeping';
         }
-      }
-    
-      pollingRef.current = setInterval(poll, 6000);
-    
-      return () => {
-        isMounted = false;
-        if (pollingRef.current) clearInterval(pollingRef.current);
-      };
-    }, [gameId]);
+    });
 
-    let currentQueue: string[] = [];
+    let currentQueue: Baserunner[] = [];
     let lastBases: Bases = { first: null, second: null, third: null }; 
     const allPlayerNames = [
         ...awayTeam.Players.map((p: any) => `${p.FirstName} ${p.LastName}`),

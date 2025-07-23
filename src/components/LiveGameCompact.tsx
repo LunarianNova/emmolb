@@ -7,49 +7,31 @@ import { GameHeader, GameHeaderEvent } from './GameHeader';
 import { Team } from '@/types/Team';
 import { Game } from '@/types/Game';
 import { Event } from '@/types/Event';
+import { usePolling } from '@/hooks/Poll';
 
 export function LiveGameCompact({ gameId, homeTeam, awayTeam, game, killLinks = false }: { gameId: string, homeTeam: Team, awayTeam: Team, game: Game , killLinks?: boolean}){
     const [event, setEvent] = useState<any | null>(null);
     const [hasError, setHasError] = useState(false);
-    const pollingRef = useRef<NodeJS.Timeout | null>(null);
     const [lastUpdated, setLastUpdated] = useState<number>(Date.now());
 
-    useEffect(() => {
-        async function fetchInitial() {
-            try {
-                const res = await fetch(`/nextapi/game/${gameId}/live`);
-                if (!res.ok) throw new Error("Fetch failed");
-                const data = await res.json();
-
-                if (!data?.entries?.length) throw new Error("No event log");
-
-                setEvent(data.entries[data.entries.length - 1]);
+    usePolling({
+        interval: 6000,
+        pollFn: async () => {
+            const after = (event.length+1).toString();
+            const res = await fetch(`/nextapi/game/${gameId}/live?after=${after}`);
+            if (!res.ok) throw new Error("Failed to fetch events")
+            return res.json();
+        },
+        onData: (newData) => {
+            if (newData.entries?.length) {
+                setEvent(newData.entries[newData.entries.length - 1]);
                 setLastUpdated(Date.now());
-            } catch (err) {
-                console.error("Error loading game:", err);
-                setHasError(true);
             }
+        },
+        killCon: () => {
+            return event.event === 'Recordkeeping';
         }
-
-        fetchInitial();
-
-        pollingRef.current = setInterval(async () => {
-            try {
-                const res = await fetch(`/nextapi/game/${gameId}/live`);
-                if (!res.ok) throw new Error("Polling failed");
-                const data = await res.json();
-                if (data?.entries?.length) {
-                    setEvent(data.entries[data.entries.length - 1]);
-                    setLastUpdated(Date.now());
-                }
-            } catch (err) {
-                console.error("Polling error:", err);
-                setHasError(true);
-            }
-        }, 6000);
-
-        return () => {if (pollingRef.current) clearInterval(pollingRef.current);};
-    }, [gameId]);
+    });
 
     if (hasError || !event) return <GameHeader homeTeam={homeTeam} awayTeam={awayTeam} game={game} killLinks={killLinks} />;
   
