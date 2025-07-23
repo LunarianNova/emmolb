@@ -30,7 +30,7 @@ export function BoxScore({ gameStats, team, isAway }: BoxScoreProps) {
                     </thead>
                     <tbody className='table-row-group'>
                         {(isAway ? gameStats.away : gameStats.home).battingOrder.map(batter =>
-                            <tr className='table-row border-b-1 border-white/50 text-sm'>
+                            <tr key={batter} className='table-row border-b-1 border-white/50 text-sm'>
                                 <td className='table-cell text-left'>{batter}</td>
                                 <td className='table-cell text-right pl-3'>{gameStats.batters[batter].atBats}</td>
                                 <td className='table-cell text-right pl-3'>{gameStats.batters[batter].hits}</td>
@@ -56,7 +56,7 @@ export function BoxScore({ gameStats, team, isAway }: BoxScoreProps) {
                     </thead>
                     <tbody className='table-row-group'>
                         {(isAway ? gameStats.away : gameStats.home).pitchingOrder.map(pitcher =>
-                            <tr className='table-row border-t-1 border-white/50 text-sm'>
+                            <tr key={pitcher} className='table-row border-t-1 border-white/50 text-sm'>
                                 <td className='table-cell text-left'>{pitcher}</td>
                                 <td className='table-cell text-right pl-3'>{Math.floor(gameStats.pitchers[pitcher].outsRecorded / 3)}.{gameStats.pitchers[pitcher].outsRecorded % 3}</td>
                                 <td className='table-cell text-right pl-3'>{gameStats.pitchers[pitcher].earnedRuns}</td>
