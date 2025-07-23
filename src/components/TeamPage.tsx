@@ -265,7 +265,7 @@ export default function TeamPage({ id }: { id: string }) {
             </div>
             {game && game.game.State != "Complete" && (<><Link href={`/game/${gameID}`}><LiveGameCompact homeTeam={MapAPITeamResponse(game.homeTeam)} awayTeam={MapAPITeamResponse(game.awayTeam)} game={MapAPIGameResponse(game.game)} gameId={gameID ? gameID : ''} killLinks={true} /></Link></>)}
             {settings.teamPage?.showMMOLBLinks && (<div className="bg-theme-primary rounded-xl shadow-lg p-6 text-center text-lg mb-6">
-                <div className="mb-4 text-white">Augments apply in <span className="font-mono">{countdown}</span></div>
+                <div className="mb-4 text-theme-text">Augments apply in <span className="font-mono">{countdown}</span></div>
                 <a target="_blank" className="px-4 py-2 bg-theme-secondary text-theme-secondary rounded mb-4" href="https://mmolb.com/augment">
                     <span>Edit Augment</span>
                 </a>
