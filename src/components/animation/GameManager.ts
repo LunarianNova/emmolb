@@ -146,7 +146,7 @@ export class GameManager {
             this.battingTeam.resetPlayers(false);
         }
 
-        this.announcer.setMessage(this.eventLog[this.eventIndex-2].message);
+        this.announcer.setMessage(this.eventLog[this.eventIndex-1].message);
     }
 
     next() {
@@ -225,7 +225,7 @@ export class GameManager {
 
         // All of this is for the weird batting formatting
         const outPatterns = [
-            { regex: new RegExp(`${batterName} (lines|flies|pops|grounds) out`, 'i'), base: 'FirstBase' },
+            { regex: new RegExp(`${batterName} (lines|flies|pops|grounds) out`, 'i'), base: 'First' },
             { regex: new RegExp(`${batterName} out at (first|second|third|home)`, 'i') },
             { regex: /double play.*out at (first|second|third|home)/gi },
             { regex: /triple play.*out at (first|second|third|home)/gi }
@@ -235,7 +235,7 @@ export class GameManager {
             const match = pattern.regex.exec(message);
             if (match) {
                 let base = match[1]?.toLowerCase() as string;
-                if (!base) base = 'First'; // default for batter if not specified
+                if (pattern.base) base = 'First'; // default for batter if not specified
                 const outBase = capitalize(base) as keyof typeof positions;
                 outs.push({ name: batterName, base: outBase });
             }
@@ -253,14 +253,14 @@ export class GameManager {
         return outs;
     }
 
-    private resolvePlay(index: number) {
+    private async resolvePlay(index: number) {
         const curEvent = this.eventLog[index];
         const nextEvent = this.eventLog[index + 1];
         const curBases = this.baseStates[index].bases;
         const nextBases = this.baseStates[index + 1].bases;
         const outs = this.parseOuts(nextEvent.message);
         const throwChain = this.parseThrowChain(nextEvent.message, this.getHitLocation(curEvent.message));
-        const ball = this.createBall(positions['Pitcher']);
+        const ball = this.createBall(positions['Home']);
 
         // Okay. I've tried this many times before, but it evidently is not working. So I'll do the age-old whiteboarding/pseudocode/rubber duck/sanity check approach
 
@@ -329,13 +329,14 @@ export class GameManager {
 
         function calculateThrowSpeed(from: Vector2, to: Vector2, minTime: number = 1200): number {
             const distance = Vector2.distance(from, to);
-            const maxSpeed = 250;
             const rawSpeed = distance / (minTime / 1000);
-            return Math.min(rawSpeed, maxSpeed);
+            return rawSpeed;
         }
 
-        function jitteredLocation(originalPos: Vector2): Vector2 {
-            return new Vector2(originalPos.x + (Math.random()-0.5)*80, originalPos.y + (Math.random()-0.5)*80);
+        function jitteredLocation(originalPos: Vector2, offsets: [number, number, number, number] = [20, 20, 20, 20]): Vector2 {
+            const offsetX = Math.random() * (offsets[0] + offsets[1]) - offsets[0];
+            const offsetY = Math.random() * (offsets[2] + offsets[3]) - offsets[2];
+            return new Vector2(originalPos.x + offsetX, originalPos.y + offsetY);
         }
 
         const throwSegments: {fromPos: keyof typeof positions; toPos: keyof typeof positions; from: Vector2; to: Vector2; dist: number; speed: number; duration: number; holdTime: number;}[] = [];
@@ -343,11 +344,25 @@ export class GameManager {
             const fromPos = throwChain[i-1];
             const toPos = throwChain[i];
             const from = throwSegments[i-2]?.to ?? positions[fromPos];
-            const to = jitteredLocation(positions[toPos]);
-            const speed = calculateThrowSpeed(from, to, 1000 + Math.random() * 400);
+            let to = jitteredLocation(positions[toPos]);
+            let speed: number = 100;
+            if (fromPos === 'Home') {
+                if (curEvent.message.includes('lines'))
+                    speed = calculateThrowSpeed(from, to, 600 + Math.random() * 100);
+                else if (curEvent.message.includes('grounds')){
+                    speed = calculateThrowSpeed(from, to, 700 + Math.random() * 200);
+                    to = jitteredLocation(positions[toPos], [20, 20, 20, 0]); // Don't go behind the catcher
+                }
+                else if (curEvent.message.includes('flies'))
+                    speed = calculateThrowSpeed(from, to, 800 + Math.random() * 300);
+                else
+                    speed = calculateThrowSpeed(from, to, 1000 + Math.random() * 400);
+            } else {
+                speed = calculateThrowSpeed(from, to, 1000 + Math.random() * 400);
+            }
             const dist = Vector2.distance(from, to);
             const duration = (dist / speed) * 1000;
-            const holdTime = 250 + Math.random() * 200;
+            const holdTime = 350 + Math.random() * 200;
             throwSegments.push({fromPos, toPos, from, to, dist, speed, duration, holdTime});
         }
 
@@ -413,37 +428,31 @@ export class GameManager {
             runnerTimings.push({ player, path: basePath, startTimes: timings, speeds });
         }
 
-                // Animate ball throws
-        this.queue(() => this.runParallel(
-            throwTimeline.map(({ from, to, speed, start }) => {
-                return async () => {
-                    await this.sleep(start);
-                    await ball.throwTo(to, speed);
-                };
-            })
-        ));
+        console.log(throwSegments);
+        console.log(outs);
+        for (const pass of throwSegments) {
+            const catcher = this.fieldingTeam?.playersByPosition[pass.toPos];
+            catcher?.walkTo(pass.to);
 
-        // Animate runners
-        for (const { player, path, startTimes, speeds } of runnerTimings) {
-            const runner = this.getPlayerByName(player);
-            if (!runner) continue;
-            this.queue(() => this.runParallel(
-                path.map((base, i) => {
-                    const pos = positions[capitalize(base) as keyof typeof positions];
-                    const delay = startTimes[i];
-                    const speed = speeds[i];
-                    return async () => {
-                        await this.sleep(delay);
-                        await runner.walkTo(pos, speed);
-                    };
-                })
-            ));
+            const matchedOut = outs.find(out => baseToFielder[out.base.toLowerCase()] === pass.toPos);
+            if (matchedOut) {
+                const basePos = positions[matchedOut.base];
+                const walkDistance = Vector2.distance(catcher!.posVector, basePos);
+                const speed = 125;
+                const calcDuration = walkDistance / speed;
+                const calcPassDuration = (pass.duration+pass.holdTime)-calcDuration;
+                const calcPassSpeed = pass.dist / (calcPassDuration/1000);
+                await ball.throwTo(pass.to, calcPassSpeed);
+                ball.moveTo(basePos, speed);
+                await catcher!.walkTo(basePos, speed);
+            }       
+            else {
+                await ball.throwTo(pass.to, pass.speed);
+                await this.sleep(pass.holdTime);
+            }
+            catcher?.returnToPosition();
         }
-
-        this.queue(() => {
-            this.svgRef.current?.removeChild(ball.group);
-            return Promise.resolve();
-        });
+        this.svgRef.current?.removeChild(ball.group);
     }
 
     private getHitLocation(msg: string): keyof typeof positions {
@@ -499,17 +508,17 @@ export class GameManager {
                 this.battingTeam.startFieldingInning();
                 break;
             case 'Pitch': {
-                // if (next?.event === 'Field') this.resolvePlay(cur.index);
-                {
+                if (next?.event === 'Field') this.resolvePlay(cur.index);
+                else {
                     if (cur.message.includes('steals')) this.advanceBases(cur.index);
                     const ball = this.createBall(positions['Pitcher']);
                     await ball.throwTo(positions['Home']);
                     this.svgRef.current?.removeChild(ball.group);
                     if (cur.message.includes('Foul')) this.foulBallAnimation(this.battingTeam.currentBatter?.posVector === positions['LeftHandedBatter'] ? 'L' : 'R');
-                    if (cur.message.includes('hits')) {
-                        this.processHitBall(cur.index);
-                        this.advanceBases(next?.index ?? 0);
-                    }
+                    // if (cur.message.includes('hits')) {
+                    //     this.processHitBall(cur.index);
+                    //     this.advanceBases(next?.index ?? 0);
+                    // }
                 }
             }
         }

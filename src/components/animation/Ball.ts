@@ -12,14 +12,6 @@ export class Ball {
 
         this.group = document.createElementNS('http://www.w3.org/2000/svg', 'g');
         const background = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-        background.setAttribute('cx', '5');
-        background.setAttribute('cy', '5');
-        background.setAttribute('fill', '#FFF');
-        background.setAttribute('stroke', '#000');
-    }
-
-    setPosition(pos: Vector2) {
-        const background = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
         background.setAttribute('cx', '0');
         background.setAttribute('cy', '0');
         background.setAttribute('r', '5');
@@ -41,6 +33,44 @@ export class Ball {
         stitch2.setAttribute('stroke-width', '0.5');
         stitch2.setAttribute('fill', 'none');
         this.group.appendChild(stitch2);
+    }
+
+    setPosition(pos: Vector2) {
+        this.pos = pos;
+    }
+
+    async moveTo(target: Vector2, speed = 125): Promise<void> {
+        const dx = target.x - this.pos.x;
+        const dy = target.y - this.pos.y;
+        const distance = Math.hypot(dx, dy);
+        const duration = (distance / speed) * 1000;
+        const startX = this.pos.x;
+        const startY = this.pos.y;
+        const startTime = performance.now();
+
+        return new Promise(resolve => {
+            const animate = (now: number) => {
+                const elapsed = now - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                const eased = progress;
+
+                const newX = startX + dx * eased;
+                const newY = startY + dy * eased;
+                this.setPosition(new Vector2(newX, newY));
+
+                this.group.setAttribute('transform', `translate(${newX}, ${newY})`);
+
+                if (progress < 1) {
+                    requestAnimationFrame(animate);
+                } else {
+                    this.setPosition(target);
+                    this.group.setAttribute('transform', `translate(${target.x}, ${target.y})`);
+                    resolve();
+                }
+            };
+
+            requestAnimationFrame(animate);
+        });
     }
 
     async throwTo(target: Vector2, speed = 125): Promise<void> {
