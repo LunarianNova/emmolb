@@ -81,6 +81,7 @@ export default function LiveGame({ awayTeamArg, homeTeamArg, initialDataArg, gam
     const [playerType, setPlayerType] = useState<'pitching' | 'batting' | null>(null);
     const [showStats, setShowStats] = useState(false);
     const [followLive, setFollowLive] = useState(false);
+    const [showBoxScore, setShowBoxScore] = useState(data.state == 'Complete');
 
     useEffect(() => {
         lastEventIndexRef.current = lastEvent.index;
@@ -262,7 +263,7 @@ export default function LiveGame({ awayTeamArg, homeTeamArg, initialDataArg, gam
                 homeTeam={homeTeam}
             />
 
-            <GameStateDisplay
+            {data.state != 'Complete' && <GameStateDisplay
                 event={lastEvent}
                 bases={{first: (lastBases.first && lastBases.first !== 'Unknown') ? lastBases.first + ` (${getOPS(players[lastBases.first].stats)} OPS)` : lastBases.first, second: (lastBases.second && lastBases.second !== 'Unknown') ? lastBases.second + ` (${getOPS(players[lastBases.second].stats)} OPS)` : lastBases.second, third: (lastBases.third && lastBases.third !== 'Unknown') ? lastBases.third + ` (${getOPS(players[lastBases.third].stats)} OPS)` : lastBases.third}}
                 pitcher={{
@@ -279,19 +280,13 @@ export default function LiveGame({ awayTeamArg, homeTeamArg, initialDataArg, gam
                 }}
                 showBases={true}
                 cashewsPlayers={cashewsPlayers}
-            />
-
-            <div className='flex items-stretch mt-6 gap-4'>
-                <div className='flex-1'>
-                    <BoxScore gameStats={gameStats} team={awayTeam} isAway={true} />
-                </div>
-                <div className='flex-1'>
-                    <BoxScore gameStats={gameStats} team={homeTeam} isAway={false} />
-                </div>
-            </div>
+            />}
 
             <>
             <div className="flex justify-between items-center mb-2 gap-2 mt-4">
+                <button onClick={() => setShowBoxScore(!showBoxScore)} className="px-3 py-1 text-xs bg-theme-primary hover:opacity-80 rounded-md">
+                    {showBoxScore ? 'Hide Box Score' : 'Show Box Score'}
+                </button>
                 <button onClick={() => setShowStats(!showStats)} className="px-3 py-1 text-xs bg-theme-primary hover:opacity-80 rounded-md">
                     {showStats ? 'Hide Stats' : 'Show Stats'}
                 </button>
@@ -303,6 +298,16 @@ export default function LiveGame({ awayTeamArg, homeTeamArg, initialDataArg, gam
                 </button>
             </div>
 
+            {showBoxScore &&
+                <div className='flex items-stretch my-2 gap-4'>
+                    <div className='flex-1'>
+                        <BoxScore gameStats={gameStats} team={awayTeam} isAway={true} />
+                    </div>
+                    <div className='flex-1'>
+                        <BoxScore gameStats={gameStats} team={homeTeam} isAway={false} />
+                    </div>
+                </div>
+            }
             {(showStats && followLive && showDetailedStats) ? (<div className='grid grid-cols-2 gap-2 items-stretch h-full'>
                 <CashewsPlayerStats player={(lastEvent.pitcher && cashewsPlayers.items.find((p) => `${p.data.FirstName} ${p.data.LastName}` === lastEvent.pitcher)) ? {...players[lastEvent.pitcher], ...cashewsPlayers.items.find((p) => `${p.data.FirstName} ${p.data.LastName}` === lastEvent.pitcher)} : null} category='pitching' />
                 <CashewsPlayerStats player={(lastEvent.batter && cashewsPlayers.items.find((p) => `${p.data.FirstName} ${p.data.LastName}` === lastEvent.batter)) ? {...players[lastEvent.batter], ...cashewsPlayers.items.find((p) => `${p.data.FirstName} ${p.data.LastName}` === lastEvent.batter)} : null} category='batting' />
