@@ -72,10 +72,6 @@ export default function LiveGame({ awayTeamArg, homeTeamArg, initialDataArg, gam
     }
     
     const lastEventIndexRef = useRef(lastEvent.index);
-    const failureCountRef = useRef(0);
-    const repeatedAfterCountRef = useRef(0);
-    const lastAfterRef = useRef<string | null>(null);
-    const pollingRef = useRef<NodeJS.Timeout | null>(null);
     const [selectedPlayer, setSelectedPlayer] = useState<string | undefined>();
     const [playerType, setPlayerType] = useState<'pitching' | 'batting' | null>(null);
     const [showStats, setShowStats] = useState(false);
@@ -100,6 +96,7 @@ export default function LiveGame({ awayTeamArg, homeTeamArg, initialDataArg, gam
                     const updated = [...prev, ...newData.entries];
                     return updated;
                 });
+                setLastEvent(newData.entries[newData.entries.length - 1]);
             }
         },
         shouldStop: (newData) => {

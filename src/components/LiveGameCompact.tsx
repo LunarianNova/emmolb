@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useRef } from 'react';
+import { useState } from 'react';
 import { GameStateDisplay } from '@/components/GameStateDisplay';
 import LastUpdatedCounter from './LastUpdatedCounter';
 import { GameHeader, GameHeaderEvent } from './GameHeader';
@@ -10,14 +10,14 @@ import { Event } from '@/types/Event';
 import { usePolling } from '@/hooks/Poll';
 
 export function LiveGameCompact({ gameId, homeTeam, awayTeam, game, killLinks = false }: { gameId: string, homeTeam: Team, awayTeam: Team, game: Game , killLinks?: boolean}){
-    const [event, setEvent] = useState<any | null>(null);
+    const [event, setEvent] = useState<Event | null>(null);
     const [hasError, setHasError] = useState(false);
     const [lastUpdated, setLastUpdated] = useState<number>(Date.now());
 
     usePolling({
         interval: 6000,
         pollFn: async () => {
-            const after = (event.length+1).toString();
+            const after = (event ? event.index + 1 : 0).toString();
             const res = await fetch(`/nextapi/game/${gameId}/live?after=${after}`);
             if (!res.ok) throw new Error("Failed to fetch events")
             return res.json();
@@ -29,7 +29,7 @@ export function LiveGameCompact({ gameId, homeTeam, awayTeam, game, killLinks = 
             }
         },
         killCon: () => {
-            return event.event === 'Recordkeeping';
+            return event?.event === 'Recordkeeping';
         }
     });
 

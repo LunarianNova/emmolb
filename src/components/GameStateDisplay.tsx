@@ -120,14 +120,6 @@ export function GameStateDisplay({
         )?.data.Bats;
     }
 
-
-
-    console.log(onDeck.player);
-    console.log(onDeckHits);
-
-
-
-
   return (
     <>
     <div className="flex justify-center items-start gap-x-10 w-full max-w-md mx-auto px-2">
