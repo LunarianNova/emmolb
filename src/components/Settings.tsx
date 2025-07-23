@@ -16,6 +16,7 @@ export type Settings = {
         showBaserunners: boolean;
         showStats: boolean;
         modifyEvents: boolean;
+        showExpandedScoreboard: boolean;
     }
     teamPage?: {
         showLiveGames: boolean;
@@ -55,6 +56,7 @@ const defaultSettings: Settings = {
         showBaserunners: false,
         showStats: true,
         modifyEvents: true,
+        showExpandedScoreboard: true,
     },
     teamPage: {
         showLiveGames: true,
