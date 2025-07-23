@@ -1,11 +1,7 @@
 'use client'
 import React from 'react'
-import { WeatherInfo } from './WeatherInfo'
-import { useRouter } from 'next/navigation'
 import { getContrastTextColor } from '@/helpers/Colors'
 import { Team } from '@/types/Team'
-import { Game } from '@/types/Game'
-import { Event } from '@/types/Event'
 import { GameStats } from '@/types/GameStats'
 
 interface BoxScoreProps {
@@ -16,60 +12,64 @@ interface BoxScoreProps {
 
 export function BoxScore({ gameStats, team, isAway }: BoxScoreProps) {
     return (
-        <div>
-            <div style={{ backgroundColor: "#" + team.color, color: getContrastTextColor(team.color) || 'rgb(0,0,0)' }}>{team.location} {team.name}</div>
-            <table>
-                <thead>
-                    <tr>
-                        <th className="p-1">Batting</th>
-                        <th className="p-1">AB</th>
-                        <th className="p-1">H</th>
-                        <th className="p-1">R</th>
-                        <th className="p-1">HR</th>
-                        <th className="p-1">RBI</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {(isAway ? gameStats.away : gameStats.home).battingOrder.map(batter =>
-                        <tr>
-                            <td className="p-1">{batter}</td>
-                            <td className="p-1">{gameStats.batters[batter].atBats}</td>
-                            <td className="p-1">{gameStats.batters[batter].hits}</td>
-                            <td className="p-1">{gameStats.batters[batter].runs}</td>
-                            <td className="p-1">{gameStats.batters[batter].homeRuns}</td>
-                            <td className="p-1">{gameStats.batters[batter].rbi}</td>
+        <div className='relative'>
+            <div className='absolute -top-3 left-3 z-10 inline-block rounded-full px-3 py-1 text-base font-bold text-theme-secondary border border-theme-accent shadow-md' style={{ background: `#${team.color}`, borderColor: getContrastTextColor(team.color), color: getContrastTextColor(team.color) }}>
+                {team.emoji && <span className="mr-1">{team.emoji}</span>} {team.name}
+            </div>
+            <div className="rounded-md pt-6 p-3 mt-4" style={{ background: 'var(--theme-primary)' }}>
+                <table className='table table-auto w-full mt-2'>
+                    <thead className='table-header-group'>
+                        <tr className='table-row border-b-1 border-white/50 font-semibold text-xs uppercase'>
+                            <td className='table-cell text-left'>Batting</td>
+                            <td className='table-cell text-right min-w-7'>AB</td>
+                            <td className='table-cell text-right min-w-7'>H</td>
+                            <td className='table-cell text-right min-w-7'>R</td>
+                            <td className='table-cell text-right min-w-7'>HR</td>
+                            <td className='table-cell text-right min-w-7'>RBI</td>
                         </tr>
-                    )}
-                </tbody>
-            </table>
-            <table>
-                <thead>
-                    <tr>
-                        <th className="p-1">Pitching</th>
-                        <th className="p-1">IP</th>
-                        <th className="p-1">ER</th>
-                        <th className="p-1">H</th>
-                        <th className="p-1">BB</th>
-                        <th className="p-1">K</th>
-                        <th className="p-1">PC</th>
-                        <th className="p-1">ST</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {(isAway ? gameStats.away : gameStats.home).pitchingOrder.map(pitcher =>
-                        <tr>
-                            <td className="p-1">{pitcher}</td>
-                            <td className="p-1">{Math.floor(gameStats.pitchers[pitcher].outsRecorded/3)}.{gameStats.pitchers[pitcher].outsRecorded%3}</td>
-                            <td className="p-1">{gameStats.pitchers[pitcher].earnedRuns}</td>
-                            <td className="p-1">{gameStats.pitchers[pitcher].hits}</td>
-                            <td className="p-1">{gameStats.pitchers[pitcher].walks}</td>
-                            <td className="p-1">{gameStats.pitchers[pitcher].strikeouts}</td>
-                            <td className="p-1">{gameStats.pitchers[pitcher].pitchCount}</td>
-                            <td className="p-1">{gameStats.pitchers[pitcher].strikesThrown}</td>
+                    </thead>
+                    <tbody className='table-row-group'>
+                        {(isAway ? gameStats.away : gameStats.home).battingOrder.map(batter =>
+                            <tr className='table-row border-b-1 border-white/50 text-[14px]'>
+                                <td className='table-cell text-left'>{batter}</td>
+                                <td className='table-cell text-right pl-3'>{gameStats.batters[batter].atBats}</td>
+                                <td className='table-cell text-right pl-3'>{gameStats.batters[batter].hits}</td>
+                                <td className='table-cell text-right pl-3'>{gameStats.batters[batter].runs}</td>
+                                <td className='table-cell text-right pl-3'>{gameStats.batters[batter].homeRuns}</td>
+                                <td className='table-cell text-right pl-3'>{gameStats.batters[batter].rbi}</td>
+                            </tr>
+                        )}
+                    </tbody>
+                </table>
+                <table className='table table-auto w-full mt-2'>
+                    <thead className='table-header-group'>
+                        <tr className='table-row font-semibold text-xs uppercase'>
+                            <th className='table-cell text-left'>Pitching</th>
+                            <th className='table-cell text-right min-w-5'>IP</th>
+                            <th className='table-cell text-right min-w-5'>ER</th>
+                            <th className='table-cell text-right min-w-5'>H</th>
+                            <th className='table-cell text-right min-w-5'>BB</th>
+                            <th className='table-cell text-right min-w-5'>K</th>
+                            <th className='table-cell text-right min-w-5'>PC</th>
+                            <th className='table-cell text-right min-w-5'>ST</th>
                         </tr>
-                    )}
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody className='table-row-group'>
+                        {(isAway ? gameStats.away : gameStats.home).pitchingOrder.map(pitcher =>
+                            <tr className='table-row border-t-1 border-white/50 text-[14px]'>
+                                <td className='table-cell text-left'>{pitcher}</td>
+                                <td className='table-cell text-right pl-3'>{Math.floor(gameStats.pitchers[pitcher].outsRecorded / 3)}.{gameStats.pitchers[pitcher].outsRecorded % 3}</td>
+                                <td className='table-cell text-right pl-3'>{gameStats.pitchers[pitcher].earnedRuns}</td>
+                                <td className='table-cell text-right pl-3'>{gameStats.pitchers[pitcher].hits}</td>
+                                <td className='table-cell text-right pl-3'>{gameStats.pitchers[pitcher].walks}</td>
+                                <td className='table-cell text-right pl-3'>{gameStats.pitchers[pitcher].strikeouts}</td>
+                                <td className='table-cell text-right pl-3'>{gameStats.pitchers[pitcher].pitchCount}</td>
+                                <td className='table-cell text-right pl-3'>{gameStats.pitchers[pitcher].strikesThrown}</td>
+                            </tr>
+                        )}
+                    </tbody>
+                </table>
+            </div>
         </div>
     )
 }

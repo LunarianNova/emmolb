@@ -309,18 +309,14 @@ export default function LiveGame({ awayTeamArg, homeTeamArg, initialDataArg, gam
                 cashewsPlayers={cashewsPlayers}
             />
 
-            <table width="100%">
-                <tbody>
-                    <tr>
-                        <td align='left' valign='top'>
-                            <BoxScore gameStats={gameStats} team={awayTeam} isAway={true} />
-                        </td>
-                        <td align='right' valign='top'>
-                            <BoxScore gameStats={gameStats} team={homeTeam} isAway={false} />
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
+            <div className='flex items-stretch mt-6 gap-4'>
+                <div className='flex-1'>
+                    <BoxScore gameStats={gameStats} team={awayTeam} isAway={true} />
+                </div>
+                <div className='flex-1'>
+                    <BoxScore gameStats={gameStats} team={homeTeam} isAway={false} />
+                </div>
+            </div>
 
             <>
             <div className="flex justify-between items-center mb-2 gap-2 mt-4">
