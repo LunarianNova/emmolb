@@ -19,7 +19,7 @@ export function BoxScore({ gameStats, team, isAway }: BoxScoreProps) {
             <div className="rounded-md pt-6 p-3 mt-4" style={{ background: 'var(--theme-primary)' }}>
                 <table className='table table-auto w-full mt-2'>
                     <thead className='table-header-group'>
-                        <tr className='table-row border-b-1 border-white/50 font-semibold text-xs uppercase'>
+                        <tr className='table-row border-b-1 border-(--theme-text)/50 font-semibold text-xs uppercase'>
                             <td className='table-cell text-left'>Batting</td>
                             <td className='table-cell text-right min-w-7'>AB</td>
                             <td className='table-cell text-right min-w-7'>H</td>
@@ -30,7 +30,7 @@ export function BoxScore({ gameStats, team, isAway }: BoxScoreProps) {
                     </thead>
                     <tbody className='table-row-group'>
                         {(isAway ? gameStats.away : gameStats.home).battingOrder.map(batter =>
-                            <tr key={batter} className='table-row border-b-1 border-white/50 text-sm'>
+                            <tr key={batter} className='table-row border-b-1 border-(--theme-text)/50 text-sm'>
                                 <td className='table-cell text-left'>{batter}</td>
                                 <td className='table-cell text-right pl-3'>{gameStats.batters[batter].atBats}</td>
                                 <td className='table-cell text-right pl-3'>{gameStats.batters[batter].hits}</td>
@@ -56,7 +56,7 @@ export function BoxScore({ gameStats, team, isAway }: BoxScoreProps) {
                     </thead>
                     <tbody className='table-row-group'>
                         {(isAway ? gameStats.away : gameStats.home).pitchingOrder.map(pitcher =>
-                            <tr key={pitcher} className='table-row border-t-1 border-white/50 text-sm'>
+                            <tr key={pitcher} className='table-row border-t-1 border-(--theme-text)/50 text-sm'>
                                 <td className='table-cell text-left'>{pitcher}</td>
                                 <td className='table-cell text-right pl-3'>{Math.floor(gameStats.pitchers[pitcher].outsRecorded / 3)}.{gameStats.pitchers[pitcher].outsRecorded % 3}</td>
                                 <td className='table-cell text-right pl-3'>{gameStats.pitchers[pitcher].earnedRuns}</td>
