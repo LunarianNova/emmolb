@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { Navbar } from '@/components/Navbar';
-import { GameHeader, GameHeaderEvent } from '@/components/GameHeader';
+import { GameHeaderEvent } from '@/components/GameHeader';
 import { GameStateDisplay } from '@/components/GameStateDisplay';
 import { EventBlock } from './EventBlock';
 import { CopiedPopup } from './CopiedPopup';
@@ -10,13 +10,12 @@ import PlayerStats from './PlayerStats';
 import { useSettings } from './Settings';
 import { Baserunner, ProcessMessage } from './BaseParser';
 import { Bases } from '@/types/Bases';
-import { MapAPITeamResponse, Team } from '@/types/Team';
-import { Game, MapAPIGameResponse } from '@/types/Game';
+import { MapAPITeamResponse } from '@/types/Team';
+import { MapAPIGameResponse } from '@/types/Game';
 import { Event } from '@/types/Event';
 import { CashewsPlayers } from '@/types/FreeCashews';
 import CashewsPlayerStats from './CashewsPlayerStats';
-import { BatterGameStats, GameStats, PitcherGameStats } from '@/types/GameStats';
-import { getContrastTextColor } from '@/helpers/Colors';
+import { GameStats } from '@/types/GameStats';
 import { BoxScore } from './BoxScore';
 import { ExpandedScoreboard } from './ExpandedScoreboard';
 
@@ -256,12 +255,12 @@ export default function LiveGame({ awayTeamArg, homeTeamArg, initialDataArg, gam
         <div className="min-h-screen bg-theme-background text-theme-text font-sans p-4 pt-20 max-w-3xl mx-auto h-full">
             <GameHeaderEvent awayTeam={awayTeam} event={lastEvent} homeTeam={homeTeam} game={data} />
 
-            <ExpandedScoreboard
+            {settings.gamePage?.showExpandedScoreboard && <ExpandedScoreboard
                 gameStats={gameStats}
                 lastEvent={lastEvent}
                 awayTeam={awayTeam}
                 homeTeam={homeTeam}
-            />
+            />}
 
             {data.state != 'Complete' && <GameStateDisplay
                 event={lastEvent}
