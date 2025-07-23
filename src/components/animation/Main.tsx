@@ -25,13 +25,29 @@ export default function GameField({homeTeam, awayTeam, game, id,}: {homeTeam: Te
     const [eventLog, setEventLog] = useState<Event[]>(game.event_log);
     const [players, setPlayers] = useState<Player[]>([]);
 
-    const playerIds = useMemo(
-        () => [
-            ...homeTeam.players.map((p) => p.player_id),
-            ...awayTeam.players.map((p) => p.player_id),
-        ],
-        [homeTeam.players, awayTeam.players]
-    );
+    const playerIds = useMemo(() => {
+        const ids: string[] = [];
+
+        for (const p of homeTeam.players) ids.push(p.player_id);
+        for (const p of awayTeam.players) ids.push(p.player_id);
+
+        for (const teamId of Object.keys(game.stats)) {
+            for (const playerId of Object.keys(game.stats[teamId])) {
+                ids.push(playerId);
+            }
+        }
+
+        const seen: Record<string, boolean> = {};
+        const deduped: string[] = [];
+        for (const id of ids) {
+            if (!seen[id]) {
+                seen[id] = true;
+                deduped.push(id);
+            }
+        }
+
+        return deduped;
+    }, [homeTeam.players, awayTeam.players, game]);
 
     useEffect(() => {
         if (playerIds.length === 0) return;
@@ -53,8 +69,8 @@ export default function GameField({homeTeam, awayTeam, game, id,}: {homeTeam: Te
         if (rerun) return;
 
         const announcer = new Announcer({ position: new Vector2(-180, 490) });
-        const homeTeamManager = new TeamManager({teamName: homeTeam.name, teamColor: `#${homeTeam.color}`, side: 'HOME', roster: players.filter((p) => p.team_id === homeTeam.id)});
-        const awayTeamManager = new TeamManager({teamName: awayTeam.name, teamColor: `#${awayTeam.color}`, side: 'AWAY', roster: players.filter((p) => p.team_id === awayTeam.id)});
+        const homeTeamManager = new TeamManager({teamName: homeTeam.name, teamColor: `#${homeTeam.color}`, side: 'HOME', roster: players.filter((p) => homeTeam.players.find((tp) => tp.player_id === p.id) || Object.keys(game.stats[homeTeam.id]).includes(p.id))});
+        const awayTeamManager = new TeamManager({teamName: awayTeam.name, teamColor: `#${awayTeam.color}`, side: 'AWAY', roster: players.filter((p) => awayTeam.players.find((tp) => tp.player_id === p.id) || Object.keys(game.stats[awayTeam.id]).includes(p.id))});
         homeTeamManager.allPlayers.map((p) => svgRef.current!.appendChild(p.group))
         awayTeamManager.allPlayers.map((p) => svgRef.current!.appendChild(p.group))
         svgRef.current.appendChild(announcer.group);

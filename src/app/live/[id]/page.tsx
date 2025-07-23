@@ -1,4 +1,4 @@
-import GameField from '@/components/animation/Test';
+import GameField from '@/components/animation/Main';
 import { MapAPIGameResponse } from '@/types/Game';
 import { MapAPITeamResponse } from '@/types/Team';
 

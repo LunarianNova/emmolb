@@ -390,9 +390,60 @@ export class GameManager {
                 const finalBase = basePath[basePath.length - 1].toLowerCase();
                 const fielder = baseToFielder[finalBase];
                 const throwEvent = throwTimeline.find(({ toPos }) => toPos === fielder);
-                const outTime = throwEvent ? throwEvent.end : undefined;
+                const outTime = throwEvent ? throwEvent.end : cumulativeTime;
+                const totalDist = 200 * basePath.length;
+                const speed = totalDist / (outTime/1000);
+                const clampedSpeed = Math.min(speed, 150);
+                const baseDuration = 200 / clampedSpeed*1000;
+                for (let i = 0; i < basePath.length; i++) {
+                    timings.push(i * baseDuration);
+                    speeds.push(clampedSpeed);
+                }
+            } else {
+                const totalDist = basePath.length * 200;
+                const totalTime = 800 + basePath.length * 1600;
+                const speed = totalDist / (totalTime / 1000);
+                const baseDuration = 200 / speed * 1000;
+                for (let i = 0; i < basePath.length; i++) {
+                    timings.push(i * baseDuration);
+                    speeds.push(speed);
+                }
             }
+
+            runnerTimings.push({ player, path: basePath, startTimes: timings, speeds });
         }
+
+                // Animate ball throws
+        this.queue(() => this.runParallel(
+            throwTimeline.map(({ from, to, speed, start }) => {
+                return async () => {
+                    await this.sleep(start);
+                    await ball.throwTo(to, speed);
+                };
+            })
+        ));
+
+        // Animate runners
+        for (const { player, path, startTimes, speeds } of runnerTimings) {
+            const runner = this.getPlayerByName(player);
+            if (!runner) continue;
+            this.queue(() => this.runParallel(
+                path.map((base, i) => {
+                    const pos = positions[capitalize(base) as keyof typeof positions];
+                    const delay = startTimes[i];
+                    const speed = speeds[i];
+                    return async () => {
+                        await this.sleep(delay);
+                        await runner.walkTo(pos, speed);
+                    };
+                })
+            ));
+        }
+
+        this.queue(() => {
+            this.svgRef.current?.removeChild(ball.group);
+            return Promise.resolve();
+        });
     }
 
     private getHitLocation(msg: string): keyof typeof positions {
@@ -448,17 +499,17 @@ export class GameManager {
                 this.battingTeam.startFieldingInning();
                 break;
             case 'Pitch': {
-                if (next?.event === 'Field') this.resolvePlay(cur.index);
-                else {
+                // if (next?.event === 'Field') this.resolvePlay(cur.index);
+                {
                     if (cur.message.includes('steals')) this.advanceBases(cur.index);
                     const ball = this.createBall(positions['Pitcher']);
                     await ball.throwTo(positions['Home']);
                     this.svgRef.current?.removeChild(ball.group);
                     if (cur.message.includes('Foul')) this.foulBallAnimation(this.battingTeam.currentBatter?.posVector === positions['LeftHandedBatter'] ? 'L' : 'R');
-                    // if (cur.message.includes('hits')) {
-                    //     this.processHitBall(cur.index);
-                    //     this.advanceBases(next?.index ?? 0);
-                    // }
+                    if (cur.message.includes('hits')) {
+                        this.processHitBall(cur.index);
+                        this.advanceBases(next?.index ?? 0);
+                    }
                 }
             }
         }
@@ -467,8 +518,12 @@ export class GameManager {
         this.announcer.sayMessage({text: cur.message ?? "Howdy! If you're on mobile, this page is fully intended to be viewed in landscape mode. Report any bugs in the offical MMOLB Discord please.", duration: 4000});
     }
 
-    private runParallel(tasks: (() => Promise<void>)[]) {
-        return Promise.all(tasks.map(task => task().catch(() => {})));
+    private sleep(ms: number) {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    private runParallel(tasks: (() => Promise<void>)[]): Promise<void> {
+        return Promise.all(tasks.map(task => task().catch(() => {}))).then(() => {});    
     }
 
     private queue(task: () => Promise<void>) {
