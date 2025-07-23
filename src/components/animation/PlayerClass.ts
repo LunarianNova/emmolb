@@ -99,6 +99,30 @@ export class AnimatedPlayer {
         this.glove.setAttribute("fill", "#a0522d"); // brownish
         this.glove.style.display = "none";
         this.glove.setAttribute("x", this.throws === "L" ? "6" : "-6");
+        
+        this.jerseyNumberLabel = document.createElementNS("http://www.w3.org/2000/svg", "text");
+        this.jerseyNumberLabel.setAttribute("font-size", "12");
+        this.jerseyNumberLabel.setAttribute("fill", getContrastTextColor(this.teamColor));
+        this.jerseyNumberLabel.setAttribute("font-weight", "bold");
+        this.jerseyNumberLabel.setAttribute("text-anchor", "middle");
+        this.jerseyNumberLabel.setAttribute('visibility', 'hidden');
+        this.jerseyNumberLabel.setAttribute("x", "0"); // center horizontally
+        this.jerseyNumberLabel.setAttribute("y", "12"); // position roughly mid-body or wherever looks good
+        this.jerseyNumberLabel.textContent = String(opts.number) !== 'undefined' ? String(opts.number) : "";
+
+        this.bat = document.createElementNS("http://www.w3.org/2000/svg", "image");
+        this.bat.setAttributeNS(null, "href", "/Baseball_bat.svg");
+        this.bat.setAttribute("class", "bat");
+        this.bat.setAttribute("visibility", "hidden");
+        this.bat.setAttribute("width", "20");
+        this.bat.setAttribute("height", "60");
+
+        const xOffset = this.bats === 'L' ? -25 : 15;
+        const yOffset = -50;
+
+        this.bat.setAttribute("x", xOffset.toString());
+        this.bat.setAttribute("y", yOffset.toString());
+        this.bat.setAttribute("transform-origin", `${xOffset + 10} ${yOffset + 30}`);
 
         // Little guy's little name
         const labelGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
@@ -128,30 +152,6 @@ export class AnimatedPlayer {
             // Move background behind text
             labelGroup.insertBefore(labelBackground, label);
         });
-        
-        this.jerseyNumberLabel = document.createElementNS("http://www.w3.org/2000/svg", "text");
-        this.jerseyNumberLabel.setAttribute("font-size", "12");
-        this.jerseyNumberLabel.setAttribute("fill", getContrastTextColor(this.teamColor));
-        this.jerseyNumberLabel.setAttribute("font-weight", "bold");
-        this.jerseyNumberLabel.setAttribute("text-anchor", "middle");
-        this.jerseyNumberLabel.setAttribute('visibility', 'hidden');
-        this.jerseyNumberLabel.setAttribute("x", "0"); // center horizontally
-        this.jerseyNumberLabel.setAttribute("y", "12"); // position roughly mid-body or wherever looks good
-        this.jerseyNumberLabel.textContent = String(opts.number) !== 'undefined' ? String(opts.number) : "";
-
-        this.bat = document.createElementNS("http://www.w3.org/2000/svg", "image");
-        this.bat.setAttributeNS(null, "href", "/Baseball_bat.svg");
-        this.bat.setAttribute("class", "bat");
-        this.bat.setAttribute("visibility", "hidden");
-        this.bat.setAttribute("width", "20");
-        this.bat.setAttribute("height", "60");
-
-        const xOffset = this.bats === 'L' ? -25 : 15;
-        const yOffset = -50;
-
-        this.bat.setAttribute("x", xOffset.toString());
-        this.bat.setAttribute("y", yOffset.toString());
-        this.bat.setAttribute("transform-origin", `${xOffset + 10} ${yOffset + 30}`);
 
         // Append all to group
         g.append(this.hat, head, this.eyeLeft, this.eyeRight, body, this.legLeft, this.legRight, this.glove, this.label, this.jerseyNumberLabel, this.bat);
@@ -415,6 +415,7 @@ export class AnimatedPlayer {
             const displacement = -offsetY * eased; // Up is negative in this application. I don't want to get into left vs. right hand arguments right now, so I won't state my opinion. I will imply it however
             const newY = initialY + displacement;
             this.setPosition(new Vector2(this.posVector.x, newY));
+            this.label.setAttribute('transform', `translate(0, ${String(-displacement)})`);
 
             const hatY = -20 + displacement*0.2;
             this.hat.setAttribute("transform", `translate(0, ${hatY})`);
@@ -423,6 +424,7 @@ export class AnimatedPlayer {
                 requestAnimationFrame(animate);
             } else {
                 this.setPosition(new Vector2(this.posVector.x, initialY));
+                this.label.setAttribute('transform', `translate(0, 0)`);
                 this.hat.setAttribute("transform", `translate(0, -16)`);
                 callback();
             }
