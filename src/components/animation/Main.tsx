@@ -38,15 +38,15 @@ export default function GameField({homeTeam, awayTeam, game, id,}: {homeTeam: Te
         }
 
         const seen: Record<string, boolean> = {};
-        const deduped: string[] = [];
+        const uniqueIds: string[] = [];
         for (const id of ids) {
             if (!seen[id]) {
                 seen[id] = true;
-                deduped.push(id);
+                uniqueIds.push(id);
             }
         }
 
-        return deduped;
+        return uniqueIds;
     }, [homeTeam.players, awayTeam.players, game]);
 
     useEffect(() => {

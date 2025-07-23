@@ -118,7 +118,9 @@ export class TeamManager {
             });
             this.currentPitcher?.show();
             this.currentPitcher?.setPosition(positions['Pitcher']);
+            console.log(this.playersByPosition);
             this.playersByPosition['Catcher'].turnAround('back');
+            console.log(this.playersByPosition['Catcher'].facing);
         }
         else {
             this.allPlayers.map((p) => p.hide());

@@ -10,6 +10,7 @@ import { RefObject } from "react";
 import { Vector2 } from "@/types/Vector2";
 import { capitalize } from "@/helpers/StringHelper";
 import { AnimatedPlayer } from "./PlayerClass";
+import { AnimatedText } from "./Text";
 
 export class GameManager {
     homeTeam: TeamManager;
@@ -122,7 +123,7 @@ export class GameManager {
     skipTo(eventIndex: number) {
         // Set up the prior event, and then call next() to animate current
         this.stop();
-        const finalIndex = Math.max(0, Math.min(this.isComplete() ? this.eventLog.length - 1 : this.eventLog.length - 2, eventIndex))
+        const finalIndex = Math.max(0, Math.min(this.isComplete() ? this.eventLog.length - 1 : this.eventLog.length - 2, eventIndex));
         this.eventIndex = finalIndex;
 
         const cur = this.eventLog[this.eventIndex-1]
@@ -170,6 +171,12 @@ export class GameManager {
         const ball = new Ball(startPos);
         this.svgRef.current?.appendChild(ball.group);
         return ball;
+    }
+
+    private createText(startPos: Vector2, duration: number, fade: boolean, color: string, size: number, text: string): AnimatedText {
+        const textObj = new AnimatedText(startPos, duration, fade, color, size, text);
+        this.svgRef.current?.appendChild(textObj.group);
+        return textObj;
     }
 
     private async foulBallAnimation(hand: 'L' | 'R') {
@@ -551,6 +558,16 @@ export class GameManager {
         this.runParallel(tasks);
     }
 
+    // Scrapping this for now. It would need to be called the event prior, and with current pitch speeds, the runner moving would be really slow with a lead-off
+    // I'll instead move onto other fixes, like pitch speed displaying
+    // private async handleSteals(curIndex: number) {
+    //     const message = this.eventLog[curIndex].message.split(". ").slice(1).join(". ");
+    //     const caught = message.includes('caught stealing');
+    //     const match = message.match(/([\w.'-]+) (is caught stealing|steals)/i)
+    //     const player = match ? this.getPlayerByName(match[1]) : undefined;
+    //     this.battingTeam.leadOff(player); // It is easier to make a leadOff in TeamManager as it knows what base that player is on
+    // }
+
     private async handleEvent({prev, cur, next}: {prev: Event | null, cur: Event, next: Event | null}) {
         this.fieldingTeam = cur.inning_side === 0 ? this.homeTeam : this.awayTeam;
         this.battingTeam = cur.inning_side === 0 ? this.awayTeam : this.homeTeam;
@@ -565,7 +582,13 @@ export class GameManager {
                 this.battingTeam.startFieldingInning();
                 break;
             case 'Pitch': {
-                if (next?.event === 'Field') this.resolvePlay(cur.index);
+                this.createText(new Vector2(positions['Pitcher'].x, positions['Pitcher'].y - 40,), 3000, true, 'white', 12, cur.pitch_info);
+                if (next?.event === 'Field') {
+                    const ball = this.createBall(positions['Pitcher']);
+                    await ball.throwTo(positions['Home']);
+                    this.svgRef.current?.removeChild(ball.group);
+                    this.resolvePlay(cur.index);
+                }
                 else {
                     if (cur.message.includes('steals') || cur.message.includes('walks')) this.advanceBases(cur.index);
                     const ball = this.createBall(positions['Pitcher']);
