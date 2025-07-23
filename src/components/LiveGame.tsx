@@ -8,7 +8,7 @@ import { EventBlock } from './EventBlock';
 import { CopiedPopup } from './CopiedPopup';
 import PlayerStats from './PlayerStats';
 import { useSettings } from './Settings';
-import { ProcessMessage } from './BaseParser';
+import { Baserunner, ProcessMessage } from './BaseParser';
 import { Bases } from '@/types/Bases';
 import { MapAPITeamResponse, Team } from '@/types/Team';
 import { Game, MapAPIGameResponse } from '@/types/Game';
@@ -17,6 +17,7 @@ import { CashewsPlayers } from '@/types/FreeCashews';
 import CashewsPlayerStats from './CashewsPlayerStats';
 import { BatterGameStats, GameStats, PitcherGameStats } from '@/types/GameStats';
 import { getContrastTextColor } from '@/helpers/Colors';
+import { BoxScore } from './BoxScore';
 
 type EventBlockGroup = {
     emoji?: string;
@@ -62,18 +63,12 @@ export default function LiveGame({ awayTeamArg, homeTeamArg, initialDataArg, gam
         const fullName = `${player.first_name} ${player.last_name}`
         players[fullName] = player;
         awayPlayers.push(fullName);
-        if (player.position_type == 'Batter') {
-            gameStats.batters[fullName] = BatterGameStats();
-        }
     }
 
     for (const player of homeTeam.players) {
         const fullName = `${player.first_name} ${player.last_name}`
         players[fullName] = player;
         homePlayers.push(fullName);
-        if (player.position_type == 'Batter') {
-            gameStats.batters[fullName] = BatterGameStats();
-        }
     }
     
     const lastEventIndexRef = useRef(lastEvent.index);
@@ -241,7 +236,7 @@ export default function LiveGame({ awayTeamArg, homeTeamArg, initialDataArg, gam
 
 
     const groupedEvents = groupEventLog(eventLog);
-    let currentQueue: string[] = [];
+    let currentQueue: Baserunner[] = [];
     let lastBases: Bases = { first: null, second: null, third: null }; 
 
     gameStats.reset();
@@ -313,6 +308,19 @@ export default function LiveGame({ awayTeamArg, homeTeamArg, initialDataArg, gam
                 showBases={true}
                 cashewsPlayers={cashewsPlayers}
             />
+
+            <table width="100%">
+                <tbody>
+                    <tr>
+                        <td align='left' valign='top'>
+                            <BoxScore gameStats={gameStats} team={awayTeam} isAway={true} />
+                        </td>
+                        <td align='right' valign='top'>
+                            <BoxScore gameStats={gameStats} team={homeTeam} isAway={false} />
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
 
             <>
             <div className="flex justify-between items-center mb-2 gap-2 mt-4">

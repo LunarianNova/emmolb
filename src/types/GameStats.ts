@@ -43,6 +43,8 @@ export type ExpandedScoreboard = {
     hits: number;
     errors: number;
     leftOnBase: number;
+    battingOrder: string[];
+    pitchingOrder: string[];
 }
 
 export type GameStats = {
@@ -59,13 +61,17 @@ export function GameStats(): GameStats {
             runsByInning: [],
             hits: 0,
             errors: 0,
-            leftOnBase: 0
+            leftOnBase: 0,
+            battingOrder: [],
+            pitchingOrder: []
         },
         home: {
             runsByInning: [],
             hits: 0,
             errors: 0,
-            leftOnBase: 0
+            leftOnBase: 0,
+            battingOrder: [],
+            pitchingOrder: []
         },
         batters: {},
         pitchers: {},
@@ -74,13 +80,17 @@ export function GameStats(): GameStats {
                 runsByInning: [],
                 hits: 0,
                 errors: 0,
-                leftOnBase: 0
+                leftOnBase: 0,
+                battingOrder: [],
+                pitchingOrder: []
             };
             this.home = {
                 runsByInning: [],
                 hits: 0,
                 errors: 0,
-                leftOnBase: 0
+                leftOnBase: 0,
+                battingOrder: [],
+                pitchingOrder: []
             }
             this.batters = {}
             this.pitchers = {}
