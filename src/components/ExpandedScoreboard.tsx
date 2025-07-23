@@ -34,7 +34,9 @@ export function ExpandedScoreboard({ gameStats, lastEvent, awayTeam, homeTeam }:
                 </thead>
                 <tbody className='table-row-group'>
                     <tr className='table-row text-base'>
-                        <td className='table-cell px-3 pt-1 font-bold rounded-tl-md' style={{ background: `linear-gradient(to right, #${awayTeam.color} 95%, var(--theme-primary))`, color: getContrastTextColor(awayTeam.color) || 'rgb(0,0,0)' }}>{awayTeam.emoji} {awayTeam.abbreviation}</td>
+                        <td className='table-cell px-2 pt-1 font-bold rounded-tl-md' style={{ background: `linear-gradient(to right, #${awayTeam.color} 95%, var(--theme-primary))`, color: getContrastTextColor(awayTeam.color) || 'rgb(0,0,0)' }}>
+                            <span className='mr-1'>{awayTeam.emoji}</span> {awayTeam.abbreviation}
+                        </td>
                         {innings.map(index => {
                             const runs = index < gameStats.away.runsByInning.length ? gameStats.away.runsByInning[index] : '';
                             return <td className={`table-cell bg-(--theme-primary) text-right border-t border-white/50 ${index == innings.length - 1 ? 'px' : 'pl'}-3 pt-1`}>
@@ -47,7 +49,9 @@ export function ExpandedScoreboard({ gameStats, lastEvent, awayTeam, homeTeam }:
                         <td className='table-cell bg-(--theme-primary) text-center font-semibold border-t border-white/50 pl-3 pr-2 pt-1'>{gameStats.away.leftOnBase}</td>
                     </tr>
                     <tr className='table-row'>
-                        <td className='table-cell px-3 pt-1 pb-0.5 font-bold rounded-bl-md' style={{ background: `linear-gradient(to right, #${homeTeam.color} 95%, var(--theme-primary))`, color: getContrastTextColor(homeTeam.color) || 'rgb(0,0,0)' }}>{homeTeam.emoji} {homeTeam.abbreviation}</td>
+                        <td className='table-cell px-2 pt-1 pb-0.5 font-bold rounded-bl-md' style={{ background: `linear-gradient(to right, #${homeTeam.color} 95%, var(--theme-primary))`, color: getContrastTextColor(homeTeam.color) || 'rgb(0,0,0)' }}>
+                            <span className='mr-1'>{homeTeam.emoji}</span> {homeTeam.abbreviation}
+                        </td>
                         {innings.map(index => {
                             const runs = index < gameStats.home.runsByInning.length ? gameStats.home.runsByInning[index] : '';
                             return <td className={`table-cell bg-(--theme-primary) text-right ${index == innings.length - 1 ? 'px' : 'pl'}-3 pt-1 pb-0.5`}>
