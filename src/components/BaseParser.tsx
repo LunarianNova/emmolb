@@ -30,11 +30,11 @@ function assignBases(event: Event, queue: Baserunner[]): Bases {
     const { on_1b, on_2b, on_3b } = event;
 
     let third = null, second = null, first = null;
-    let qIndex = 0;
+    let queueIndex = 0;
 
-    if (on_3b) third = queue[qIndex++].runner ?? 'Unknown';
-    if (on_2b) second = queue[qIndex++].runner ?? 'Unknown';
-    if (on_1b) first = queue[qIndex++].runner ?? 'Unknown';
+    if (on_3b) third = queue[queueIndex++].runner ?? 'Unknown';
+    if (on_2b) second = queue[queueIndex++].runner ?? 'Unknown';
+    if (on_1b) first = queue[queueIndex++].runner ?? 'Unknown';
 
     return { first, second, third };
 }
@@ -44,36 +44,43 @@ export interface Baserunner {
     pitcher?: string;
 }
 
-export function ProcessMessage(event: Event, players: string[], gameStats: GameStats, queue: Baserunner[]): {bases: Bases, baseQueue: Baserunner[]} {
+export function ProcessMessage(event: Event, players: string[], queue: Baserunner[], gameStats?: GameStats,): {bases: Bases; baseQueue: Baserunner[]} {
     const message = event.message;
     const playerSet = new Set(players);
     const newQueue = [...queue];
-    const scoreboard = (event.inning_side === 0) ? gameStats.away : gameStats.home;
-    if (scoreboard.runsByInning.length < event.inning)
-        scoreboard.runsByInning.push(0);
 
-    if (event.batter && !gameStats.batters[event.batter]) {
-        scoreboard.battingOrder.push(event.batter);
-        gameStats.batters[event.batter] = BatterGameStats();
-    }
-    const batterStats = (event.batter) ? gameStats.batters[event.batter] : null;
-    if (event.pitcher && !gameStats.pitchers[event.pitcher]) {
-        ((event.inning_side === 0) ? gameStats.home : gameStats.away).pitchingOrder.push(event.pitcher);
-        gameStats.pitchers[event.pitcher] = PitcherGameStats();
-    }
-    const pitcherStats = (event.pitcher) ? gameStats.pitchers[event.pitcher] : null;
+    const {scoreboard, batterStats, pitcherStats, scoreCount} = (() => {
+        if (!gameStats) return {scoreboard: null, batterStats: null, pitcherStats: null, scoreCount: null};
 
-    const scoreCount = (message.match(/scores!/g) ?? []).length;
-    for (let i = 0; i < scoreCount; i++) {
-        const scoringPlayer = newQueue.shift();
-        if (scoringPlayer && scoringPlayer.runner && scoringPlayer.runner != 'Unknown') {
-            gameStats.batters[scoringPlayer.runner].runs++;
-            if (scoringPlayer.pitcher) gameStats.pitchers[scoringPlayer.pitcher].earnedRuns++;
+        const scoreboard = (event.inning_side === 0) ? gameStats.away : gameStats.home;
+        if (scoreboard.runsByInning.length < event.inning)
+            scoreboard.runsByInning.push(0);
+
+        if (event.batter && !gameStats.batters[event.batter]) {
+            scoreboard.battingOrder.push(event.batter);
+            gameStats.batters[event.batter] = BatterGameStats();
         }
-    }
-    if (scoreCount > 0) {
-        scoreboard.runsByInning[event.inning - 1] += scoreCount;
-    }
+        const batterStats = (event.batter) ? gameStats.batters[event.batter] : null;
+        if (event.pitcher && !gameStats.pitchers[event.pitcher]) {
+            ((event.inning_side === 0) ? gameStats.home : gameStats.away).pitchingOrder.push(event.pitcher);
+            gameStats.pitchers[event.pitcher] = PitcherGameStats();
+        }
+        const pitcherStats = (event.pitcher) ? gameStats.pitchers[event.pitcher] : null;
+
+        const scoreCount = (message.match(/scores!/g) ?? []).length;
+        for (let i = 0; i < scoreCount; i++) {
+            const scoringPlayer = newQueue.shift();
+            if (scoringPlayer && scoringPlayer.runner && scoringPlayer.runner != 'Unknown') {
+                gameStats.batters[scoringPlayer.runner].runs++;
+                if (scoringPlayer.pitcher) gameStats.pitchers[scoringPlayer.pitcher].earnedRuns++;
+            }
+        }
+        if (scoreCount > 0) {
+            scoreboard.runsByInning[event.inning - 1] += scoreCount;
+        }
+
+        return {scoreboard, batterStats, pitcherStats, scoreCount};
+    })();
 
     const startsInning = /starts the inning on/i.test(message);
     const hit = /(singles|doubles|triples)/i.test(message);
@@ -92,31 +99,33 @@ export function ProcessMessage(event: Event, players: string[], gameStats: GameS
     const stealsHome = /steals home/i.test(message);
     const inningEnd = event.outs === null || event.outs === undefined;
 
-    if (hit || homer) {
-        scoreboard.hits++;
-    } else if (error) {
-        ((event.inning_side === 0) ? gameStats.home : gameStats.away).errors++;
-    }
-
-    if (batterStats) {
-        if (hit || homer || out || strikeout || fc || doublePlay) batterStats.atBats++;
-        if (hit || homer) batterStats.hits++;
-        if (homer) {
-            batterStats.homeRuns++;
-            batterStats.runs++;
+    if (gameStats) {
+        if (hit || homer) {
+            scoreboard!.hits++;
+        } else if (error) {
+            ((event.inning_side === 0) ? gameStats.home : gameStats.away).errors++;
         }
-        if (scoreCount > 0 && !error && !doublePlay && !stealsHome) batterStats.rbi += scoreCount;
-    }
 
-    if (pitcherStats) {
-        if (strike) pitcherStats.strikesThrown++;
-        if (strike || ball) pitcherStats.pitchCount++;
-        if (hit || homer) pitcherStats.hits++;
-        if (homer) pitcherStats.earnedRuns++;
-        if (out || strikeout || fc || caughtStealing) pitcherStats.outsRecorded++;
-        if (doublePlay) pitcherStats.outsRecorded += 2;
-        if (strikeout) pitcherStats.strikeouts++;
-        if (walk) pitcherStats.walks++;
+        if (batterStats) {
+            if (hit || homer || out || strikeout || fc || doublePlay) batterStats.atBats++;
+            if (hit || homer) batterStats.hits++;
+            if (homer) {
+                batterStats.homeRuns++;
+                batterStats.runs++;
+            }
+            if (scoreCount > 0 && !error && !doublePlay && !stealsHome) batterStats.rbi += scoreCount;
+        }
+
+        if (pitcherStats) {
+            if (strike) pitcherStats.strikesThrown++;
+            if (strike || ball) pitcherStats.pitchCount++;
+            if (hit || homer) pitcherStats.hits++;
+            if (homer) pitcherStats.earnedRuns++;
+            if (out || strikeout || fc || caughtStealing) pitcherStats.outsRecorded++;
+            if (doublePlay) pitcherStats.outsRecorded += 2;
+            if (strikeout) pitcherStats.strikeouts++;
+            if (walk) pitcherStats.walks++;
+        }
     }
 
     if (startsInning) {
@@ -135,8 +144,8 @@ export function ProcessMessage(event: Event, players: string[], gameStats: GameS
         if (index !== -1) newQueue.splice(index, 1);
     }
 
-    if (inningEnd) {
-        scoreboard.leftOnBase += newQueue.length;
+    if (inningEnd && gameStats) {
+        scoreboard!.leftOnBase += newQueue.length;
     }
 
     if (homer || inningEnd)

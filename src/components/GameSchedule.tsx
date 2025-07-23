@@ -194,8 +194,6 @@ export default function GameSchedule({ id, feed }: { id: string, feed: Record<st
                                                 const color = isHome
                                                     ? game.away_team_color
                                                     : game.home_team_color;
-                                                console.log(game);
-                                                console.log(game.away_team_name);
                                                 const name = isHome
                                                     ? game.away_team_name
                                                     : game.home_team_name;

@@ -195,7 +195,6 @@ export default function LiveGame({ awayTeamArg, homeTeamArg, initialDataArg, gam
 
     const gameStats = GameStats();
     for (const event of eventLog) {
-        console.log(event, currentQueue, gameStats);
         const result = ProcessMessage(event, [...awayPlayers, ...homePlayers], currentQueue, gameStats);
         currentQueue = result.baseQueue;
         lastBases = result.bases;

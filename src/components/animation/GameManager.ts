@@ -116,7 +116,6 @@ export class GameManager {
             paths[player] = positionOrder.slice(0, toIndex + 1);
         }
 
-        console.log(paths);
         return paths;
     }
 
