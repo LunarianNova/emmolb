@@ -2,9 +2,10 @@ import { getContrastTextColor } from "@/helpers/Colors";
 import { Team } from "@/types/Team";
 import Link from "next/link";
 
-export default function MiniTeamHeader({team, index}: { team: Team, index?: number }) {
+export default function MiniTeamHeader({team, leader, index, alignValues}: { team: Team, leader?: Team, index?: number, alignValues?: boolean }) {
     if (!team) return null;
     if (!('color' in team)) return null;
+    const gamesBehind = (leader) ? (leader.record.regular_season.wins - team.record.regular_season.wins + team.record.regular_season.losses - leader.record.regular_season.losses) / 2 : null;
     return (
         <Link href={`/team/${team.id}`} className='block'>
             <div className='flex justify-between items-center p-2 rounded cursor-pointer transition h-12' style={{background: `#${team.color}`, color: getContrastTextColor(team.color)}}>
@@ -14,10 +15,17 @@ export default function MiniTeamHeader({team, index}: { team: Team, index?: numb
                     <span className="flex-1 font-semibold text-left truncate min-w-0">{team.location} {team.name}</span>
                 </div>
                 <span className='text-sm font-semibold opacity-80 flex-shrink-0'>
-                    {team.record.regular_season.wins} - {team.record.regular_season.losses}
-                    <span className="ml-1">
-                        ({team.record.regular_season.run_differential > 0 ? '+' : ''}{team.record.regular_season.run_differential})
+                    <span className={`ml-1 ${alignValues && 'inline-block w-14 text-right'}`}>
+                        {team.record.regular_season.wins}–{team.record.regular_season.losses}
                     </span>
+                    <span className={`ml-1 ${alignValues && 'inline-block w-10 text-right'}`}>
+                        {!alignValues && '('}{team.record.regular_season.run_differential > 0 ? '+' : ''}{team.record.regular_season.run_differential}{!alignValues && ')'}
+                    </span>
+                    {leader && (
+                        <span className={`ml-1 ${alignValues && 'inline-block w-9 text-right'}`}>
+                            {gamesBehind == 0 ? '—' : gamesBehind}
+                        </span>
+                    )}
                 </span>
             </div>
         </Link>

@@ -54,7 +54,12 @@ export default function LeaguePage({ id }: { id: string }) {
                 <div className="mb-8">
                     <LeagueHeader league={league} />
                     <div className="flex justify-center">
-                        <div className="w-full max-w-[32rem] space-y-2">
+                        <div className="w-full max-w-[36rem] space-y-2">
+                            <div className='flex justify-end px-2 text-xs font-semibold uppercase'>
+                                <div className='ml-1 w-14 text-right'>Record</div>
+                                <div className='ml-1 w-10 text-right'>RD</div>
+                                <div className='ml-1 w-9 text-right'>GB</div>
+                            </div>
                             {teams.map((team: any, index) => (
                                 <div key={team.id || index}>
                                     {index === cutoffIndex && (
@@ -65,7 +70,7 @@ export default function LeaguePage({ id }: { id: string }) {
                                             <div className="flex-grow border-t-2 border-theme-text"></div>
                                         </div>
                                     )}
-                                    <MiniTeamHeader team={team} index={index + 1} />
+                                    <MiniTeamHeader team={team} leader={teams[0]} index={index + 1} alignValues={true} />
                                 </div>
                             ))}
                         </div>
