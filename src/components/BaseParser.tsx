@@ -83,9 +83,9 @@ export function ProcessMessage(event: Event, players: string[], queue: Baserunne
     })();
 
     const startsInning = /starts the inning on/i.test(message);
-    const hit = /(singles|doubles|triples)/i.test(message);
-    const homer = /(homers|grand slam)/i.test(message);
-    const walk = /walks/i.test(message);
+    const hit = /(singles on|doubles on|triples on)/i.test(message);
+    const homer = /(homers on|grand slam)/i.test(message);
+    const walk = /^Ball 4. /i.test(message);
     const hbp = /was hit by the pitch/i.test(message);
     const error = /(fielding error|throwing error)/i.test(message);
     const sacFly = /sacrifice fly/i.test(message);
@@ -94,7 +94,7 @@ export function ProcessMessage(event: Event, players: string[], queue: Baserunne
     const strikeout = /struck out/i.test(message);
     const fc = !error && /(fielder's choice|force out)/i.test(message);
     const ball = walk || hbp || /^Ball/.test(message);
-    const strike = hit || homer || error || out || fc || strikeout || /(^Strike|^Foul)/.test(message);
+    const strike = hit || homer || error || out || fc || strikeout || /(^Strike, |^Foul ball|^Foul tip)/.test(message);
     const balk = /^Balk. /.test(message);
     const caughtStealing = /caught stealing/i.test(message);
     const stealsHome = /steals home/i.test(message);
