@@ -183,7 +183,7 @@ export class GameManager {
         const foulPositions: Record<string, Vector2> = {'L': new Vector2(-150, -10), 'R': new Vector2(1150, -10)};
         const ball = this.createBall(positions['Home']);
         const hitPos = Math.random() >= 0.3 ? foulPositions[hand] : foulPositions[hand === 'L' ? 'R' : 'L'];
-        await ball.throwTo(new Vector2((hitPos.x-30)+Math.random()*60), 100+Math.random()*50);
+        await ball.throwTo(new Vector2((hitPos.x-30)+Math.random()*60), 250+Math.random()*50);
         this.svgRef.current?.removeChild(ball.group);
     }
 

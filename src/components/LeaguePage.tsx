@@ -42,10 +42,12 @@ export default function LeaguePage({ id }: { id: string }) {
     if (!league || !teams.length) return (<div className="text-white text-center mt-10">Can't find that league</div>);
 
     const totalGamesInSeason = 120;
-    const firstTeamGamesPlayed = teams[0].record.regular_season.wins + teams[0].record.regular_season.losses;
-    const gamesLeft = totalGamesInSeason - firstTeamGamesPlayed;
+    const gamesPlayed = Math.max(...teams.map((team) => (team.record.regular_season.wins+team.record.regular_season.losses)));
+    const gamesLeft = totalGamesInSeason-gamesPlayed;
+    console.log(gamesLeft);
+    const topTeamWinDiff = teams[0].record.regular_season.wins - teams[0].record.regular_season.losses;
 
-    const cutoffIndex = teams.findIndex(team => (teams[0].record.regular_season.wins - team.record.regular_season.wins + team.record.regular_season.losses - teams[0].record.regular_season.losses) / 2 > gamesLeft);
+    const cutoffIndex = teams.findIndex(team => (((team.record.regular_season.wins + gamesLeft) - team.record.regular_season.losses) < (topTeamWinDiff-gamesLeft)));
 
     return (
         <main className="mt-16">
@@ -58,7 +60,9 @@ export default function LeaguePage({ id }: { id: string }) {
                                 <div key={team.id || index}>
                                     {index === cutoffIndex && (
                                         <div className="relative my-4 flex items-center" aria-label="Cutoff line">
-                                            <div className="bg-theme-text absolute left-0 -translate-x-full bg-theme-primary text-xs font-bold px-2 py-0.5 rounded-sm select-none" style={{color: 'var(--theme-background)'}}>#1 CUTOFF</div>
+                                            <div className="absolute -left-2 sm:left-0 sm:-translate-x-full bg-theme-text text-xs font-bold px-2 py-0.5 rounded-sm select-none text-theme-background whitespace-nowrap">
+                                                #1 CUTOFF
+                                            </div>
                                             <div className="flex-grow border-t-2 border-theme-text"></div>
                                         </div>
                                     )}

@@ -20,6 +20,10 @@
   color: var(--theme-text);
 }
 
+.text-theme-text {
+  color: var(--theme-background);
+}
+
 .text-theme-secondary {
   color: var(--theme-secondary_text)
 }
