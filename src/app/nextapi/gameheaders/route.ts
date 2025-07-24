@@ -28,6 +28,7 @@ export async function POST(req: NextRequest) {
       });
     }
 
+    const gameIds = new Set<any>();
     const gamesPromises = teamIds.map(async (teamId) => {
       let gameId = null;
       const gameRes = await fetch(`https://mmolb.com/api/game-by-team/${teamId}`);
@@ -44,6 +45,10 @@ export async function POST(req: NextRequest) {
         const gameData = await gameRes.json();
         gameId = gameData.game_id;
       }
+
+      if (gameIds.has(gameId))
+        return null;
+      gameIds.add(gameId);
 
       const gameHeaderRes = await fetch(`https://lunanova.space/nextapi/gameheader/${gameId}`);
       if (!gameHeaderRes.ok) return null;
