@@ -32,9 +32,9 @@ function assignBases(event: Event, queue: Baserunner[]): Bases {
     let third = null, second = null, first = null;
     let queueIndex = 0;
 
-    if (on_3b) third = queue[queueIndex++].runner ?? 'Unknown';
-    if (on_2b) second = queue[queueIndex++].runner ?? 'Unknown';
-    if (on_1b) first = queue[queueIndex++].runner ?? 'Unknown';
+    if (on_3b) third = queue[queueIndex++]?.runner ?? 'Unknown';
+    if (on_2b) second = queue[queueIndex++]?.runner ?? 'Unknown';
+    if (on_1b) first = queue[queueIndex++]?.runner ?? 'Unknown';
 
     return { first, second, third };
 }
@@ -49,8 +49,9 @@ export function ProcessMessage(event: Event, players: string[], queue: Baserunne
     const playerSet = new Set(players);
     const newQueue = [...queue];
 
-    const {scoreboard, batterStats, pitcherStats, scoreCount} = (() => {
-        if (!gameStats) return {scoreboard: null, batterStats: null, pitcherStats: null, scoreCount: null};
+    const scoreCount = (message.match(/scores!/g) ?? []).length;
+    const {scoreboard, batterStats, pitcherStats} = (() => {
+        if (!gameStats) return {scoreboard: null, batterStats: null, pitcherStats: null};
 
         const scoreboard = (event.inning_side === 0) ? gameStats.away : gameStats.home;
         if (scoreboard.runsByInning.length < event.inning)
@@ -67,9 +68,8 @@ export function ProcessMessage(event: Event, players: string[], queue: Baserunne
         }
         const pitcherStats = (event.pitcher) ? gameStats.pitchers[event.pitcher] : null;
 
-        const scoreCount = (message.match(/scores!/g) ?? []).length;
         for (let i = 0; i < scoreCount; i++) {
-            const scoringPlayer = newQueue.shift();
+            const scoringPlayer = newQueue[i];
             if (scoringPlayer && scoringPlayer.runner && scoringPlayer.runner != 'Unknown') {
                 gameStats.batters[scoringPlayer.runner].runs++;
                 if (scoringPlayer.pitcher) gameStats.pitchers[scoringPlayer.pitcher].earnedRuns++;
@@ -79,7 +79,7 @@ export function ProcessMessage(event: Event, players: string[], queue: Baserunne
             scoreboard.runsByInning[event.inning - 1] += scoreCount;
         }
 
-        return {scoreboard, batterStats, pitcherStats, scoreCount};
+        return {scoreboard, batterStats, pitcherStats};
     })();
 
     const startsInning = /starts the inning on/i.test(message);
@@ -95,10 +95,11 @@ export function ProcessMessage(event: Event, players: string[], queue: Baserunne
     const fc = !error && /(fielder's choice|force out)/i.test(message);
     const ball = walk || hbp || /^Ball/.test(message);
     const strike = hit || homer || error || out || fc || strikeout || /(^Strike|^Foul)/.test(message);
+    const balk = /^Balk. /.test(message);
     const caughtStealing = /caught stealing/i.test(message);
     const stealsHome = /steals home/i.test(message);
     const inningEnd = event.outs === null || event.outs === undefined;
-
+    
     if (gameStats) {
         if (hit || homer) {
             scoreboard!.hits++;
@@ -113,7 +114,7 @@ export function ProcessMessage(event: Event, players: string[], queue: Baserunne
                 batterStats.homeRuns++;
                 batterStats.runs++;
             }
-            if (scoreCount > 0 && !error && !doublePlay && !stealsHome) batterStats.rbi += scoreCount;
+            if (scoreCount > 0 && !error && !doublePlay && !stealsHome && !balk) batterStats.rbi += scoreCount;
         }
 
         if (pitcherStats) {
@@ -126,6 +127,10 @@ export function ProcessMessage(event: Event, players: string[], queue: Baserunne
             if (strikeout) pitcherStats.strikeouts++;
             if (walk) pitcherStats.walks++;
         }
+    }
+
+    for (let i = 0; i < scoreCount; i++) {
+        newQueue.shift();
     }
 
     if (startsInning) {
