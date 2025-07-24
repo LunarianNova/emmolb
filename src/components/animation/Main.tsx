@@ -143,9 +143,9 @@ export default function GameField({homeTeam, awayTeam, game, id,}: {homeTeam: Te
                     gameManager?.skipTo(gameManager.getEventIndex()+1);
                     setIsPlaying(gameManager?.getIsPlaying() ?? false);
                 }} 
-                onJTL={() => (null)}
+                onJTL={() => gameManager?.skipTo(99999999999)}
                 isPaused={!isPlaying}
-                displayJTL={gameManager!.getEventIndex() < (gameManager!.eventLog.length - 7)}
+                displayJTL={(gameManager && !(eventLog[eventLog.length - 1].event === 'Recordkeeping') ? gameManager?.getEventIndex() < (gameManager?.eventLog.length - 7) : false)}
             />
 
             <GameInfo homeTeam={homeTeam} awayTeam={awayTeam} stadium={homeTeam.ballpark_name ?? ''} />

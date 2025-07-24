@@ -13,6 +13,7 @@ export default function LeaguePage({ id }: { id: string }) {
     const [loading, setLoading] = useState(true);
     const [league, setLeague] = useState<League | undefined>(undefined);
     const [teams, setTeams] = useState<Team[]>([]);
+    const [time, setTime] = useState<any>();
 
     useEffect(() => {
         async function APICalls() {
@@ -27,6 +28,10 @@ export default function LeaguePage({ id }: { id: string }) {
 
                 if (!Array.isArray(json.teams)) throw new Error('Teams response was not an array');
                 setTeams(json.teams.map((team: any) => MapAPILeagueTeamResponse(team)));
+
+                const timeRes = await fetch(`/nextapi/time`);
+                if (!timeRes.ok) throw new Error('Failed to load time');
+                setTime(await timeRes.json());
             } catch (err) {
                 console.error(err);
             } finally {
@@ -42,7 +47,7 @@ export default function LeaguePage({ id }: { id: string }) {
     if (!league || !teams.length) return (<div className="text-white text-center mt-10">Can't find that league</div>);
 
     const totalGamesInSeason = 120;
-    const gamesPlayed = Math.max(...teams.map((team) => (team.record.regular_season.wins+team.record.regular_season.losses)));
+    const gamesPlayed = Math.floor(time.season_day / 2);
     const gamesLeft = totalGamesInSeason-gamesPlayed;
     const topTeamWinDiff = teams[0].record.regular_season.wins - teams[0].record.regular_season.losses;
 
@@ -55,6 +60,7 @@ export default function LeaguePage({ id }: { id: string }) {
                     <LeagueHeader league={league} />
                     <div className="flex justify-center">
                         <div className="w-full max-w-[36rem] space-y-2">
+                            <div className="text-center mt-0 mb-4 text-lg font-bold">{gamesLeft + (time.season_day % 2 == 0 ? `-${gamesLeft+1}` : '')} Game{gamesLeft === 1 ? '' : 's'} Remain{gamesLeft === 1 ? 's' : ''}</div>
                             <div className='flex justify-end px-2 text-xs font-semibold uppercase'>
                                 <div className='ml-1 w-14 text-right'>Record</div>
                                 <div className='ml-1 w-10 text-right'>RD</div>

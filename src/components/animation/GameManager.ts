@@ -590,10 +590,11 @@ export class GameManager {
                     this.resolvePlay(cur.index);
                 }
                 else {
-                    if (cur.message.includes('steals') || cur.message.includes('walks')) this.advanceBases(cur.index);
+                    if (cur.message.includes('steals')) this.advanceBases(cur.index);
                     const ball = this.createBall(positions['Pitcher']);
                     await ball.throwTo(positions['Home']);
                     this.svgRef.current?.removeChild(ball.group);
+                    if (cur.message.includes('walks')) this.advanceBases(cur.index);
                     if (cur.message.includes('Foul')) this.foulBallAnimation(this.battingTeam.currentBatter?.posVector === positions['LeftHandedBatter'] ? 'L' : 'R');
                 }
             }

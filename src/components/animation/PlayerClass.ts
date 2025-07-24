@@ -53,6 +53,8 @@ export class AnimatedPlayer {
     private label: SVGElement;
     private jerseyNumberLabel: SVGElement;
     private movingStartTime: number = 0;
+    private forceKillWalk: boolean = false;
+    private walkSession = 0;
 
     private idleIntervalIDs = {
         blink: null as number | null,
@@ -73,7 +75,6 @@ export class AnimatedPlayer {
         const g = document.createElementNS("http://www.w3.org/2000/svg", "g");
         g.setAttribute("id", this.name);
         this.group = g;
-        this.setPosition(this.posVector);
 
         const hatMain = this.makeRect(-8, -8, 16, 6, opts.teamColor, 2);
         const brim = this.makeRect(-10, -2, 20, 2, "black");
@@ -153,10 +154,11 @@ export class AnimatedPlayer {
             labelGroup.insertBefore(labelBackground, label);
         });
 
+        this.setPosition(this.posVector);
         // Append all to group
         g.append(this.hat, head, this.eyeLeft, this.eyeRight, body, this.legLeft, this.legRight, this.glove, this.label, this.jerseyNumberLabel, this.bat);
         this.startIdle();
-  }
+    }
 
     private makeRect(x: number, y: number, width: number, height: number, fill: string, rx = 0, ry = 0): SVGRectElement {
         const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
@@ -170,7 +172,14 @@ export class AnimatedPlayer {
         return rect;
     }
 
-    setPosition(target: Vector2) {
+     
+
+    setPosition(target: Vector2, forceKillWalk: boolean=true) {
+        if (forceKillWalk) {
+            this.forceKillWalk = true; 
+            this.walkSession++; 
+            this.stopWalking();
+        }
         this.posVector = target;
 
         const transform = `translate(${target.x}, ${target.y})`;
@@ -193,6 +202,8 @@ export class AnimatedPlayer {
     }
 
     walkTo(target: Vector2, speed: number = 100): Promise<void> {
+        const sessionID = ++this.walkSession;
+        this.forceKillWalk = false;
         return new Promise(resolve => {
             if (target.y >= this.posVector.y) this.turnAround("front");
             else this.turnAround("back");
@@ -209,6 +220,13 @@ export class AnimatedPlayer {
             const startTime = performance.now();
 
             const animate = (now: number) => {
+                if (this.walkSession !== sessionID || this.forceKillWalk) {
+                    this.setPosition(target);
+                    this.stopWalking();
+                    resolve();
+                    return;
+                }
+
                 const elapsed = now - startTime;
                 const progress = Math.min(elapsed / duration, 1);
                 const eased = progress; // Maybe ease this?
@@ -216,10 +234,14 @@ export class AnimatedPlayer {
                 const newX = startX + dx * eased;
                 const newY = startY + dy * eased;
 
-                this.setPosition(new Vector2(newX, newY));
+                this.setPosition(new Vector2(newX, newY), false);
 
                 if (progress < 1) {
-                    requestAnimationFrame(animate);
+                    if (this.forceKillWalk){
+                        this.setPosition(target);
+                        this.stopWalking();
+                        resolve();
+                    } else requestAnimationFrame(animate);
                 } else {
                     this.setPosition(target);
                     this.stopWalking();
@@ -414,7 +436,7 @@ export class AnimatedPlayer {
 
             const displacement = -offsetY * eased; // Up is negative in this application. I don't want to get into left vs. right hand arguments right now, so I won't state my opinion. I will imply it however
             const newY = initialY + displacement;
-            this.setPosition(new Vector2(this.posVector.x, newY));
+            this.setPosition(new Vector2(this.posVector.x, newY), false);
             this.label.setAttribute('transform', `translate(0, ${String(-displacement)})`);
 
             const hatY = -20 + displacement*0.2;
@@ -423,7 +445,7 @@ export class AnimatedPlayer {
             if (progress < 1) {
                 requestAnimationFrame(animate);
             } else {
-                this.setPosition(new Vector2(this.posVector.x, initialY));
+                this.setPosition(new Vector2(this.posVector.x, initialY), false);
                 this.label.setAttribute('transform', `translate(0, 0)`);
                 this.hat.setAttribute("transform", `translate(0, -16)`);
                 callback();
