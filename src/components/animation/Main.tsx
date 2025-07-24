@@ -69,8 +69,8 @@ export default function GameField({homeTeam, awayTeam, game, id,}: {homeTeam: Te
         if (rerun) return;
 
         const announcer = new Announcer({ position: new Vector2(-180, 490) });
-        const homeTeamManager = new TeamManager({teamName: homeTeam.name, teamColor: `#${homeTeam.color}`, side: 'HOME', roster: players.filter((p) => homeTeam.players.find((tp) => tp.player_id === p.id) || Object.keys(game.stats[homeTeam.id]).includes(p.id))});
-        const awayTeamManager = new TeamManager({teamName: awayTeam.name, teamColor: `#${awayTeam.color}`, side: 'AWAY', roster: players.filter((p) => awayTeam.players.find((tp) => tp.player_id === p.id) || Object.keys(game.stats[awayTeam.id]).includes(p.id))});
+        const homeTeamManager = new TeamManager({team: homeTeam, side: 'HOME', roster: players.filter((p) => homeTeam.players.find((tp) => tp.player_id === p.id) || Object.keys(game.stats[homeTeam.id]).includes(p.id))});
+        const awayTeamManager = new TeamManager({team: awayTeam, side: 'AWAY', roster: players.filter((p) => awayTeam.players.find((tp) => tp.player_id === p.id) || Object.keys(game.stats[awayTeam.id]).includes(p.id))});
         homeTeamManager.allPlayers.map((p) => svgRef.current!.appendChild(p.group))
         awayTeamManager.allPlayers.map((p) => svgRef.current!.appendChild(p.group))
         svgRef.current.appendChild(announcer.group);

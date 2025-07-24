@@ -19,6 +19,9 @@ export default function MiniTeamHeader({team, leader, index, alignValues}: { tea
                         {team.record.regular_season.wins}–{team.record.regular_season.losses}
                     </span>
                     <span className={`ml-1 ${alignValues && 'inline-block w-10 text-right'}`}>
+                        {!alignValues && '('}{team.record.regular_season.wins - team.record.regular_season.losses > 0 ? '+' : ''}{team.record.regular_season.wins - team.record.regular_season.losses}{!alignValues && ')'}
+                    </span>
+                    <span className={`ml-1 ${alignValues && 'inline-block w-10 text-right'}`}>
                         {!alignValues && '('}{team.record.regular_season.run_differential > 0 ? '+' : ''}{team.record.regular_season.run_differential}{!alignValues && ')'}
                     </span>
                     {leader && (

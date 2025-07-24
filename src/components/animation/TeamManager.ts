@@ -5,6 +5,7 @@ import { AnimatedPlayer } from "./PlayerClass";
 import { Vector2 } from "@/types/Vector2";
 import { Bases } from "@/types/Bases";
 import { positions } from "./Constants";
+import { Team } from "@/types/Team";
 
 const apiToPosition: Record<string, string> = {
     'C': 'Catcher',
@@ -32,6 +33,7 @@ const fieldingPositions = [
 ]
 
 export class TeamManager {
+    team: Team;
     teamName: string;
     teamColor: string;
     side: 'HOME' | 'AWAY';
@@ -47,9 +49,10 @@ export class TeamManager {
     secondBaseRunner?: AnimatedPlayer;
     thirdBaseRunner?: AnimatedPlayer;
 
-    constructor({teamName, teamColor, side, roster,}: {teamName: string; teamColor: string; side: 'HOME' | 'AWAY'; roster: Player[]}) {
-        this.teamName = teamName;
-        this.teamColor = teamColor;
+    constructor({team, side, roster,}: {team: Team; side: 'HOME' | 'AWAY'; roster: Player[]}) {
+        this.team = team;
+        this.teamName = team.name;
+        this.teamColor = `#${team.color}`;
         this.side = side;
 
         this.playersByPosition = {};
@@ -62,9 +65,11 @@ export class TeamManager {
     private createPlayers(roster: Player[]) {
         for (const p of roster) {
             const name = `${p.first_name} ${p.last_name}`
+            const tp = this.team.players.find((tp) => tp.player_id === p.id)?.slot;
+            const pos = tp ? apiToPosition[tp] : apiToPosition[p.position];
             const player = new AnimatedPlayer({
                 teamColor: this.teamColor,
-                position: apiToPosition[p.position],
+                position: pos,
                 team: this.side,
                 bats: p.bats as "R" | "L" | "S" ?? (Math.random() > 0.5 ? 'R' : 'L'),
                 throws: p.throws as "R" | "L" | "S" ?? (Math.random() > 0.5 ? 'R' : 'L'),
@@ -74,7 +79,7 @@ export class TeamManager {
             });
 
             player.hide();
-            this.playersByPosition[apiToPosition[p.position]] = player;
+            this.playersByPosition[pos] = player;
             this.playersByName[name] = player;
             this.allPlayers.push(player);
         }
@@ -118,9 +123,7 @@ export class TeamManager {
             });
             this.currentPitcher?.show();
             this.currentPitcher?.setPosition(positions['Pitcher']);
-            console.log(this.playersByPosition);
             this.playersByPosition['Catcher'].turnAround('back');
-            console.log(this.playersByPosition['Catcher'].facing);
         }
         else {
             this.allPlayers.map((p) => p.hide());

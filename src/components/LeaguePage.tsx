@@ -63,6 +63,7 @@ export default function LeaguePage({ id }: { id: string }) {
                             <div className="text-center mt-0 mb-4 text-lg font-bold">{gamesLeft + (time.season_day % 2 == 0 ? `-${gamesLeft+1}` : '')} Game{gamesLeft === 1 ? '' : 's'} Remain{gamesLeft === 1 ? 's' : ''}</div>
                             <div className='flex justify-end px-2 text-xs font-semibold uppercase'>
                                 <div className='ml-1 w-14 text-right'>Record</div>
+                                <div className='ml-1 w-14 text-right'>WD</div>
                                 <div className='ml-1 w-10 text-right'>RD</div>
                                 <div className='ml-1 w-9 text-right'>GB</div>
                             </div>
