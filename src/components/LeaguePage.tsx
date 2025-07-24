@@ -44,7 +44,6 @@ export default function LeaguePage({ id }: { id: string }) {
     const totalGamesInSeason = 120;
     const gamesPlayed = Math.max(...teams.map((team) => (team.record.regular_season.wins+team.record.regular_season.losses)));
     const gamesLeft = totalGamesInSeason-gamesPlayed;
-    console.log(gamesLeft);
     const topTeamWinDiff = teams[0].record.regular_season.wins - teams[0].record.regular_season.losses;
 
     const cutoffIndex = teams.findIndex(team => (((team.record.regular_season.wins + gamesLeft) - team.record.regular_season.losses) < (topTeamWinDiff-gamesLeft)));

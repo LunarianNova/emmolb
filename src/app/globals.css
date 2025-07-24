@@ -20,7 +20,7 @@
   color: var(--theme-text);
 }
 
-.text-theme-text {
+.bg-theme-text {
   color: var(--theme-background);
 }
 
