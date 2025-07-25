@@ -155,8 +155,10 @@ export class TeamManager {
     }
 
     async switchBatter(newBatter: string) {
+        console.log(this.currentBatter);
         void this.currentBatter?.walkOff();
         this.currentBatter = this.playersByName[newBatter] ?? null;
+        console.log(this.currentBatter);
 
         const pos = this.getBatterPosition();
         await this.currentBatter?.walkOn(pos.label);

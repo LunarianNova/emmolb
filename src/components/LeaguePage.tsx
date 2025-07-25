@@ -1,5 +1,4 @@
 // components/LeaguePage.tsx
-// Author: Navy
 'use client'
 
 import Loading from "@/components/Loading";
@@ -8,6 +7,12 @@ import LeagueHeader from "./LeagueHeader";
 import MiniTeamHeader from "./MiniTeamHeader";
 import { MapAPILeagueTeamResponse, Team } from "@/types/Team";
 import { League, MapAPILeagueResponse } from "@/types/League";
+
+function getCurrentPhase(now: Date, phases: { name: string, start: string }[]): string {
+    const preview = phases.find(p => p.name === "PostseasonPreview");
+    if (!preview) return "Unknown";
+    return now >= new Date(preview.start) ? "Postseason" : "Regular Season";
+}
 
 export default function LeaguePage({ id }: { id: string }) {
     const [loading, setLoading] = useState(true);
@@ -52,7 +57,16 @@ export default function LeaguePage({ id }: { id: string }) {
     const topTeamWinDiff = teams[0].record.regular_season.wins - teams[0].record.regular_season.losses;
 
     const worstCaseTopTeam = time.season_day%2 == 0 ? topTeamWinDiff-gamesLeft+1 : topTeamWinDiff-gamesLeft;
-    const cutoffIndex = teams.findIndex(team => (((team.record.regular_season.wins + gamesLeft) - team.record.regular_season.losses) < (worstCaseTopTeam)));
+    let cutoffIndex = teams.findIndex(team => (((team.record.regular_season.wins + gamesLeft) - team.record.regular_season.losses) < (worstCaseTopTeam)));
+    cutoffIndex = Math.max(1, cutoffIndex);
+    
+    const phase = getCurrentPhase(new Date(), Object.entries(time.phase_times as Record<string, string>).map(([name, start]) => ({name, start})));
+    const isPostseason = phase === 'Postseason';
+    const postSeasonGL = `Final Standings for Season ${time.season_number}`
+
+    const isEvenDay = time.season_day % 2 === 0;
+    const pluralGamesLeft = gamesLeft !== 1;
+    const formattedGL = `${gamesLeft}${isEvenDay ? `-${gamesLeft + 1}` : ''} Game${pluralGamesLeft ? 's' : ''} Remain${pluralGamesLeft ? '' : 's'}`;
 
     return (
         <main className="mt-16">
@@ -61,7 +75,7 @@ export default function LeaguePage({ id }: { id: string }) {
                     <LeagueHeader league={league} />
                     <div className="flex justify-center">
                         <div className="w-full max-w-[36rem] space-y-2">
-                            <div className="text-center mt-0 mb-4 text-lg font-bold">{gamesLeft + (time.season_day % 2 == 0 ? `-${gamesLeft+1}` : '')} Game{gamesLeft === 1 ? '' : 's'} Remain{gamesLeft === 1 ? 's' : ''}</div>
+                            <div className="text-center mt-0 mb-4 text-lg font-bold">{isPostseason ? postSeasonGL : formattedGL}</div>
                             <div className='flex justify-end px-2 text-xs font-semibold uppercase'>
                                 <div className='ml-1 w-14 text-right'>Record</div>
                                 <div className='ml-1 w-9 text-right'>WD</div>

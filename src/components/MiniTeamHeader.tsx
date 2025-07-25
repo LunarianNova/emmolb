@@ -5,7 +5,26 @@ import Link from "next/link";
 export default function MiniTeamHeader({team, leader, index, alignValues}: { team: Team, leader?: Team, index?: number, alignValues?: boolean }) {
     if (!team) return null;
     if (!('color' in team)) return null;
+
     const gamesBehind = (leader) ? (leader.record.regular_season.wins - team.record.regular_season.wins + team.record.regular_season.losses - leader.record.regular_season.losses) / 2 : null;
+    let formattedGB: React.ReactNode = '';
+    if (gamesBehind != null) {
+        if (gamesBehind === 0) {
+            formattedGB = '-';
+        } else if (gamesBehind < 1) {
+            formattedGB = <span style={{ fontFamily: 'geist, sans-serif' }}>½</span>;
+        } else if (Number.isInteger(gamesBehind)) {
+            formattedGB = `${gamesBehind}`;
+        } else {
+            formattedGB = (
+                <>
+                    {Math.floor(gamesBehind)}
+                    <span style={{ fontFamily: 'geist, sans-serif' }}>½</span>
+                </>
+            );
+        }
+    }
+
     return (
         <Link href={`/team/${team.id}`} className='block'>
             <div className='flex justify-between items-center p-2 rounded cursor-pointer transition h-12' style={{background: `#${team.color}`, color: getContrastTextColor(team.color)}}>
@@ -26,7 +45,7 @@ export default function MiniTeamHeader({team, leader, index, alignValues}: { tea
                     </span>
                     {leader && (
                         <span className={`ml-1 ${alignValues && 'inline-block w-9 text-right'}`}>
-                            {gamesBehind == 0 ? '—' : gamesBehind}
+                            {formattedGB}
                         </span>
                     )}
                 </span>

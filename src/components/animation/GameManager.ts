@@ -543,12 +543,12 @@ export class GameManager {
         return "Home";
     }
 
-    private advanceBases(index: number) {
+    private advanceBases(index: number, removeBatter: boolean = true) {
         if (!this.battingTeam || !this.fieldingTeam) return;
 
         const prevBases = this.baseStates[index-1];
         const curBases = this.baseStates[index];
-        this.battingTeam.currentBatter = undefined;
+        if (removeBatter) this.battingTeam.currentBatter = undefined;
         this.battingTeam.firstBaseRunner = curBases.bases.first ? this.battingTeam.playersByName[curBases.bases.first] : undefined;
         this.battingTeam.secondBaseRunner = curBases.bases.second ? this.battingTeam.playersByName[curBases.bases.second] : undefined;
         this.battingTeam.thirdBaseRunner = curBases.bases.third ? this.battingTeam.playersByName[curBases.bases.third] : undefined;
@@ -602,7 +602,7 @@ export class GameManager {
                     this.resolvePlay(cur.index);
                 }
                 else {
-                    if (cur.message.includes('steals')) this.advanceBases(cur.index);
+                    if (cur.message.includes('steals')) this.advanceBases(cur.index, false);
                     const ball = this.createBall(positions['Pitcher']);
                     await ball.throwTo(positions['Home']);
                     this.svgRef.current?.removeChild(ball.group);
