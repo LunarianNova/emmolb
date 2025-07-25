@@ -16,6 +16,7 @@ import { TeamManager } from "./TeamManager";
 import { GameManager } from "./GameManager";
 import AnimationControls from "./Controls";
 import BetaWarning from "./BetaWarning";
+import { Crowd } from "./Crowd";
 
 export default function GameField({homeTeam, awayTeam, game, id,}: {homeTeam: Team; awayTeam: Team; game: Game; id: string;}) {
     const svgRef = useRef<SVGSVGElement>(null);
@@ -69,6 +70,8 @@ export default function GameField({homeTeam, awayTeam, game, id,}: {homeTeam: Te
         const rerun = svgRef.current.querySelector("#Announcer");
         if (rerun) return;
 
+        const crowd = new Crowd(homeTeam.color, awayTeam.color);
+        svgRef.current.appendChild(crowd.group);
         const announcer = new Announcer({ position: new Vector2(-180, 490) });
         const homeTeamManager = new TeamManager({team: homeTeam, side: 'HOME', roster: players.filter((p) => homeTeam.players.find((tp) => tp.player_id === p.id) || Object.keys(game.stats[homeTeam.id]).includes(p.id))});
         const awayTeamManager = new TeamManager({team: awayTeam, side: 'AWAY', roster: players.filter((p) => awayTeam.players.find((tp) => tp.player_id === p.id) || Object.keys(game.stats[awayTeam.id]).includes(p.id))});
@@ -76,7 +79,7 @@ export default function GameField({homeTeam, awayTeam, game, id,}: {homeTeam: Te
         awayTeamManager.allPlayers.map((p) => svgRef.current!.appendChild(p.group))
         svgRef.current.appendChild(announcer.group);
 
-        const gameManager = new GameManager({homeTeam: homeTeamManager, awayTeam: awayTeamManager, announcer, eventLog, game, svgRef});
+        const gameManager = new GameManager({homeTeam: homeTeamManager, awayTeam: awayTeamManager, announcer, eventLog, game, crowd: crowd, svgRef});
         setGameManager(gameManager);
         setIsPlaying(true);
         gameManager.start();

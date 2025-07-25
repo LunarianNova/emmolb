@@ -11,11 +11,13 @@ import { Vector2 } from "@/types/Vector2";
 import { capitalize } from "@/helpers/StringHelper";
 import { AnimatedPlayer } from "./PlayerClass";
 import { AnimatedText } from "./Text";
+import { Crowd } from "./Crowd";
 
 export class GameManager {
     homeTeam: TeamManager;
     awayTeam: TeamManager;
     game: Game;
+    crowd: Crowd;
     eventLog: Event[];
     announcer: Announcer;
     private svgRef: RefObject<SVGSVGElement | null>
@@ -28,13 +30,14 @@ export class GameManager {
     private players: string[] = [];
     private animationQueue: Promise<void> = Promise.resolve();
 
-    constructor({homeTeam, awayTeam, game, eventLog, announcer, svgRef,}: {homeTeam: TeamManager; awayTeam: TeamManager, game: Game, eventLog: Event[]; announcer: Announcer; svgRef: RefObject<SVGSVGElement | null>;}) {
+    constructor({homeTeam, awayTeam, game, eventLog, announcer, crowd, svgRef,}: {homeTeam: TeamManager; awayTeam: TeamManager, game: Game, eventLog: Event[]; announcer: Announcer; crowd: Crowd; svgRef: RefObject<SVGSVGElement | null>;}) {
         this.homeTeam = homeTeam;
         this.awayTeam = awayTeam;
         this.game = game;
         this.eventLog = eventLog;
         this.announcer = announcer;
         this.svgRef = svgRef;
+        this.crowd = crowd;
 
         this.players = [...this.homeTeam.allPlayers.map((p) => (p.name)), ...this.awayTeam.allPlayers.map((p) => (p.name))];
         this.processBases();
@@ -256,6 +259,7 @@ export class GameManager {
     };
 
     private async resolvePlay(index: number) {
+        this.crowd.cheer(this.battingTeam === this.awayTeam ? 'Away' : 'Home', 'Light');
         const ball = this.createBall(positions.Home);
         ball.hide();
 
@@ -292,6 +296,8 @@ export class GameManager {
         const throwTimeline: { toPos: keyof typeof positions, catchTime: number, speed: number, to: Vector2, startTime: number }[] = [];
         let cumulativeTime = 0;
     
+        if (isHomer) this.crowd.cheer(this.battingTeam === this.awayTeam ? 'Away' : 'Home', 'Heavy');
+
         if (!isHomer) {
             for (let i = 1; i < throwChain.length; i++) {
                 let isBeforeBatterOut = false; // Speed stuff up if it is before the batter gets out. Helps slightly with batter walk times
@@ -595,7 +601,10 @@ export class GameManager {
         this.battingTeam = cur.inning_side === 0 ? this.awayTeam : this.homeTeam;
 
         if (cur.pitcher !== prev?.pitcher) this.fieldingTeam.switchPitcher(cur.pitcher ?? '');
-        if (cur.batter !== prev?.batter) this.battingTeam.switchBatter(cur.batter ?? '');
+        if (cur.batter !== prev?.batter) {
+            this.battingTeam.switchBatter(cur.batter ?? '');
+            this.crowd.cheer(this.battingTeam === this.awayTeam ? 'Away' : 'Home', 'Idle');
+        }
 
         const outsIncreased = (cur.outs ?? 0) > (prev?.outs ?? 0);
         const strikesIncreased = (cur.strikes ?? 0) > (prev?.strikes ?? 0);
@@ -616,6 +625,8 @@ export class GameManager {
             case 'PlayBall':  // 'PlayBall' to catch the first inning's start
                 this.fieldingTeam.endFieldingInning();
                 this.battingTeam.startFieldingInning();
+                this.crowd.cheer('Home', 'Idle');
+                this.crowd.cheer('Away', 'Idle');
                 break;
             case 'Pitch': {
                 this.createText(new Vector2(positions['Pitcher'].x, positions['Pitcher'].y - 40,), 3000, true, 'white', 12, cur.pitch_info);
@@ -627,6 +638,7 @@ export class GameManager {
                 }
                 else {
                     if (cur.message.includes('steals')) this.advanceBases(cur.index, false);
+                    if (cur.message.includes('📣')) this.crowd.cheer(this.battingTeam === this.awayTeam ? 'Away' : 'Home', 'Heavy');
                     const ball = this.createBall(positions['Pitcher']);
                     await ball.throwTo(positions['Home']);
                     this.svgRef.current?.removeChild(ball.group);
