@@ -263,6 +263,9 @@ export class GameManager {
         const nextEvent = this.eventLog[index + 1];
         const isHomer = nextEvent.message.includes('homers') || nextEvent.message.includes('grand slam');
         if (!curEvent || !nextEvent || !this.battingTeam || !this.fieldingTeam) return; // Uhhh. Shouldn't run. My sanity
+
+        const batCaughtReg = new RegExp(`(lines|flies|pops|grounds) out`, 'i');
+        const isHitCaught = batCaughtReg.exec(nextEvent.message);
     
         const initialOuts = curEvent.outs;
         const newOuts = this.parseOuts(nextEvent.message);
@@ -347,9 +350,11 @@ export class GameManager {
         const ballAnimations = async () => {
             ball.show();
             let currentTime = 0;
-            for (const seg of throwTimeline) {
+            for (let i = 0; i < throwTimeline.length; i++) {
+                const seg = throwTimeline[i];
                 await this.sleep(Math.max(0, seg.startTime - currentTime));
                 await ball.throwTo(seg.to, seg.speed);
+                if (isHitCaught && i==0) this.createText(new Vector2(seg.to.x, seg.to.y-40), 2500, true, 'white', 16, 'Caught!');
                 currentTime = seg.catchTime;
             }
             if (throwTimeline.length > 0) await this.sleep(cumulativeTime - currentTime); // Final sleep
@@ -372,6 +377,7 @@ export class GameManager {
                 if (outBase) { // Walk to the base to 'tag'
                     ball.moveTo(positions[outBase.base], 150)
                     await fielder.walkTo(positions[outBase.base], 150);
+                    this.createText(new Vector2(positions[outBase.base].x, positions[outBase.base].y - 40), 2500, true, 'white', 16, "Out!");
                     await this.sleep(250); // A little pause in case that is the end of events
                 }
             };
@@ -415,6 +421,8 @@ export class GameManager {
                         }
                         const requiredSpeed = totalDistance / (totalRunDuration / 1000);
                         for (const base of path) await player.walkTo(positions[base], requiredSpeed);
+                        await this.sleep(500);
+                        await player.walkOff();
                     } else {
                         for (const base of path) await player.walkTo(positions[base], 125); // This shouldn't really ever run. It would mean the player getting out but there is no throw to the baseman to get them out
                     }
@@ -428,6 +436,8 @@ export class GameManager {
                         const totalRunDuration = Math.max(200, arrivalTime - reactionTime);
                         const requiredSpeed = Vector2.distance(player.posVector, positions[path[0]]) / (totalRunDuration / 1000);
                         await player.walkTo(positions[path[0]], requiredSpeed);
+                        await this.sleep(500);
+                        await player.walkOff();
                     } else {
                         await player.walkTo(positions[path[0]], 125); // See above
                     }
@@ -587,6 +597,20 @@ export class GameManager {
         if (cur.pitcher !== prev?.pitcher) this.fieldingTeam.switchPitcher(cur.pitcher ?? '');
         if (cur.batter !== prev?.batter) this.battingTeam.switchBatter(cur.batter ?? '');
 
+        const outsIncreased = (cur.outs ?? 0) > (prev?.outs ?? 0);
+        const strikesIncreased = (cur.strikes ?? 0) > (prev?.strikes ?? 0);
+        const ballsIncreased = (cur.balls ?? 0) > (prev?.balls ?? 0);
+        const resultTextLocation = new Vector2(positions['Home'].x, positions['Home'].y - 40);
+        let resultText = '';
+        if (outsIncreased)
+            resultText = 'Strikeout!';
+        else if (cur.message.includes('Foul'))
+            resultText = 'Foul!'
+        else if (strikesIncreased)
+            resultText = 'Strike!';
+        else if (ballsIncreased)
+            resultText = 'Ball!';
+
         switch (cur.event) {
             case 'InningEnd':
             case 'PlayBall':  // 'PlayBall' to catch the first inning's start
@@ -606,6 +630,7 @@ export class GameManager {
                     const ball = this.createBall(positions['Pitcher']);
                     await ball.throwTo(positions['Home']);
                     this.svgRef.current?.removeChild(ball.group);
+                    this.createText(resultTextLocation, 2500, true, 'white', 16, resultText);
                     if (cur.message.includes('walks') || cur.message.includes('hit by the pitch')) this.advanceBases(cur.index);
                     if (cur.message.includes('Foul')) this.foulBallAnimation(this.battingTeam.currentBatter?.posVector === positions['LeftHandedBatter'] ? 'L' : 'R');
                 }
