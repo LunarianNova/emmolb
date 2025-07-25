@@ -201,8 +201,10 @@ export default function LiveGame({ awayTeamArg, homeTeamArg, initialDataArg, gam
         <main className="mt-16">
         <CopiedPopup />
         <div className="min-h-screen bg-theme-background text-theme-text font-sans p-4 pt-20 max-w-3xl mx-auto h-full">
+            <button onClick={() => window.location.href = `/live/${gameId}`} className="px-3 py-1 text-xs bg-theme-primary hover:opacity-80 rounded-md mb-1">
+                View in Live Viewer (BETA)
+            </button>
             <GameHeaderEvent awayTeam={awayTeam} event={lastEvent} homeTeam={homeTeam} game={data} />
-            <div>Live Page Button</div>
 
             {settings.gamePage?.showExpandedScoreboard && <ExpandedScoreboard
                 gameStats={gameStats}
