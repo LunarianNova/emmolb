@@ -5,13 +5,13 @@ import { useEffect, useState } from "react";
 import { LiveGameCompact } from "./LiveGameCompact";
 import CheckboxDropdown from "./CheckboxDropdown";
 import { getContrastTextColor } from "@/helpers/Colors";
-import { Game, MapAPIGameResponse } from "@/types/Game";
+import { MapAPIGameResponse } from "@/types/Game";
 import { MapAPITeamResponse, PlaceholderTeam, Team, TeamPlayer } from "@/types/Team";
-import { CashewsPlayers, CashewsPlayer } from "@/types/FreeCashews";
-import CashewsPlayerStats from "./CashewsPlayerStats";
 import { useSettings } from "./Settings";
 import { DerivedPlayerStats } from "@/types/PlayerStats";
 import GameSchedule from "./GameSchedule";
+import { MapAPIPlayerResponse, Player } from "@/types/Player";
+import ExpandedPlayerStats from "./ExpandedPlayerStats";
 
 function getCountdown() {
     const now = new Date();
@@ -133,7 +133,7 @@ export default function TeamPage({ id }: { id: string }) {
   const [selectedSeasons, setSelectedSeasons] = useState<string[]>(["3"]);
   const [feedFilters, setFeedFilters] = useState<string[]>(["game", "augment"]);
   const [dropdownOpen, setDropdownOpen] = useState<{ season: boolean; type: boolean }>({season: false, type: false});
-  const [players, setPlayers] = useState<CashewsPlayers|undefined>(undefined);
+  const [players, setPlayers] = useState<Player[]|undefined>(undefined);
   const {settings} = useSettings();
 
   useEffect(() => {
@@ -155,13 +155,14 @@ export default function TeamPage({ id }: { id: string }) {
 
         const teamRes = await fetch(`/nextapi/team/${id}`);
         if (!teamRes.ok) throw new Error('Failed to load team data');
-        setTeam(MapAPITeamResponse(await teamRes.json()));
+        const team = MapAPITeamResponse(await teamRes.json());
+        setTeam(team);
         setExpandedPlayers(Object.fromEntries(team.players.map((player: TeamPlayer) => [player.player_id, false])))
 
-        const playersRes = await fetch(`/nextapi/teamplayers/${id}`);
+        const playersRes = await fetch(`/nextapi/players?ids=${team.players.map((p: TeamPlayer) => p.player_id).join(',')}`);
         if (!playersRes.ok) throw new Error('Failed to load player data');
-        const players: CashewsPlayers = await playersRes.json();
-        setPlayers(players);
+        const players = await playersRes.json();
+        setPlayers(players.players.map((p: any) => MapAPIPlayerResponse(p)));
 
       } catch (err) {
         console.error(err);
@@ -368,15 +369,10 @@ export default function TeamPage({ id }: { id: string }) {
                                     </div>
                                 </div>
                                 {expandedPlayers[player.player_id] && (() => {
-                                    const statsPlayer = players?.items.find(p => p.entity_id === player.player_id);
+                                    const statsPlayer = players?.find((p: Player) => p.id === player.player_id);
                                     if (!statsPlayer) return null;
 
-                                    const mergedPlayer: CashewsPlayer & TeamPlayer = {
-                                        ...(player as TeamPlayer),
-                                        ...(statsPlayer as CashewsPlayer),
-                                    };
-
-                                    return <CashewsPlayerStats player={mergedPlayer} />;
+                                    return <ExpandedPlayerStats player={{...(player as any), ...(statsPlayer as Player),}} />;
                                 })()}
                             </div>
                         );

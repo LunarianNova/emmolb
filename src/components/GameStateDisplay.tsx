@@ -2,10 +2,10 @@
 
 import { Bases } from '@/types/Bases'
 import { Event } from '@/types/Event'
-import { CashewsPlayers } from '@/types/FreeCashews'
 import { TeamPlayer } from '@/types/Team'
 import React from 'react'
 import { useSettings } from './Settings'
+import { Player } from '@/types/Player'
 
 type PlayerInfo = {
   player: TeamPlayer | string;
@@ -19,7 +19,7 @@ type GameStateDisplayProps = {
     batter: PlayerInfo;
     onDeck: PlayerInfo;
     showBases?: boolean;
-    cashewsPlayers?: CashewsPlayers;
+    playerObjects?: Player[];
 }
 
 export function GameStateDisplay({
@@ -29,7 +29,7 @@ export function GameStateDisplay({
   batter,
   onDeck,
   showBases=false,
-  cashewsPlayers,
+  playerObjects,
 }: GameStateDisplayProps) {
   const {settings} = useSettings();
   const renderCircles = (count: number, max: number) =>
@@ -95,29 +95,29 @@ export function GameStateDisplay({
         const pitch: TeamPlayer = pitcher.player
         const bat: TeamPlayer = batter.player
         const deck: TeamPlayer = onDeck.player;
-        pitcherThrows = cashewsPlayers?.items.find(
-            (p) => normalize(`${p.data.FirstName} ${p.data.LastName}`) === normalize(`${pitch.first_name} ${pitch.last_name}`)
-        )?.data.Throws;
+        pitcherThrows = playerObjects?.find(
+            (p: Player) => normalize(`${p.first_name} ${p.last_name}`) === normalize(`${pitch.first_name} ${pitch.last_name}`)
+        )?.throws;
 
-        batterHits = cashewsPlayers?.items.find(
-            (p) => normalize(`${p.data.FirstName} ${p.data.LastName}`) === normalize(`${bat.first_name} ${bat.last_name}`)
-        )?.data.Bats;
+        batterHits = playerObjects?.find(
+            (p: Player) => normalize(`${p.first_name} ${p.last_name}`) === normalize(`${bat.first_name} ${bat.last_name}`)
+        )?.bats;
 
-        onDeckHits = cashewsPlayers?.items.find(
-            (p) => normalize(`${p.data.FirstName} ${p.data.LastName}`) === normalize(`${deck.first_name} ${deck.last_name}`)
-        )?.data.Bats;
+        onDeckHits = playerObjects?.find(
+            (p: Player) => normalize(`${p.first_name} ${p.last_name}`) === normalize(`${deck.first_name} ${deck.last_name}`)
+        )?.bats;
     } else {
-        pitcherThrows = cashewsPlayers?.items.find(
-            (p) => normalize(`${p.data.FirstName} ${p.data.LastName}`) === normalize(String(pitcher.player))
-        )?.data.Throws;
+        pitcherThrows = playerObjects?.find(
+            (p: Player) => normalize(`${p.first_name} ${p.last_name}`) === normalize(String(pitcher.player))
+        )?.throws;
 
-        batterHits = cashewsPlayers?.items.find(
-            (p) => normalize(`${p.data.FirstName} ${p.data.LastName}`) === normalize(String(batter.player))
-        )?.data.Bats;
+        batterHits = playerObjects?.find(
+            (p: Player) => normalize(`${p.first_name} ${p.last_name}`) === normalize(String(batter.player))
+        )?.bats;
 
-        onDeckHits = cashewsPlayers?.items.find(
-            (p) => normalize(`${p.data.FirstName} ${p.data.LastName}`) === normalize(String(onDeck.player))
-        )?.data.Bats;
+        onDeckHits = playerObjects?.find(
+            (p: Player) => normalize(`${p.first_name} ${p.last_name}`) === normalize(String(onDeck.player))
+        )?.bats;
     }
 
   return (

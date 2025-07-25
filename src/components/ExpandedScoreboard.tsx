@@ -43,7 +43,7 @@ export function ExpandedScoreboard({ gameStats, lastEvent, awayTeam, homeTeam }:
                                 <span className={`${runs == 0 ? 'opacity-60' : ''}`}>{runs}</span>
                             </td>
                         })}
-                        <td className='table-cell bg-(--theme-primary) text-center font-semibold border-t border-(--theme-text)/50 pl-3 pt-1 border-l border-(--theme-text)/50'>{lastEvent.away_score}</td>
+                        <td className='table-cell bg-(--theme-primary) text-center font-semibold border-t border-(--theme-text)/50 pl-3 pt-1 border-l'>{lastEvent.away_score}</td>
                         <td className='table-cell bg-(--theme-primary) text-center font-semibold border-t border-(--theme-text)/50 pl-3 pt-1'>{gameStats.away.hits}</td>
                         <td className='table-cell bg-(--theme-primary) text-center font-semibold border-t border-(--theme-text)/50 pl-3 pt-1'>{gameStats.away.errors}</td>
                         <td className='table-cell bg-(--theme-primary) text-center font-semibold border-t border-(--theme-text)/50 pl-3 pr-2 pt-1'>{gameStats.away.leftOnBase}</td>

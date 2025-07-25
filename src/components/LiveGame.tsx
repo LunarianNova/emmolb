@@ -13,12 +13,12 @@ import { Bases } from '@/types/Bases';
 import { MapAPITeamResponse } from '@/types/Team';
 import { MapAPIGameResponse } from '@/types/Game';
 import { Event } from '@/types/Event';
-import { CashewsPlayers } from '@/types/FreeCashews';
-import CashewsPlayerStats from './CashewsPlayerStats';
 import { GameStats } from '@/types/GameStats';
 import { BoxScore } from './BoxScore';
 import { ExpandedScoreboard } from './ExpandedScoreboard';
 import { usePolling } from '@/hooks/Poll';
+import { Player } from '@/types/Player';
+import ExpandedPlayerStats from './ExpandedPlayerStats';
 
 type EventBlockGroup = {
     emoji?: string;
@@ -46,7 +46,7 @@ function getOPS(stats: any): string {
     return (Number(obp) + Number(slg)).toFixed(3);
 }
 
-export default function LiveGame({ awayTeamArg, homeTeamArg, initialDataArg, gameId, cashewsPlayers }: { awayTeamArg: any, homeTeamArg: any, initialDataArg: any; gameId: string, cashewsPlayers: CashewsPlayers }) {
+export default function LiveGame({ awayTeamArg, homeTeamArg, initialDataArg, gameId, playerObjects }: { awayTeamArg: any, homeTeamArg: any, initialDataArg: any; gameId: string, playerObjects: Player[] }) {
     const awayTeam = MapAPITeamResponse(awayTeamArg);
     const homeTeam = MapAPITeamResponse(homeTeamArg);
     const initialData = MapAPIGameResponse(initialDataArg);
@@ -202,6 +202,7 @@ export default function LiveGame({ awayTeamArg, homeTeamArg, initialDataArg, gam
         <CopiedPopup />
         <div className="min-h-screen bg-theme-background text-theme-text font-sans p-4 pt-20 max-w-3xl mx-auto h-full">
             <GameHeaderEvent awayTeam={awayTeam} event={lastEvent} homeTeam={homeTeam} game={data} />
+            <div>Live Page Button</div>
 
             {settings.gamePage?.showExpandedScoreboard && <ExpandedScoreboard
                 gameStats={gameStats}
@@ -226,7 +227,7 @@ export default function LiveGame({ awayTeamArg, homeTeamArg, initialDataArg, gam
                     onClick: () => {setSelectedPlayer(lastEvent.on_deck); setPlayerType('batting'); setShowStats(true);},
                 }}
                 showBases={true}
-                cashewsPlayers={cashewsPlayers}
+                playerObjects={playerObjects}
             />}
 
             <>
@@ -256,15 +257,15 @@ export default function LiveGame({ awayTeamArg, homeTeamArg, initialDataArg, gam
                 </div>
             }
             {(showStats && followLive && showDetailedStats) ? (<div className='grid grid-cols-2 gap-2 items-stretch h-full'>
-                <CashewsPlayerStats player={(lastEvent.pitcher && cashewsPlayers.items.find((p) => `${p.data.FirstName} ${p.data.LastName}` === lastEvent.pitcher)) ? {...players[lastEvent.pitcher], ...cashewsPlayers.items.find((p) => `${p.data.FirstName} ${p.data.LastName}` === lastEvent.pitcher)} : null} category='pitching' />
-                <CashewsPlayerStats player={(lastEvent.batter && cashewsPlayers.items.find((p) => `${p.data.FirstName} ${p.data.LastName}` === lastEvent.batter)) ? {...players[lastEvent.batter], ...cashewsPlayers.items.find((p) => `${p.data.FirstName} ${p.data.LastName}` === lastEvent.batter)} : null} category='batting' />
+                <ExpandedPlayerStats player={(lastEvent.pitcher && playerObjects.find((p: Player) => `${p.first_name} ${p.last_name}` === lastEvent.pitcher)) ? {...players[lastEvent.pitcher], ...playerObjects.find((p: Player) => `${p.first_name} ${p.last_name}` === lastEvent.pitcher)} : null} category='pitching' />
+                <ExpandedPlayerStats player={(lastEvent.batter && playerObjects.find((p: Player) => `${p.first_name} ${p.last_name}` === lastEvent.batter)) ? {...players[lastEvent.batter], ...playerObjects.find((p: Player) => `${p.first_name} ${p.last_name}` === lastEvent.batter)} : null} category='batting' />
                 </div>) : ''}
             {(showStats && followLive && !showDetailedStats) ? (<div className='grid grid-cols-2 gap-2 items-stretch h-full'>
                 <PlayerStats player={lastEvent.pitcher ? players[lastEvent.pitcher] : null} category='pitching' />
                 <PlayerStats player={lastEvent.batter ? players[lastEvent.batter] : null} category='batting' />
                 </div>) : ''}
             {(showStats && !followLive && !showDetailedStats) ? (<PlayerStats player={selectedPlayer ? players[selectedPlayer] : null} category={playerType} />) : ''}
-            {(showStats && !followLive && showDetailedStats) ? (<CashewsPlayerStats player={(selectedPlayer && cashewsPlayers.items.find((p) => `${p.data.FirstName} ${p.data.LastName}` === selectedPlayer)) ? {...players[selectedPlayer], ...cashewsPlayers.items.find((p) => `${p.data.FirstName} ${p.data.LastName}` === selectedPlayer)} : null} category={playerType} />) : ''}
+            {(showStats && !followLive && showDetailedStats) ? (<ExpandedPlayerStats player={(selectedPlayer && playerObjects.find((p: Player) => `${p.first_name} ${p.last_name}` === selectedPlayer)) ? {...players[selectedPlayer], ...playerObjects.find((p: Player) => `${p.first_name} ${p.last_name}` === selectedPlayer)} : null} category={playerType} />) : ''}
             </>
 
             <div className="mt-6 space-y-4">
