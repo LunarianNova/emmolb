@@ -51,7 +51,8 @@ export default function LeaguePage({ id }: { id: string }) {
     const gamesLeft = totalGamesInSeason-gamesPlayed;
     const topTeamWinDiff = teams[0].record.regular_season.wins - teams[0].record.regular_season.losses;
 
-    const cutoffIndex = teams.findIndex(team => (((team.record.regular_season.wins + gamesLeft) - team.record.regular_season.losses) < (topTeamWinDiff-gamesLeft)));
+    const worstCaseTopTeam = time.season_day%2 == 0 ? topTeamWinDiff-gamesLeft+1 : topTeamWinDiff-gamesLeft;
+    const cutoffIndex = teams.findIndex(team => (((team.record.regular_season.wins + gamesLeft) - team.record.regular_season.losses) < (worstCaseTopTeam)));
 
     return (
         <main className="mt-16">
@@ -63,7 +64,7 @@ export default function LeaguePage({ id }: { id: string }) {
                             <div className="text-center mt-0 mb-4 text-lg font-bold">{gamesLeft + (time.season_day % 2 == 0 ? `-${gamesLeft+1}` : '')} Game{gamesLeft === 1 ? '' : 's'} Remain{gamesLeft === 1 ? 's' : ''}</div>
                             <div className='flex justify-end px-2 text-xs font-semibold uppercase'>
                                 <div className='ml-1 w-14 text-right'>Record</div>
-                                <div className='ml-1 w-14 text-right'>WD</div>
+                                <div className='ml-1 w-9 text-right'>WD</div>
                                 <div className='ml-1 w-10 text-right'>RD</div>
                                 <div className='ml-1 w-9 text-right'>GB</div>
                             </div>

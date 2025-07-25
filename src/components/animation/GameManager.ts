@@ -261,6 +261,7 @@ export class GameManager {
 
         const curEvent = this.eventLog[index];
         const nextEvent = this.eventLog[index + 1];
+        const isHomer = nextEvent.message.includes('homers') || nextEvent.message.includes('grand slam');
         if (!curEvent || !nextEvent || !this.battingTeam || !this.fieldingTeam) return; // Uhhh. Shouldn't run. My sanity
     
         const initialOuts = curEvent.outs;
@@ -288,34 +289,43 @@ export class GameManager {
         const throwTimeline: { toPos: keyof typeof positions, catchTime: number, speed: number, to: Vector2, startTime: number }[] = [];
         let cumulativeTime = 0;
     
-        for (let i = 1; i < throwChain.length; i++) {
-            let isBeforeBatterOut = false; // Speed stuff up if it is before the batter gets out. Helps slightly with batter walk times
-            if (batterOutInfo) {
-                const outFielderForBatter = baseToFielder[batterOutInfo.base.toLowerCase()];
-                const outThrowIndex = throwChain.findIndex(p => p === outFielderForBatter);
-                if (outThrowIndex !== -1 && i <= outThrowIndex) {
-                    isBeforeBatterOut = true;
+        if (!isHomer) {
+            for (let i = 1; i < throwChain.length; i++) {
+                let isBeforeBatterOut = false; // Speed stuff up if it is before the batter gets out. Helps slightly with batter walk times
+                if (batterOutInfo) {
+                    const outFielderForBatter = baseToFielder[batterOutInfo.base.toLowerCase()];
+                    const outThrowIndex = throwChain.findIndex(p => p === outFielderForBatter);
+                    if (outThrowIndex !== -1 && i <= outThrowIndex) {
+                        isBeforeBatterOut = true;
+                    }
                 }
+        
+                const fromPos = throwChain[i - 1];
+                const toPos = throwChain[i];
+                const fromVec = (i > 1 ? throwTimeline[i - 2].to : positions[fromPos]);
+                const toVec = this.jitterPosition(positions[toPos]);
+                const distance = Vector2.distance(fromVec, toVec);
+                
+                const isHit = (i === 1);
+                
+                const throwDuration = isHit ? 1400 : (isBeforeBatterOut ? 950 : 1100);
+                const holdTime = isBeforeBatterOut ? 350 : 700;
+                const speed = distance / (throwDuration / 1000);
+                
+                const startTime = cumulativeTime;
+                const catchTime = startTime + throwDuration;
+                cumulativeTime = catchTime + holdTime;
+                
+                throwTimeline.push({toPos, catchTime, speed, to: toVec, startTime});
             }
-    
-            const fromPos = throwChain[i - 1];
-            const toPos = throwChain[i];
-            const fromVec = (i > 1 ? throwTimeline[i - 2].to : positions[fromPos]);
-            const toVec = this.jitterPosition(positions[toPos]);
-            const distance = Vector2.distance(fromVec, toVec);
-            
-            const isHit = (i === 1);
-            
-            const throwDuration = isHit ? 1400 : (isBeforeBatterOut ? 950 : 1100);
-            const holdTime = isBeforeBatterOut ? 350 : 700;
-            const speed = distance / (throwDuration / 1000);
-            
-            const startTime = cumulativeTime;
-            const catchTime = startTime + throwDuration;
-            cumulativeTime = catchTime + holdTime;
-            
-            throwTimeline.push({toPos, catchTime, speed, to: toVec, startTime});
+        } else {
+            // Home run
+            const toPos = this.jitterPosition(positions[throwChain[throwChain.length-1]]);
+            const outOfFieldPos = new Vector2(toPos.x, -200);
+            throwTimeline.push({toPos: 'Home'/* filler */, catchTime: 5000, speed: 250, to: outOfFieldPos, startTime: 0});
         }
+
+
     
         // Calculate when outs occur
         const outEvents = newOuts.map(out => {
@@ -343,7 +353,7 @@ export class GameManager {
                 currentTime = seg.catchTime;
             }
             if (throwTimeline.length > 0) await this.sleep(cumulativeTime - currentTime); // Final sleep
-            await ball.throwTo(positions['Pitcher']); // Pass back to mound
+            if (!isHomer) await ball.throwTo(positions['Pitcher']); // Pass back to mound
             this.svgRef.current?.removeChild(ball.group); // I think this is what they call an Orchiectomy
         };
         animationTasks.push(ballAnimations);
@@ -352,7 +362,7 @@ export class GameManager {
         for (const seg of throwTimeline) {
             const fielderAnimations = async () => {
                 const fielder = this.fieldingTeam?.playersByPosition[seg.toPos];
-                if (!fielder) return; // Uhh. shouldn't run either. Just a bunch of checks so I don't see an error in the console and then instead rip my hair out trying to find why it isn't working
+                if (!fielder) return; // This one could run! On a home run! (New as of 7-24)
                 
                 const moveStartTime = seg.catchTime - 200 - fielder.getWalkDuration(seg.to); // Walk to the catch position before the ball (get there 200ms prior)
                 await this.sleep(Math.max(0, moveStartTime));
@@ -435,7 +445,7 @@ export class GameManager {
                         reactionTime += duration;
     
                         const isFinalBase = (i === path.length - 1);
-                        if (!isFinalBase) {
+                        if (!isFinalBase && !isHomer) {
                             const contemplationTime = 300 + Math.random() * 400; // Still have some fake thinking every base
                             if (reactionTime + contemplationTime > thirdOutTime) break;
                             await this.sleep(contemplationTime);
@@ -448,13 +458,15 @@ export class GameManager {
                         await player.walkOff();
                     }
                 }
+                await player.faceDirection("front");
             };
             animationTasks.push(runnerAnimations);
         }
         
         await this.runParallel(animationTasks);
         this.battingTeam.setBases(nextBases);
-        this.fieldingTeam.allPlayers.forEach(p => p.returnToPosition());
+        this.battingTeam.currentBatter = undefined;
+        this.fieldingTeam.allPlayers.forEach(p => void p.returnToPosition());
         // And breathe. Deep breath. In. And out. In. And out
     }
 
@@ -551,7 +563,7 @@ export class GameManager {
             for (const base of path) {
                 await player.walkTo(positions[base]);
             }
-            player.turnAround('front');
+            player.faceDirection('front');
             if (path[path.length - 1] === 'Home') await player.walkOff();
         });
 
@@ -594,7 +606,7 @@ export class GameManager {
                     const ball = this.createBall(positions['Pitcher']);
                     await ball.throwTo(positions['Home']);
                     this.svgRef.current?.removeChild(ball.group);
-                    if (cur.message.includes('walks')) this.advanceBases(cur.index);
+                    if (cur.message.includes('walks') || cur.message.includes('hit by the pitch')) this.advanceBases(cur.index);
                     if (cur.message.includes('Foul')) this.foulBallAnimation(this.battingTeam.currentBatter?.posVector === positions['LeftHandedBatter'] ? 'L' : 'R');
                 }
             }

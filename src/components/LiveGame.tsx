@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { Navbar } from '@/components/Navbar';
 import { GameHeaderEvent } from '@/components/GameHeader';
 import { GameStateDisplay } from '@/components/GameStateDisplay';
@@ -82,30 +82,28 @@ export default function LiveGame({ awayTeamArg, homeTeamArg, initialDataArg, gam
         lastEventIndexRef.current = lastEvent.index;
     }, [lastEvent]);
 
+    const pollFn = useCallback(async () => {
+        const after = (eventLog.length+1).toString();
+        const res = await fetch(`/nextapi/game/${gameId}/live?after=${after}`);
+        if (!res.ok) throw new Error("Failed to fetch events");
+        return res.json();
+    }, [gameId, eventLog]);
+
+    const killCon = useCallback(() => {
+        if (!eventLog || eventLog.length === 0) return false;
+        return eventLog[eventLog.length - 1].event === 'Recordkeeping';
+    }, [eventLog]);
+
     usePolling({
         interval: 6000,
-        pollFn: async () => {
-            const after = (eventLog.length+1).toString();
-            const res = await fetch(`/nextapi/game/${gameId}/live?after=${after}`);
-            if (!res.ok) throw new Error("Failed to fetch events");
-            return res.json();
-        },
+        pollFn,
         onData: (newData) => {
             if (newData.entries?.length) {
-                setEventLog(prev => {
-                    const updated = [...prev, ...newData.entries];
-                    return updated;
-                });
+                setEventLog(prev => ([...prev, ...newData.entries]));
                 setLastEvent(newData.entries[newData.entries.length - 1]);
             }
         },
-        shouldStop: (newData) => {
-            const last = newData.entries?.[newData.entries.length - 1];
-            return last?.event === "Recordkeeping";
-        },
-        killCon: () => {
-            return eventLog[eventLog.length - 1].event === 'Recordkeeping';
-        }
+        killCon
     });
 
     function getBlockMetadata(message: string): { emoji?: string; title?: string, titleColor?: string, onClick?: () => void } | null {

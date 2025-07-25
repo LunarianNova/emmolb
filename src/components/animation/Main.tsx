@@ -1,5 +1,5 @@
 'use client'
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Scoreboard } from "./Scoreboard";
 import { Announcer } from "./Announcer";
 import { Vector2 } from "@/types/Vector2";
@@ -82,15 +82,21 @@ export default function GameField({homeTeam, awayTeam, game, id,}: {homeTeam: Te
 
     }, [players, eventLog, homeTeam, awayTeam, game]);
 
+    const pollFn = useCallback(async () => {
+        const after = (eventLog.length+1).toString();
+        const res = await fetch(`/nextapi/game/${id}/live?after=${after}`);
+        if (!res.ok) throw new Error("Failed to fetch events");
+        return res.json();
+    }, [id, eventLog]);
+
+    const killCon = useCallback(() => {
+        if (!eventLog || eventLog.length === 0) return false;
+        return eventLog[eventLog.length - 1].event === 'Recordkeeping';
+    }, [eventLog]);
 
     usePolling({
         interval: 6000,
-        pollFn: async () => {
-            const after = (eventLog.length+1).toString();
-            const res = await fetch(`/nextapi/game/${id}/live?after=${after}`);
-            if (!res.ok) throw new Error("Failed to fetch events");
-            return res.json();
-        },
+        pollFn,
         onData: (newData) => {
             if (newData.entries?.length) {
                 setEventLog(prev => {
@@ -100,14 +106,7 @@ export default function GameField({homeTeam, awayTeam, game, id,}: {homeTeam: Te
                 });
             }
         },
-        shouldStop: (newData) => {
-            if (game.state === 'Complete') return true;
-            const last = newData.entries?.[newData.entries.length - 1];
-            return last?.event === "Recordkeeping";
-        },
-        killCon: () => {
-            return eventLog[eventLog.length - 1].event === 'Recordkeeping';
-        }
+        killCon
     });
 
     useEffect(() => {

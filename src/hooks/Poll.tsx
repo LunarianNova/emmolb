@@ -4,13 +4,12 @@ type PollingOptions<T> = {
     interval: number;
     pollFn: () => Promise<T>;
     onData: (data: T) => void;
-    shouldStop?: (data: T) => boolean;
     killCon?: () => boolean;
     maxFailures?: number;
     maxRepeat?: number;
 };
 
-export function usePolling<T>({interval, pollFn, onData, shouldStop = () => false, killCon = () => false, maxFailures = 5, maxRepeat = 5,}: PollingOptions<T>) {
+export function usePolling<T>({interval, pollFn, onData, killCon = () => false, maxFailures = 5, maxRepeat = 5,}: PollingOptions<T>) {
     const pollingRef = useRef<NodeJS.Timeout | null>(null);
     const failureCountRef = useRef(0);
     const lastResultRef = useRef<string | null>(null);
@@ -42,11 +41,7 @@ export function usePolling<T>({interval, pollFn, onData, shouldStop = () => fals
 
                 onData(result);
 
-                if (shouldStop(result)) {
-                    stopPolling();
-                } else {
-                    failureCountRef.current = 0;
-                }
+                failureCountRef.current = 0;
             } catch (err) {
                 console.error(err);
                 failureCountRef.current++;

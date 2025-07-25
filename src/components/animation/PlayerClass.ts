@@ -172,8 +172,6 @@ export class AnimatedPlayer {
         return rect;
     }
 
-     
-
     setPosition(target: Vector2, forceKillWalk: boolean=true) {
         if (forceKillWalk) {
             this.forceKillWalk = true; 
@@ -205,8 +203,8 @@ export class AnimatedPlayer {
         const sessionID = ++this.walkSession;
         this.forceKillWalk = false;
         return new Promise(resolve => {
-            if (target.y >= this.posVector.y) this.turnAround("front");
-            else this.turnAround("back");
+            if (target.y >= this.posVector.y) this.faceDirection("front");
+            else this.faceDirection("back");
 
             this.startWalking();
 
@@ -271,9 +269,11 @@ export class AnimatedPlayer {
     }
 
     async returnToPosition() {
+        if (!positions[this.position]) return;
         const walkspeed = 80 + Math.random() * 40;
         await this.walkTo(positions[this.position], walkspeed);
-        this.turnAround('front');
+        if (this.position != 'Catcher') this.faceDirection('front');
+        else this.faceDirection('back')
     }
 
     async walkOff() {
@@ -318,24 +318,28 @@ export class AnimatedPlayer {
         await this.walkTo(destination, walkspeed)
 
         // Only two players to face away
-        if (this.position === 'Catcher' || this.position === 'Batter') this.turnAround("back");
+        if (this.position === 'Catcher' || this.position === 'Batter') this.faceDirection("back");
     }
 
     hideGlove() {
         this.glove.style.display = "none";
     }
 
-    turnAround(direction: FacingDirection) {
+    // Async so that I can await it (:
+    faceDirection(direction: FacingDirection): Promise<void> {
         this.facing = direction;
-        if (this.facing === 'front') {
-            this.jerseyNumberLabel.setAttribute('visibility', 'hidden');
-            this.eyeLeft.setAttribute('visibility', 'visible');
-            this.eyeRight.setAttribute('visibility', 'visible');
-        } else {
-            this.jerseyNumberLabel.setAttribute('visibility', 'visible');
-            this.eyeLeft.setAttribute('visibility', 'hidden');
-            this.eyeRight.setAttribute('visibility', 'hidden');
-        }
+        return new Promise(resolve => {
+            if (this.facing === 'front') {
+                this.jerseyNumberLabel.setAttribute('visibility', 'hidden');
+                this.eyeLeft.setAttribute('visibility', 'visible');
+                this.eyeRight.setAttribute('visibility', 'visible');
+            } else {
+                this.jerseyNumberLabel.setAttribute('visibility', 'visible');
+                this.eyeLeft.setAttribute('visibility', 'hidden');
+                this.eyeRight.setAttribute('visibility', 'hidden');
+            }
+            resolve();
+        })
     }
 
     lookInDirection(direction: Direction8) {

@@ -87,23 +87,23 @@ export class TeamManager {
 
     startFieldingInning() {
         fieldingPositions.map((pos) => {
-            this.playersByPosition[pos].walkOn();
+            void this.playersByPosition[pos].walkOn();
         })
         this.currentPitcher?.show();
-        this.currentPitcher?.walkOn();
+        void this.currentPitcher?.walkOn();
     }
 
     endFieldingInning() {
         fieldingPositions.map((pos) => {
-            this.playersByPosition[pos].walkOff();
+            void this.playersByPosition[pos].walkOff();
         })
-        this.currentPitcher?.walkOff();
+        void this.currentPitcher?.walkOff();
     }
 
-    switchPitcher(newPitcher: string) {
-        this.currentPitcher?.walkOff();
+    async switchPitcher(newPitcher: string) {
+        void this.currentPitcher?.walkOff();
         this.currentPitcher = this.playersByName[newPitcher] ?? null;
-        this.currentPitcher?.walkOn();
+        void this.currentPitcher?.walkOn('Pitcher');
     }
 
     hardSwitchPitcher(newPitcher: string) {
@@ -119,11 +119,11 @@ export class TeamManager {
                 const player = this.playersByPosition[pos];
                 player.show();
                 player.setPosition(positions[pos]);
-                player.turnAround('front');
+                player.faceDirection('front');
             });
             this.currentPitcher?.show();
             this.currentPitcher?.setPosition(positions['Pitcher']);
-            this.playersByPosition['Catcher'].turnAround('back');
+            this.playersByPosition['Catcher'].faceDirection('back');
         }
         else {
             this.allPlayers.map((p) => p.hide());
@@ -135,10 +135,10 @@ export class TeamManager {
             this.secondBaseRunner?.setPosition(positions['Second']);
             this.thirdBaseRunner?.setPosition(positions['Third']);
             this.currentBatter?.setPosition(this.getBatterPosition().position);
-            this.firstBaseRunner?.turnAround('front');
-            this.secondBaseRunner?.turnAround('front');
-            this.thirdBaseRunner?.turnAround('front');
-            this.currentBatter?.turnAround("back");
+            this.firstBaseRunner?.faceDirection('front');
+            this.secondBaseRunner?.faceDirection('front');
+            this.thirdBaseRunner?.faceDirection('front');
+            this.currentBatter?.faceDirection("back");
         }
     }
 
@@ -155,12 +155,12 @@ export class TeamManager {
     }
 
     async switchBatter(newBatter: string) {
-        this.currentBatter?.walkOff();
+        void this.currentBatter?.walkOff();
         this.currentBatter = this.playersByName[newBatter] ?? null;
 
         const pos = this.getBatterPosition();
         await this.currentBatter?.walkOn(pos.label);
-        this.currentBatter?.turnAround("back");
+        this.currentBatter?.faceDirection("back");
     }
 
     hardSwitchBatter(newBatter: string) {
@@ -169,6 +169,6 @@ export class TeamManager {
 
         const pos = this.getBatterPosition();
         this.currentBatter?.setPosition(pos.position);
-        this.currentBatter?.turnAround("back");
+        this.currentBatter?.faceDirection("back");
     }
 }

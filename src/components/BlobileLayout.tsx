@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import MiniTeamHeader from "./MiniTeamHeader";
 import { MapAPITeamResponse } from "@/types/Team";
 import { Bases } from "@/types/Bases";
@@ -33,14 +33,21 @@ export function FullBlobileDisplay({ gameId, awayTeam, homeTeam, game}: {gameId:
       lastEventIndexRef.current = lastEvent.index;
     }, [lastEvent]);
     
+    const pollFn = useCallback(async () => {
+        const after = (eventLog.length+1).toString();
+        const res = await fetch(`/nextapi/game/${gameId}/live?after=${after}`);
+        if (!res.ok) throw new Error("Failed to fetch events");
+        return res.json();
+    }, [gameId, eventLog]);
+
+    const killCon = useCallback(() => {
+        if (!eventLog || eventLog.length === 0) return false;
+        return eventLog[eventLog.length - 1].event === 'Recordkeeping';
+    }, [eventLog]);
+    
     usePolling({
         interval: 6000,
-        pollFn: async () => {
-            const after = (eventLog.length+1).toString();
-            const res = await fetch(`/nextapi/game/${gameId}/live?after=${after}`);
-            if (!res.ok) throw new Error("Failed to fetch events");
-            return res.json();
-        },
+        pollFn,
         onData: (newData) => {
             if (newData.entries?.length) {
                 setEventLog(prev => {
@@ -50,14 +57,7 @@ export function FullBlobileDisplay({ gameId, awayTeam, homeTeam, game}: {gameId:
                 setLastEvent(newData.entries[newData.entries.length - 1]);
             }
         },
-        shouldStop: (newData) => {
-            if (game.state === 'Complete') return true;
-            const last = newData.entries?.[newData.entries.length - 1];
-            return last?.event === "Recordkeeping";
-        },
-        killCon: () => {
-            return eventLog[eventLog.length - 1].event === 'Recordkeeping';
-        }
+        killCon
     });
 
     let currentQueue: Baserunner[] = [];
