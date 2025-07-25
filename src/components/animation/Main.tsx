@@ -15,6 +15,7 @@ import { Navbar } from "../Navbar";
 import { TeamManager } from "./TeamManager";
 import { GameManager } from "./GameManager";
 import AnimationControls from "./Controls";
+import BetaWarning from "./BetaWarning";
 
 export default function GameField({homeTeam, awayTeam, game, id,}: {homeTeam: Team; awayTeam: Team; game: Game; id: string;}) {
     const svgRef = useRef<SVGSVGElement>(null);
@@ -128,7 +129,7 @@ export default function GameField({homeTeam, awayTeam, game, id,}: {homeTeam: Te
     return (
         <svg ref={svgRef} id={id} width="100%" height="100vh" viewBox="-200 0 1200 600" style={{ background: "#242424" }}>
             <Field />
-
+            <BetaWarning />
             <AnimationControls 
                 onRewind={() => {
                     gameManager?.skipTo(gameManager.getEventIndex()-1);

@@ -36,8 +36,26 @@ export default function Field() {
             <rect x="424.5" y="505" width="15" height="30" fill="none" strokeWidth="3" stroke="white"/>
 
             {/* Bleachers */}
-            <polygon points="480,500 980,500 980,170 830,170" fill="#ABABAB" />        
+            <polygon points="480,500 980,500 980,170 830,170" fill="#ABABAB" />    
+            <polygon points="530,480 560,480 870,190 840,190" fill="#606060" />    
+            <polygon points="580,480 610,480 920,190 890,190" fill="#606060" />    
+            <polygon points="630,480 660,480 960,200 960,190 940,190" fill="#606060" />    
+            <polygon points="680,480 710,480 960,248.5 960,218" fill="#606060" />    
+            <polygon points="730,480 760,480 960,297 960,267" fill="#606060" />    
+            <polygon points="780,480 810,480 960,346 960,316" fill="#606060" />    
+            <polygon points="830,480 860,480 960,394 960,365" fill="#606060" />  
+            <polygon points="880,480 960,480 960,413" fill="#606060" />      
             <polygon points="320,500 -180,500 -180,170 -30,170" fill="#ABABAB" />  
+            <g transform="scale(-1, 1) translate(-800, 0)">
+                <polygon points="530,480 560,480 870,190 840,190" fill="#606060" />    
+                <polygon points="580,480 610,480 920,190 890,190" fill="#606060" />    
+                <polygon points="630,480 660,480 960,200 960,190 940,190" fill="#606060" />    
+                <polygon points="680,480 710,480 960,248.5 960,218" fill="#606060" />    
+                <polygon points="730,480 760,480 960,297 960,267" fill="#606060" />    
+                <polygon points="780,480 810,480 960,346 960,316" fill="#606060" />    
+                <polygon points="830,480 860,480 960,394 960,365" fill="#606060" />  
+                <polygon points="880,480 960,480 960,413" fill="#606060" />  
+            </g>
         </g>
     );
 };
