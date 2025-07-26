@@ -122,7 +122,7 @@ export function ProcessMessage(event: Event, players: string[], queue: Baserunne
             if (strike || ball) pitcherStats.pitchCount++;
             if (hit || homer) pitcherStats.hits++;
             if (homer) pitcherStats.earnedRuns++;
-            if (out || strikeout || fc) pitcherStats.outsRecorded++;
+            if (out || strikeout || fc || sacFly) pitcherStats.outsRecorded++;
             if (caughtStealing) pitcherStats.outsRecorded++;
             if (doublePlay) pitcherStats.outsRecorded += 2;
             if (strikeout) pitcherStats.strikeouts++;
