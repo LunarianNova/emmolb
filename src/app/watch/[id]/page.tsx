@@ -16,8 +16,8 @@ export default async function GamePage({ params }: PageProps) {
     if (!res.ok) throw new Error('Failed to load game + team data');
     const { game, gameId, awayTeam, homeTeam } = await res.json();
 
-    const homePlayers = await fetch(`http://localhost:3000/nextapi/players?ids=${homeTeam.Players.map((p: any) => p.PlayerID).join(',')}`)
-    const awayPlayers = await fetch(`http://localhost:3000/nextapi/players?ids=${awayTeam.Players.map((p: any) => p.PlayerID).join(',')}`)
+    const homePlayers = await fetch(`https://lunanova.space/nextapi/players?ids=${homeTeam.Players.map((p: any) => p.PlayerID).join(',')}`)
+    const awayPlayers = await fetch(`https://lunanova.space/nextapi/players?ids=${awayTeam.Players.map((p: any) => p.PlayerID).join(',')}`)
     if (!homePlayers.ok || !awayPlayers.ok) throw new Error('Failed to load player data');
     const homeData = await homePlayers.json();
     const awayData = await awayPlayers.json();
