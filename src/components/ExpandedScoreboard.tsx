@@ -39,7 +39,7 @@ export function ExpandedScoreboard({ gameStats, lastEvent, awayTeam, homeTeam }:
                         </td>
                         {innings.map(index => {
                             const runs = index < gameStats.away.runsByInning.length ? gameStats.away.runsByInning[index] : '';
-                            return <td key={index} className={`table-cell bg-(--theme-primary) text-right border-t border-(--theme-text)/50 ${index == innings.length - 1 ? 'px' : 'pl'}-3 pt-1`}>
+                            return <td key={index} className={`table-cell bg-(--theme-primary) text-center border-t border-(--theme-text)/50 ${index == innings.length - 1 ? 'px' : 'pl'}-3 pt-1`}>
                                 <span className={`${runs == 0 ? 'opacity-60' : ''}`}>{runs}</span>
                             </td>
                         })}
@@ -54,7 +54,7 @@ export function ExpandedScoreboard({ gameStats, lastEvent, awayTeam, homeTeam }:
                         </td>
                         {innings.map(index => {
                             const runs = index < gameStats.home.runsByInning.length ? gameStats.home.runsByInning[index] : '';
-                            return <td key={index} className={`table-cell bg-(--theme-primary) text-right ${index == innings.length - 1 ? 'px' : 'pl'}-3 pt-1 pb-0.5`}>
+                            return <td key={index} className={`table-cell bg-(--theme-primary) text-center ${index == innings.length - 1 ? 'px' : 'pl'}-3 pt-1 pb-0.5`}>
                                 <span className={`${runs == 0 ? 'opacity-60' : ''}`}>{runs}</span>
                             </td>
                         } )}
