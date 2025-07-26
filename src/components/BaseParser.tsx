@@ -49,7 +49,25 @@ export function ProcessMessage(event: Event, players: string[], queue: Baserunne
     const playerSet = new Set(players);
     const newQueue = [...queue];
 
-    const scoreCount = (message.match(/scores!/g) ?? []).length;
+    const startsInning = /starts the inning on/i.test(message);
+    const hit = /(singles on|doubles on|triples on)/i.test(message);
+    const homer = /(homers on|grand slam)/i.test(message);
+    const walk = /^Ball 4. /i.test(message);
+    const hbp = /was hit by the pitch/i.test(message);
+    const error = /(fielding error|throwing error)/i.test(message);
+    const sacFly = /sacrifice fly/i.test(message);
+    const doublePlay = /double play/i.test(message);
+    const out = !sacFly && /(grounds out|lines out|flies out|pops out)/i.test(message);
+    const strikeout = /struck out/i.test(message);
+    const fc = !error && /(fielder's choice|force out)/i.test(message);
+    const ball = walk || hbp || /^Ball/.test(message);
+    const strike = hit || homer || error || out || fc || strikeout || /(^Strike, |^Foul ball|^Foul tip)/.test(message);
+    const balk = /^Balk. /.test(message);
+    const caughtStealing = /caught stealing/i.test(message);
+    const stealsHome = /steals home/i.test(message);
+    const inningEnd = event.outs === null || event.outs === undefined;
+    const scoreCount = (message.match(/scores!/g) ?? []).length + (stealsHome ? 1 : 0);
+
     const {scoreboard, batterStats, pitcherStats} = (() => {
         if (!gameStats) return {scoreboard: null, batterStats: null, pitcherStats: null};
 
@@ -81,24 +99,6 @@ export function ProcessMessage(event: Event, players: string[], queue: Baserunne
 
         return {scoreboard, batterStats, pitcherStats};
     })();
-
-    const startsInning = /starts the inning on/i.test(message);
-    const hit = /(singles on|doubles on|triples on)/i.test(message);
-    const homer = /(homers on|grand slam)/i.test(message);
-    const walk = /^Ball 4. /i.test(message);
-    const hbp = /was hit by the pitch/i.test(message);
-    const error = /(fielding error|throwing error)/i.test(message);
-    const sacFly = /sacrifice fly/i.test(message);
-    const doublePlay = /double play/i.test(message);
-    const out = !sacFly && /(grounds out|lines out|flies out|pops out)/i.test(message);
-    const strikeout = /struck out/i.test(message);
-    const fc = !error && /(fielder's choice|force out)/i.test(message);
-    const ball = walk || hbp || /^Ball/.test(message);
-    const strike = hit || homer || error || out || fc || strikeout || /(^Strike, |^Foul ball|^Foul tip)/.test(message);
-    const balk = /^Balk. /.test(message);
-    const caughtStealing = /caught stealing/i.test(message);
-    const stealsHome = /steals home/i.test(message);
-    const inningEnd = event.outs === null || event.outs === undefined;
     
     if (gameStats) {
         if (hit || homer) {
