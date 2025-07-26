@@ -2,8 +2,8 @@ import { Vector2 } from "../../types/Vector2";
 
 export const positions: Record<string, Vector2> = {
     'FirstBaseman': new Vector2(560, 280),
-    'Shortstop': new Vector2(500, 220),
-    'SecondBaseman': new Vector2(300, 220),
+    'SecondBaseman': new Vector2(500, 220),
+    'Shortstop': new Vector2(300, 220),
     'ThirdBaseman': new Vector2(235, 280),
     'LeftFielder': new Vector2(160, 160),
     'CenterFielder': new Vector2(400, 80),
@@ -16,8 +16,8 @@ export const positions: Record<string, Vector2> = {
     'First': new Vector2(541.5, 325),
     'Second': new Vector2(400, 190),
     'Third': new Vector2(256.5, 325),
-    'AwayDugout': new Vector2(300, 470),
-    'HomeDugout': new Vector2(500, 470),
+    'AwayDugout': new Vector2(400, 370),
+    'HomeDugout': new Vector2(600, 370),
 }
 
 export const fielderLabels: Record<string, string> = {

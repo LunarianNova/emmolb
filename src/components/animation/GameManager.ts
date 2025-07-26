@@ -183,10 +183,10 @@ export class GameManager {
     }
 
     private async foulBallAnimation(hand: 'L' | 'R') {
-        const foulPositions: Record<string, Vector2> = {'L': new Vector2(-150, -10), 'R': new Vector2(1150, -10)};
+        const foulPositions: Record<string, Vector2> = {'L': new Vector2(0, 300), 'R': new Vector2(1000, 300)};
         const ball = this.createBall(positions['Home']);
         const hitPos = Math.random() >= 0.3 ? foulPositions[hand] : foulPositions[hand === 'L' ? 'R' : 'L'];
-        await ball.throwTo(new Vector2((hitPos.x-30)+Math.random()*60), 250+Math.random()*50);
+        await ball.throwTo(new Vector2((hitPos.x-30)+Math.random()*60, hitPos.y), 250+Math.random()*50);
         this.svgRef.current?.removeChild(ball.group);
     }
 
@@ -268,7 +268,7 @@ export class GameManager {
         const isHomer = nextEvent.message.includes('homers') || nextEvent.message.includes('grand slam');
         if (!curEvent || !nextEvent || !this.battingTeam || !this.fieldingTeam) return; // Uhhh. Shouldn't run. My sanity
 
-        const batCaughtReg = new RegExp(`(lines|flies|pops|grounds) out`, 'i');
+        const batCaughtReg = new RegExp(`(lines|flies|pops) out`, 'i');
         const isHitCaught = batCaughtReg.exec(nextEvent.message);
     
         const initialOuts = curEvent.outs;
@@ -600,7 +600,7 @@ export class GameManager {
         this.fieldingTeam = cur.inning_side === 0 ? this.homeTeam : this.awayTeam;
         this.battingTeam = cur.inning_side === 0 ? this.awayTeam : this.homeTeam;
 
-        if (cur.pitcher !== prev?.pitcher) this.fieldingTeam.switchPitcher(cur.pitcher ?? '');
+        if (cur.pitcher !== prev?.pitcher && cur.pitcher) this.fieldingTeam.switchPitcher(cur.pitcher ?? '');
         if (cur.batter !== prev?.batter) {
             this.battingTeam.switchBatter(cur.batter ?? '');
             this.crowd.cheer(this.battingTeam === this.awayTeam ? 'Away' : 'Home', 'Idle');
@@ -623,8 +623,10 @@ export class GameManager {
         switch (cur.event) {
             case 'InningEnd':
             case 'PlayBall':  // 'PlayBall' to catch the first inning's start
-                this.fieldingTeam.endFieldingInning();
-                this.battingTeam.startFieldingInning();
+                if (next?.event === 'InningStart'){
+                    this.fieldingTeam.endFieldingInning();
+                    this.battingTeam.startFieldingInning();
+                }
                 this.crowd.cheer('Home', 'Idle');
                 this.crowd.cheer('Away', 'Idle');
                 break;
@@ -644,7 +646,7 @@ export class GameManager {
                     this.svgRef.current?.removeChild(ball.group);
                     this.createText(resultTextLocation, 2500, true, 'white', 16, resultText);
                     if (cur.message.includes('walks') || cur.message.includes('hit by the pitch')) this.advanceBases(cur.index);
-                    if (cur.message.includes('Foul')) this.foulBallAnimation(this.battingTeam.currentBatter?.posVector === positions['LeftHandedBatter'] ? 'L' : 'R');
+                    if (cur.message.includes('Foul') && !cur.message.includes('tip')) this.foulBallAnimation(this.battingTeam.currentBatter?.posVector === positions['LeftHandedBatter'] ? 'L' : 'R');
                 }
             }
         }
