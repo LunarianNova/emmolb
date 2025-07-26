@@ -192,37 +192,21 @@ export function GameStateDisplay({
         />
       </div>
     </div>
-    {(showBases && settings.gamePage?.showBaserunners) && (<div className="text-sm space-y-4 text-left w-full shrink-0 whitespace-nowrap">
-        <div className="max-w-full sm:max-w-none">
-            <div className="text-[10px] sm:text-xs font-semibold uppercase tracking-wide opacity-70 leading-tight">
-                FIRST
-            </div>
-            <div className="text-[13px] sm:text-sm flex flex-wrap sm:flex-nowrap items-center gap-x-1 leading-snug">
-                <span className="font-medium text-left whitespace-normal sm:whitespace-nowrap">
-                    {bases.first}
-                </span>
-            </div>
+    {(showBases && settings.gamePage?.showBaserunners) && (
+        <div className="text-sm space-y-4 text-left w-full shrink-0 whitespace-nowrap">
+            {['first', 'second', 'third'].map((base) => (
+                <div key={base} className="max-w-full sm:max-w-none">
+                    <div className="text-[10px] sm:text-xs font-semibold uppercase tracking-wide opacity-70 leading-tight">
+                        {base}
+                    </div>
+                    <div className="text-[13px] sm:text-sm flex flex-wrap sm:flex-nowrap items-center gap-x-1 leading-snug">
+                        <span className="font-medium text-left whitespace-normal sm:whitespace-nowrap">
+                            {bases[base as keyof Bases]}
+                        </span>
+                    </div>
+                </div>
+            ))}
         </div>
-        <div className="max-w-full sm:max-w-none">
-            <div className="text-[10px] sm:text-xs font-semibold uppercase tracking-wide opacity-70 leading-tight">
-                SECOND
-            </div>
-            <div className="text-[13px] sm:text-sm flex flex-wrap sm:flex-nowrap items-center gap-x-1 leading-snug">
-                <span className="font-medium text-left whitespace-normal sm:whitespace-nowrap">
-                    {bases.second}
-                </span>
-            </div>
-        </div>
-        <div className="max-w-full sm:max-w-none">
-            <div className="text-[10px] sm:text-xs font-semibold uppercase tracking-wide opacity-70 leading-tight">
-                THIRD
-            </div>
-            <div className="text-[13px] sm:text-sm flex flex-wrap sm:flex-nowrap items-center gap-x-1 leading-snug">
-                <span className="font-medium text-left whitespace-normal sm:whitespace-nowrap">
-                    {bases.third}
-                </span>
-            </div>
-        </div>
-    </div>)}
+    )}
     </>);
 }
