@@ -201,7 +201,10 @@ export function GameStateDisplay({
                     </div>
                     <div className="text-[13px] sm:text-sm flex flex-wrap sm:flex-nowrap items-center gap-x-1 leading-snug">
                         <span className="font-medium text-left whitespace-normal sm:whitespace-nowrap">
-                            {bases[base as keyof Bases]}
+                            {bases[base as keyof Bases]?.split(" (")[0]}
+                            <span className="ml-1 text-xs text-theme-primary opacity-70">
+                                {bases[base as keyof Bases] ? `(${bases[base as keyof Bases]?.split("(")[1]}` : ''}
+                            </span>
                         </span>
                     </div>
                 </div>
