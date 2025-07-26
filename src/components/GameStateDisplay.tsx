@@ -192,9 +192,37 @@ export function GameStateDisplay({
         />
       </div>
     </div>
-    {(showBases && settings.gamePage?.showBaserunners) && (<div>1st: {bases.first}<br></br>
-    2nd: {bases.second}<br></br>
-    3rd: {bases.third}<br></br></div>)}
-    </>
-  )
+    {(showBases && settings.gamePage?.showBaserunners) && (<div className="text-sm space-y-4 text-left w-full shrink-0 whitespace-nowrap">
+        <div className="max-w-full sm:max-w-none">
+            <div className="text-[10px] sm:text-xs font-semibold uppercase tracking-wide opacity-70 leading-tight">
+                FIRST
+            </div>
+            <div className="text-[13px] sm:text-sm flex flex-wrap sm:flex-nowrap items-center gap-x-1 leading-snug">
+                <span className="font-medium text-left whitespace-normal sm:whitespace-nowrap">
+                    {bases.first}
+                </span>
+            </div>
+        </div>
+        <div className="max-w-full sm:max-w-none">
+            <div className="text-[10px] sm:text-xs font-semibold uppercase tracking-wide opacity-70 leading-tight">
+                SECOND
+            </div>
+            <div className="text-[13px] sm:text-sm flex flex-wrap sm:flex-nowrap items-center gap-x-1 leading-snug">
+                <span className="font-medium text-left whitespace-normal sm:whitespace-nowrap">
+                    {bases.second}
+                </span>
+            </div>
+        </div>
+        <div className="max-w-full sm:max-w-none">
+            <div className="text-[10px] sm:text-xs font-semibold uppercase tracking-wide opacity-70 leading-tight">
+                THIRD
+            </div>
+            <div className="text-[13px] sm:text-sm flex flex-wrap sm:flex-nowrap items-center gap-x-1 leading-snug">
+                <span className="font-medium text-left whitespace-normal sm:whitespace-nowrap">
+                    {bases.third}
+                </span>
+            </div>
+        </div>
+    </div>)}
+    </>);
 }
