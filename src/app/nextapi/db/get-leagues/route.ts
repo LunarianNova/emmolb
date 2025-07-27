@@ -1,13 +1,12 @@
 import { NextResponse } from 'next/server';
-import db from '@/sqlite/db';
+import dbPromise from '@/sqlite/db';
 
 export async function GET() {
-    const statement = db.prepare(`SELECT * FROM leagues`);
-
     try {
-        const leagues = statement.all();
+        const db = await dbPromise;
+        const leagues = await db.all(`SELECT * FROM leagues`);
         return NextResponse.json({ leagues });
-    } catch (e) {
+    } catch {
         return NextResponse.json({ error: 'Failed to fetch' }, { status: 500 });
     }
 }

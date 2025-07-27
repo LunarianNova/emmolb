@@ -1,16 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
-import db from '@/sqlite/db';
+import dbPromise from '@/sqlite/db';
 
 export async function POST(req: NextRequest) {
-    const body = await req.json();
-    const { league_name } = body;
-
-    const statement = db.prepare(`SELECT * FROM leagues WHERE league_name = ?`);
-
     try {
-        const league = statement.get(league_name);
+        const body = await req.json();
+        const { league_name } = body;
+
+        const db = await dbPromise;
+        const league = await db.get(`SELECT * FROM leagues WHERE league_name = ?`, league_name);
+
         return NextResponse.json({ league });
-    } catch (e) {
+    } catch {
         return NextResponse.json({ error: 'Failed to retrieve league' }, { status: 500 });
     }
 }

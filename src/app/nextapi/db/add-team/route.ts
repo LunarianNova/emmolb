@@ -1,19 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server';
-import db from '@/sqlite/db';
+import dbPromise from '@/sqlite/db';
 
 export async function POST(req: NextRequest) {
-    const body = await req.json();
-    const { league_name, team_id } = body;
-
-    const fetchStatement = db.prepare(`SELECT league_teams FROM leagues WHERE league_name = ?`);
-    const insertStatemnt = db.prepare(`UPDATE leagues SET league_teams = ? WHERE league_name = ?`);
-
     try {
-        const result = fetchStatement.get(league_name) as {league_teams: string};
-        const teams = result?.league_teams || '';
-        insertStatemnt.run(`${teams},${team_id}`, league_name);
+        const body = await req.json();
+        const { league_name, team_id } = body;
+
+        const db = await dbPromise;
+        const result = await db.get(`SELECT league_teams FROM leagues WHERE league_name = ?`, league_name);
+        const teams: string = result?.league_teams || '';
+
+        const updatedTeams = teams ? `${teams},${team_id}` : team_id;
+
+        await db.run(`UPDATE leagues SET league_teams = ? WHERE league_name = ?`, updatedTeams, league_name);
+
         return NextResponse.json({ ok: true });
-    } catch (e) {
+    } catch {
         return NextResponse.json({ error: 'Failed to update' }, { status: 500 });
     }
 }
