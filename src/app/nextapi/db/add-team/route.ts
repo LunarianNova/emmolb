@@ -3,7 +3,7 @@ import db from '@/sqlite/db';
 
 export async function POST(req: NextRequest) {
     const body = await req.json();
-    const { league_name, new_team } = body;
+    const { league_name, team_id } = body;
 
     const fetchStatement = db.prepare(`SELECT league_teams FROM leagues WHERE league_name = ?`);
     const insertStatemnt = db.prepare(`UPDATE leagues SET league_teams = ? WHERE league_name = ?`);
@@ -11,7 +11,7 @@ export async function POST(req: NextRequest) {
     try {
         const result = fetchStatement.get(league_name) as {league_teams: string};
         const teams = result?.league_teams || '';
-        insertStatemnt.run(`${teams},${new_team}`, league_name);
+        insertStatemnt.run(`${teams},${team_id}`, league_name);
         return NextResponse.json({ ok: true });
     } catch (e) {
         return NextResponse.json({ error: 'Failed to update' }, { status: 500 });

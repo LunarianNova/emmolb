@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import Picker, { EmojiClickData } from 'emoji-picker-react';
 import { getContrastTextColor } from '@/helpers/Colors';
+import { useRouter } from 'next/navigation';
 
 export default function CreateLeague() {
     const [leagueName, setLeagueName] = useState('');
@@ -9,6 +10,8 @@ export default function CreateLeague() {
     const [leagueColor, setLeagueColor] = useState('#FFFFFF');
     const [showEmojiPicker, setShowEmojiPicker] = useState(false);
     const [status, setStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle');
+
+    const router = useRouter();
 
     const handleEmojiClick = (emojiData: EmojiClickData) => {
         setLeagueEmoji(emojiData.emoji);
@@ -30,10 +33,7 @@ export default function CreateLeague() {
         });
 
         if (res.ok) {
-            setStatus('success');
-            setLeagueName('');
-            setLeagueEmoji('⚾');
-            setLeagueColor('#FFFFFF');
+            router.push(`/custom-league/${leagueName}`)
         } else {
             setStatus('error');
         }

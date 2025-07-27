@@ -2,12 +2,14 @@
 import { useEffect, useState } from "react";
 import Loading from "@/components/Loading";
 import Link from "next/link";
-import { MapAPILeagueResponse } from "@/types/League";
 import { getContrastTextColor } from "@/helpers/Colors";
+import { useRouter } from 'next/navigation';
 
 export default function CustomLeaguePage() {
     const [loading, setLoading] = useState(true);
     const [leagues, setLeagues] = useState<any[]>([]);
+
+    const router = useRouter();
 
     useEffect(() => {
         async function fetchLeagues() {
@@ -37,6 +39,9 @@ export default function CustomLeaguePage() {
                 <div className="space-y-6">
                     <div>
                         <div className="space-y-3">
+                            <button onClick={() => router.push('/create-league')} className="px-4 py-2 link-hover text-theme-secondary rounded mb-4">
+                                Create Subleague
+                            </button>
                             {leagues.map((league, index) => (
                                 <Link key={index} href={`/custom-league/${league.league_name}`}>
                                     <CustomLeagueHeader league={league} />
