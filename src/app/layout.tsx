@@ -9,8 +9,6 @@ import { ThemeUpdater } from "@/components/ThemeUpdater";
 import { Navbar } from "@/components/Navbar";
 import { usePathname } from "next/navigation";
 
-
-
 export default function RootLayout({ children, }: Readonly<{children: React.ReactNode;}>) {
     const pathname = usePathname();
     const hideNavbar = pathname.includes('live');

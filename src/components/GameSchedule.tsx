@@ -5,7 +5,7 @@ import { getContrastTextColor } from "@/helpers/Colors";
 import Link from "next/link";
 import CheckboxDropdown from "./CheckboxDropdown";
 
-export default function GameSchedule({ id, feed }: { id: string, feed: Record<string, any[]> }) {
+export default function GameSchedule({ id, feed, colors }: { id: string, feed: Record<string, any[]>; colors?: Record<string, string>[] }) {
     const { settings } = useSettings();
     const [loading, setLoading] = useState(false);
     const [schedule, setSchedule] = useState<any>(null);
@@ -104,8 +104,8 @@ export default function GameSchedule({ id, feed }: { id: string, feed: Record<st
             ...game,
             home_team_id: homeLink.id || "???",
             away_team_id: awayLink.id || "???",
-            home_team_color: game.home_color || "333333",
-            away_team_color: game.away_color || "555555",
+            home_team_color: game.home_color || colors?.[homeLink.id] || "333333",
+            away_team_color: game.away_color || colors?.[awayLink.id] || "555555",
             home_score: homeScore ?? 0,
             away_score: awayScore ?? 0,
             home_team_name: homeNameRaw,

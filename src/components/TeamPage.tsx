@@ -134,6 +134,7 @@ export default function TeamPage({ id }: { id: string }) {
   const [feedFilters, setFeedFilters] = useState<string[]>(["game", "augment"]);
   const [dropdownOpen, setDropdownOpen] = useState<{ season: boolean; type: boolean }>({season: false, type: false});
   const [players, setPlayers] = useState<Player[]|undefined>(undefined);
+  const [teamColors, setTeamColors] = useState<Record<string, string>[] | null>(null);
   const {settings} = useSettings();
 
   useEffect(() => {
@@ -158,6 +159,19 @@ export default function TeamPage({ id }: { id: string }) {
         const team = MapAPITeamResponse(await teamRes.json());
         setTeam(team);
         setExpandedPlayers(Object.fromEntries(team.players.map((player: TeamPlayer) => [player.player_id, false])))
+
+        const gamesPlayed = team.feed.filter((event: any) => event.type === 'game' && event.text.includes('FINAL'));
+        const team_ids = new Set(gamesPlayed.flatMap((game) => [game.links[0].id, game.links[1].id]));
+        const colorsRes = await fetch('/nextapi/cache/teamcolors', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                team_ids: Array.from(team_ids),
+            }),
+        });
+        if (!colorsRes) throw new Error('Failed to fetch team colors');
+        const colors = await colorsRes.json();
+        setTeamColors(colors.data);
 
         const playersRes = await fetch(`/nextapi/players?ids=${team.players.map((p: TeamPlayer) => p.player_id).join(',')}`);
         if (!playersRes.ok) throw new Error('Failed to load player data');
@@ -237,7 +251,7 @@ export default function TeamPage({ id }: { id: string }) {
         return acc;
     }, {});
 
-  return (
+    return (
     <>
       <main className="mt-16">
         <div className="min-h-screen bg-theme-background text-theme-text font-sans p-4 pt-24 max-w-2xl mx-auto">
@@ -286,7 +300,7 @@ export default function TeamPage({ id }: { id: string }) {
                     <span>Quaelyth's Curios</span>
                 </a>
             </div></>)}
-            <GameSchedule id={id} feed={groupedFeed}/>
+            <GameSchedule id={id} feed={groupedFeed} colors={teamColors ? teamColors : undefined} />
             <h2 className="text-xl font-bold mb-4 text-center">Roster</h2>
             <div className="mb-4 text-center">
                 <label className="mr-2 font-semibold">Sort by:</label>
