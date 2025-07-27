@@ -7,7 +7,7 @@ export async function POST(req: NextRequest) {
         const { league_name } = body;
 
         const db = await dbPromise;
-        const league = await db.get(`SELECT * FROM leagues WHERE league_name = ?`, league_name);
+        const league = await db.get(`SELECT * FROM leagues WHERE league_name = ?`, [league_name]);
 
         return NextResponse.json({ league });
     } catch {

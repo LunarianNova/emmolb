@@ -5,7 +5,8 @@ interface PageProps {
 }
 
 export default async function CustomLeagueSubleagueServerPage({ params }: PageProps) {
-    const { name } = await params;
+    let { name } = await params;
+    name = name.replace(/%20/g, ' ');
 
     const res = await fetch('https://lunanova.space/nextapi/db/get-league', {
         method: 'POST',
