@@ -1,7 +1,7 @@
 'use client'
 import { useEffect, useState } from "react";
 import Loading from "./Loading";
-import { MapAPITeamResponse, Team } from "@/types/Team";
+import { MapAPITeamResponse, MapTeamLite, Team } from "@/types/Team";
 import MiniTeamHeader from "./MiniTeamHeader";
 import CustomLeagueHeader from "./CustomLeagueHeader";
 
@@ -22,18 +22,13 @@ export default function CustomLeagueSubleaguePage({league}: {league: any}){
     useEffect(() => {
         async function getTeams() {
             try {
-                const teams: Team[] = [];
                 if (league.league_teams?.trim()){
-                    console.log(league);
-                    console.log(league.league_teams.split(","));
-                    for (const teamID of league.league_teams.split(",")) {
-                        if (!teamID) continue;
-                        const res = await fetch(`/nextapi/team/${teamID}`);
-                        if (!res.ok) throw new Error('Failed to fetch team!');
-                        teams.push(MapAPITeamResponse(await res.json()));
-                    }
+                    const res = await fetch(`/nextapi/cashews-teams?ids=${league.league_teams}`);
+                    if (!res.ok) throw new Error('Failed to fetch team!');
+                    const data = await res.json();
+                    const teams: Team[] = data.map((t: any) => MapTeamLite(t));
+                    setTeams(teams);
                 }
-                setTeams(teams);
 
                 const timeRes = await fetch(`/nextapi/time`);
                 if (!timeRes.ok) throw new Error('Failed to load time');

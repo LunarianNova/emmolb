@@ -45,6 +45,52 @@ export type Team = {
     id: string;
 }
 
+export function MapTeamLite(data: any): Team {
+    data = data.data;
+    return {
+        abbreviation: data.Abbreviation,
+        active: data.Active,
+        augments: data.Augments,
+        ballpark_name: data.BallparkName,
+        ballpark_suffix: data.BallparkSuffix,
+        ballpark_use_city: data.BallparkUseCity,
+        ballpark_word_1: data.BallparkWord1,
+        ballpark_word_2: data.BallparkWord2,
+        championships: data.Championships,
+        color: data.Color,
+        emoji: data.Emoji,
+        feed: [],
+        full_location: data.FullLocation,
+        league: data.League,
+        location: data.Location,
+        modifications: data.Modifications,
+        motes_used: data.MotesUsed,
+        motto: data.Motto,
+        name: data.Name,
+        owner_id: data.OwnerID,
+        players: data.Players.map((p: any) => ({
+            emoji: p.Emoji,
+            first_name: p.FirstName,
+            last_name: p.LastName,
+            number: p.Number,
+            player_id: p.PlayerID,
+            position: p.Position,
+            position_type: p.PositionType,
+            slot: p.Slot,
+            stats: null
+        })),
+        record: {
+            regular_season: {
+                losses: data.Record["Regular Season"].Losses,
+                run_differential: data.Record["Regular Season"].RunDifferential,
+                wins: data.Record["Regular Season"].Wins,
+            },
+        },
+        season_records: data.SeasonRecords,
+        id: data._id,
+    };
+}
+
 export function MapAPITeamResponse(data: any): Team {
     return {
         abbreviation: data.Abbreviation,

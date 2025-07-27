@@ -1,4 +1,3 @@
-// Placeholder file so the server runs
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(req: NextRequest) {
@@ -8,7 +7,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'Missing "ids" query parameter' }, { status: 400 });
   }
 
-  const response = await fetch(`https://mmolb.com/api/players?ids=${idsParam}`, {
+  const response = await fetch(`https://freecashe.ws/api/chron/v0/entities?kind=team_lite&id=${idsParam}`, {
     headers: {
       'Accept': 'application/json',
     },
@@ -17,7 +16,7 @@ export async function GET(req: NextRequest) {
 
   const data = await response.json();
 
-  return NextResponse.json(data, {
+  return NextResponse.json(data.items, {
     status: response.status,
     headers: {
       'Access-Control-Allow-Origin': '*',
