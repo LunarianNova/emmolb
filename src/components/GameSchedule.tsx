@@ -129,6 +129,19 @@ export default function GameSchedule({ id, feed, colors }: { id: string, feed: R
         gamesBySeason[season].push(game);
     }
 
+    const seasonRecords: Record<string, { wins: number; losses: number }> = {};
+
+    for (const game of normalizedGames) {
+        const season = String(game.season || game.season_number || "unknown");
+        const isHome = game.home_team_id === id;
+        const teamScore = isHome ? game.home_score : game.away_score;
+        const oppScore = isHome ? game.away_score : game.home_score;
+
+        if (!seasonRecords[season]) seasonRecords[season] = { wins: 0, losses: 0 };
+        if (teamScore > oppScore) seasonRecords[season].wins++;
+        else seasonRecords[season].losses++;
+    }
+
     return (
         <>
             <div className="mb-4 flex justify-center gap-4">
@@ -177,6 +190,7 @@ export default function GameSchedule({ id, feed, colors }: { id: string, feed: R
                         ) : (
                             selectedSeasons.map((season) => {
                                 const games = gamesBySeason[season];
+                                const record = seasonRecords[season];
                                 if (!games || games.length === 0) return null;
 
                                 const sortedGames = games.sort(
@@ -185,9 +199,10 @@ export default function GameSchedule({ id, feed, colors }: { id: string, feed: R
 
                                 return (
                                     <div key={season} className="mb-6">
-                                        <h2 className="text-lg font-bold text-white mb-2 text-center">
+                                        <h2 className="text-lg font-bold text-white text-center mb-0">
                                             Season {season}
                                         </h2>
+                                        <h3 className="text-md font-bold text-white mb-4 text-center mt-0">{record.wins}-{record.losses}</h3>
                                         <div className="grid gap-4 grid-cols-[repeat(auto-fit,_minmax(100px,_1fr))]">
                                             {sortedGames.map((game) => {
                                                 const isHome = game.home_team_id === id;
