@@ -1,9 +1,9 @@
 'use client'
-import { CustomLeagueHeader } from "@/app/custom-league/page";
 import { useEffect, useState } from "react";
 import Loading from "./Loading";
 import { MapAPITeamResponse, Team } from "@/types/Team";
 import MiniTeamHeader from "./MiniTeamHeader";
+import CustomLeagueHeader from "./CustomLeagueHeader";
 
 function getCurrentPhase(now: Date, phases: { name: string, start: string }[]): string {
     const preview = phases.find(p => p.name === "PostseasonPreview");

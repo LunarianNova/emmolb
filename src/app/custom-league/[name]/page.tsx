@@ -7,7 +7,7 @@ interface PageProps {
 export default async function CustomLeagueSubleagueServerPage({ params }: PageProps) {
     const { name } = await params;
 
-    const res = await fetch('http://localhost:3000/nextapi/db/get-league', {
+    const res = await fetch('https://lunanova.space/nextapi/db/get-league', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

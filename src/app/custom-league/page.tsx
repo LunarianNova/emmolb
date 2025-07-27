@@ -4,6 +4,7 @@ import Loading from "@/components/Loading";
 import Link from "next/link";
 import { getContrastTextColor } from "@/helpers/Colors";
 import { useRouter } from 'next/navigation';
+import CustomLeagueHeader from "@/components/CustomLeagueHeader";
 
 export default function CustomLeaguePage() {
     const [loading, setLoading] = useState(true);
@@ -53,22 +54,4 @@ export default function CustomLeaguePage() {
             </div>
         </main>
     </>);
-}
-
-export function CustomLeagueHeader({ league }: { league: any }) {
-    return (
-        <div className='relative w-full h-28 px-6 py-4 border-2 rounded-2xl shadow-xl overflow-hidden mb-4 flex items-center' style={{background: `${league.league_color}`, color: getContrastTextColor(league.league_color ? league.league_color : '')}}>
-            <span className="text-7xl flex-shrink-0">
-                {league.league_emoji}
-            </span>
-            <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none px-2">
-                <span className="text-2xl font-bold tracking-wide leading-tight text-center">
-                    {league.league_name} League
-                </span>
-                <span>
-                    Custom League
-                </span>
-            </div>
-        </div>
-    );
 }
