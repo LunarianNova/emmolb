@@ -12,6 +12,7 @@ import { DerivedPlayerStats } from "@/types/PlayerStats";
 import GameSchedule from "./GameSchedule";
 import { MapAPIPlayerResponse, Player } from "@/types/Player";
 import ExpandedPlayerStats from "./ExpandedPlayerStats";
+import SeasonTrophy from "./SeasonTrophy";
 
 function getCountdown() {
     const now = new Date();
@@ -135,6 +136,7 @@ export default function TeamPage({ id }: { id: string }) {
   const [dropdownOpen, setDropdownOpen] = useState<{ season: boolean; type: boolean }>({season: false, type: false});
   const [players, setPlayers] = useState<Player[]|undefined>(undefined);
   const [teamColors, setTeamColors] = useState<Record<string, string>[] | null>(null);
+  const [seasonChamps, setSeasonChamps] = useState<Record<number, string>>({});
   const {settings} = useSettings();
 
   useEffect(() => {
@@ -172,6 +174,11 @@ export default function TeamPage({ id }: { id: string }) {
         if (!colorsRes) throw new Error('Failed to fetch team colors');
         const colors = await colorsRes.json();
         setTeamColors(colors.data);
+
+        const champsRes = await fetch(`/nextapi/cache/season-winners`);
+        if (!champsRes.ok) throw new Error('Failed to fetch champions!');
+        const champsData = await champsRes.json();
+        setSeasonChamps(champsData[team.league] as Record<number, string>);
 
         const playersRes = await fetch(`/nextapi/players?ids=${team.players.map((p: TeamPlayer) => p.player_id).join(',')}`);
         if (!playersRes.ok) throw new Error('Failed to load player data');
@@ -278,6 +285,13 @@ export default function TeamPage({ id }: { id: string }) {
                 </span>
                 <span className="absolute top-1 right-2 text-base font-semibold opacity-80 pointer-events-none">{team.record.regular_season.run_differential > 0 ? '+' : ''}{team.record.regular_season.run_differential}</span>
             </div>
+            {seasonChamps && Object.values(seasonChamps).includes(team.id) && (
+                <div className="mb-4 mt-2 w-auto shadow-md text-5xl px-2 py-2 space-x-0 flex rounded-sm bg-theme-primary">
+                    {Object.entries(seasonChamps).filter(([_, champId]) => champId === team.id).map(([season]) => (
+                        <SeasonTrophy key={season} season={Number(season)} />
+                    ))}
+                </div>
+            )}
             {game && game.game.State != "Complete" && (<><Link href={`/game/${gameID}`}><LiveGameCompact homeTeam={MapAPITeamResponse(game.homeTeam)} awayTeam={MapAPITeamResponse(game.awayTeam)} game={MapAPIGameResponse(game.game)} gameId={gameID ? gameID : ''} killLinks={true} /></Link></>)}
             {settings.teamPage?.showMMOLBLinks && (<div className="bg-theme-primary rounded-xl shadow-lg p-6 text-center text-lg mb-6">
                 <div className="mb-4 text-theme-text">Augments apply in <span className="font-mono">{countdown}</span></div>

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getCachedData } from '@/lib/cache';
+import { getCachedLiteTeams } from '@/lib/cache';
 export const dynamic = 'force-dynamic'; // Disables static caching
 
 export async function POST(req: NextRequest) {
@@ -7,7 +7,7 @@ export async function POST(req: NextRequest) {
         const body = await req.json();
         const { team_ids } = body;
 
-        const data = await getCachedData();
+        const data = await getCachedLiteTeams();
 
         return NextResponse.json({
             data: Object.fromEntries(data.items.filter((team: any) => team_ids.includes(team.team_id)).map((team: any) => [team.team_id, team.color]))

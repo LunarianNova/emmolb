@@ -23,7 +23,7 @@ export default function CustomLeagueSubleaguePage({league}: {league: any}){
         async function getTeams() {
             try {
                 if (league.league_teams?.trim()){
-                    const res = await fetch(`/nextapi/cashews-teams?ids=${league.league_teams}`);
+                    const res = await fetch(`/nextapi/cashews-teams-lite?ids=${league.league_teams}`);
                     if (!res.ok) throw new Error('Failed to fetch team!');
                     const data = await res.json();
                     const teams: Team[] = data.map((t: any) => MapTeamLite(t));

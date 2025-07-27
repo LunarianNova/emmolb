@@ -7,7 +7,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'Missing "ids" query parameter' }, { status: 400 });
   }
 
-  const response = await fetch(`https://freecashe.ws/api/chron/v0/entities?kind=team&id=${idsParam}`, {
+  const response = await fetch(`https://freecashe.ws/api/chron/v0/entities?kind=team_lite&id=${idsParam}`, {
     headers: {
       'Accept': 'application/json',
     },
