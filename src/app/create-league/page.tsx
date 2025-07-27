@@ -57,11 +57,11 @@ export default function CreateLeague() {
                             </span>
                         </div>
                     </div>
-                                            {showEmojiPicker && (
-                                    <div className="absolute z-10 -translate-x-1/2 left-1/2 mt-2">
-                                        <Picker onEmojiClick={handleEmojiClick} />
-                                    </div>
-                                )}
+                    {showEmojiPicker && (
+                        <div className="absolute z-10 -translate-x-1/2 left-1/2 mt-2">
+                            <Picker onEmojiClick={handleEmojiClick} />
+                        </div>
+                    )}
 
                     <div>
                         <label className="block mb-2 text-[10px] sm:text-xs font-semibold uppercase tracking-wide opacity-70 leading-tight">League Color</label>

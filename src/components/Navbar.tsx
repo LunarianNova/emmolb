@@ -120,6 +120,7 @@ export function Navbar() {
               <div className='ml-4 space-y-1'>
                 <Link href='/greater-league' className='block'>Greater League</Link>
                 <Link href='/lesser-league' className='block'>Lesser League</Link>
+                <Link href='/custom-league' className='block'>Custom League</Link>
               </div>
             </details>
 
@@ -185,6 +186,9 @@ export function Navbar() {
               </Link>
               <Link href='/lesser-league' className="block w-full text-left px-3 py-2 rounded link-hover transition cursor-pointer">
                 Lesser League
+              </Link>
+              <Link href='/custom-league' className="block w-full text-left px-3 py-2 rounded link-hover transition cursor-pointer">
+                Custom League
               </Link>
             </div>
           </div>
