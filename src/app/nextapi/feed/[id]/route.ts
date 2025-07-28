@@ -3,7 +3,7 @@ import { NextRequest } from 'next/server';
 export async function GET(req: NextRequest, {params}: {params: Promise<{ id: string }>}) {
   const { id } = await params;
 
-  const response = await fetch(`https://mmolb.com/api/feed/${id}`, {
+  const response = await fetch(`https://mmolb.com/api/feed?team=${id}`, {
     headers: {
       'Accept': 'application/json',
     },
