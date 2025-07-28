@@ -1,7 +1,7 @@
 import GLGamesPage from "@/components/GLGamesPage";
 
 export default async function GLGamesServerPage() {
-    const timeRes = await fetch(`http://localhost:3000/nextapi/time`, {
+    const timeRes = await fetch(`http://lunanova.space/nextapi/time`, {
         next: { revalidate: 0 },
     });
     const time = await timeRes.json();

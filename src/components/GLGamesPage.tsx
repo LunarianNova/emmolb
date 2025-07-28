@@ -43,6 +43,7 @@ export default function GLGamesPage({ season, initialDay }: {season: number, ini
                 setDayGames(games);
 
                 if (games[0].status === 'Scheduled') return;
+                if (games.every((game: DayGame) => game.status === 'Final')) return;
 
                 const res = await fetch('/nextapi/gameheaders', {
                     method: 'POST',
@@ -84,7 +85,12 @@ export default function GLGamesPage({ season, initialDay }: {season: number, ini
                 </h1>
                 <div className="text-center mb-4 font-semibold">Greater League</div>
                 {!updating && (dayGames.map((game: DayGame) => {
-                    return <MinifiedGameHeader key={game.game_id} game={game} />
+                    if (game.status === 'Upcoming') return <MinifiedGameHeader key={game.game_id} game={game} />
+                    else return (
+                        <Link href={`/watch/${game.game_id}`}>
+                            <MinifiedGameHeader key={game.game_id} game={game} />
+                        </Link>
+                    );
                 }))}  
             </div>
         </main>
