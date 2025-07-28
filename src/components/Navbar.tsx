@@ -111,7 +111,15 @@ export function Navbar() {
 
         {mobileMenuOpen && (
           <div className="sm:hidden px-6 pb-4 pt-2 space-y-2 text-left z-10">
-            <Link href="/" className="block py-2">Home</Link>
+            <details className='group'>
+              <summary className='cursor-pointer py-2'>
+                Home
+              </summary>
+              <div className='ml-4 space-y-1'>
+                <Link href='/' className='block'>Home</Link>
+                <Link href='/gl-games' className='block'>GL Games</Link>
+              </div>
+            </details>
             
             <details className='group'>
               <summary className='cursor-pointer py-2'>
@@ -156,12 +164,31 @@ export function Navbar() {
           className={`sm:flex sm:justify-center sm:gap-42 py-5 z-10 hidden`}
         >
           {/* Home */}
-          <Link
-            href="/"
-            className="text-lg font-bold tracking-wide"
-          >
-            Home
-          </Link>
+          <div className="relative">
+            <button
+              onClick={() => toggleDropdown('home')}
+              className="text-lg font-bold tracking-wide cursor-pointer"
+              aria-expanded={openDropdown === 'home'}
+              aria-haspopup="true"
+            >
+              Home
+            </button>
+            <div
+              className={`absolute top-12 left-1/2 -translate-x-1/2 w-44 bg-theme-primary border border-theme-accent rounded-xl p-2 shadow-xl transition-all duration-200 ease-out transform z-50
+                ${
+                  openDropdown === 'home'
+                    ? 'opacity-100 scale-100 translate-y-0 pointer-events-auto'
+                    : 'opacity-0 scale-95 -translate-y-2 pointer-events-none'
+                }`}
+            >
+              <Link href='/' className="block w-full text-left px-3 py-2 rounded link-hover transition cursor-pointer">
+                Home
+              </Link>
+              <Link href='/gl-games' className="block w-full text-left px-3 py-2 rounded link-hover transition cursor-pointer">
+                GL Games
+              </Link>
+            </div>
+          </div>
 
           {/* Leagues dropdown */}
           <div className="relative">
