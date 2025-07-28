@@ -1,6 +1,6 @@
 'use client'
 import { DayGame, MapDayGameAPIResponse } from "@/types/DayGame";
-import { useEffect, useState } from "react";
+import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import Loading from "./Loading";
 import { MapAPIGameResponse } from "@/types/Game";
 import { MapAPITeamResponse } from "@/types/Team";
@@ -20,6 +20,26 @@ interface GameHeaderResponse {
     gameId: any;
     awayTeam: any;
     homeTeam: any;
+}
+
+function GLGamesPageHeader({setDay, day, season,}: {setDay: Dispatch<SetStateAction<number>>, day: number, season: number,}) {
+    return (
+        <>
+            <div className="flex justify-center items-center mb-4 gap-4">
+                <button onClick={() => setDay((d) => Math.max(1, d - 2))}className="px-2 py-1 bg-theme-primary rounded">
+                    Prev
+                </button>
+                <div>Day {day}</div>
+                <button onClick={() => setDay((d) => Math.min(300, d + 2))} className="px-2 py-1 bg-theme-primary rounded">
+                    Next
+                </button>
+            </div>
+            
+            <h1 className="text-2xl font-bold text-center mb-2">
+                Season {season}, Regular Season, Day {day} Games
+            </h1>
+        </>
+    );
 }
 
 export default function GLGamesPage({ season, initialDay }: {season: number, initialDay: number}) {
@@ -67,22 +87,20 @@ export default function GLGamesPage({ season, initialDay }: {season: number, ini
 
     if (loading) return (<Loading />);
 
+    if (updating) return (
+        <main className="mt-16">
+            <div className="min-h-screen bg-theme-background text-theme-text font-sans p-4 pt-20 max-w-3xl mx-auto">
+                <GLGamesPageHeader setDay={setDay} day={day} season={season} />
+                <div>Loading...</div>
+            </div>
+        </main>
+    );
+
     if (games.length === 0 && dayGames?.length) return (
         <main className="mt-16">
             <div className="min-h-screen bg-theme-background text-theme-text font-sans p-4 pt-20 max-w-3xl mx-auto">
-                <div className="flex justify-center items-center mb-4 gap-4">
-                    <button onClick={() => setDay((d) => Math.max(1, d - 2))}className="px-2 py-1 bg-theme-primary rounded">
-                        Prev
-                    </button>
-                    <div>Day {day}</div>
-                    <button onClick={() => setDay((d) => Math.min(300, d + 2))} className="px-2 py-1 bg-theme-primary rounded">
-                        Next
-                    </button>
-                </div>
-                
-                <h1 className="text-2xl font-bold text-center mb-2">
-                    Season {season}, Regular Season, Day {day} Games
-                </h1>
+                <GLGamesPageHeader setDay={setDay} day={day} season={season} />
+
                 <div className="text-center mb-4 font-semibold">Greater League</div>
                 {!updating && (dayGames.map((game: DayGame) => {
                     if (game.status === 'Upcoming') return <MinifiedGameHeader key={game.game_id} game={game} />
@@ -99,19 +117,8 @@ export default function GLGamesPage({ season, initialDay }: {season: number, ini
     return (
         <main className="mt-16">
             <div className="min-h-screen bg-theme-background text-theme-text font-sans p-4 pt-20 max-w-3xl mx-auto">
-                <div className="flex justify-center items-center mb-4 gap-4">
-                    <button onClick={() => setDay((d) => Math.max(1, d - 2))}className="px-2 py-1 bg-theme-primary rounded">
-                        Prev
-                    </button>
-                    <div>Day {day}</div>
-                    <button onClick={() => setDay((d) => Math.min(300, d + 2))} className="px-2 py-1 bg-theme-primary rounded">
-                        Next
-                    </button>
-                </div>
-                
-                <h1 className="text-2xl font-bold text-center mb-2">
-                    Season {season}, Regular Season, Day {day} Games
-                </h1>
+                <GLGamesPageHeader setDay={setDay} day={day} season={season} />
+
                 <div className="text-center mb-4 font-semibold">Greater League</div>
                 {settings.homePage?.useBlasesloaded ? games.map(({ teamId, gameHeader }) => (
                     <Link key={teamId + "link"} href={"/game/" + gameHeader.gameId}>
