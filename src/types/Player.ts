@@ -16,6 +16,7 @@ export type Equipment = {
     effects: EquipmentEffect[];
     emoji: string;
     name: string;
+    rareName?: string;
     prefix?: string[];
     rarity: string;
     slot?: string;
@@ -64,15 +65,17 @@ function mapEffect(effect: any): EquipmentEffect {
 
 function mapEquipment(raw: any): Equipment | undefined {
     if (!raw) return;
+    console.log(raw);
 
     return {
         effects: Array.isArray(raw.Effects) ? raw.Effects.map(mapEffect) : [],
         emoji: raw.Emoji,
         name: raw.Name,
-        prefix: raw.Prefix,
+        rareName: raw.RareName,
+        prefix: raw.Prefixes,
         rarity: raw.Rarity,
         slot: raw.Slot,
-        suffix: raw.Suffix,
+        suffix: raw.Suffixes,
     };
 }
 
