@@ -166,7 +166,7 @@ export default function TeamPage({ id }: { id: string }) {
         const feedRes = await fetch(`/nextapi/feed/${id}`);
         if (!feedRes.ok) throw new Error('Failed to load team data');
         const feed = await feedRes.json();
-        setFeed(feed);
+        setFeed(feed.feed);
 
         const gamesPlayed = feed.filter((event: any) => event.type === 'game' && event.text.includes('FINAL'));
         const team_ids = new Set(gamesPlayed.flatMap((game: any) => [game.links[0].id, game.links[1].id]));
