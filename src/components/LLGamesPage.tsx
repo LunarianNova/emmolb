@@ -9,6 +9,7 @@ import { FullBlobileDisplay } from "./BlobileLayout";
 import Link from "next/link";
 import { LiveGameCompact } from "./LiveGameCompact";
 import { GameHeader, MinifiedGameHeader } from "./GameHeader";
+import { MMOLBWatchPageHeader } from "./GLGamesPage";
 
 interface GameHeaderApiResponse {
     teamId: string;
@@ -20,26 +21,6 @@ interface GameHeaderResponse {
     gameId: any;
     awayTeam: any;
     homeTeam: any;
-}
-
-export function MMOLBWatchPageHeader({setDay, day, season,}: {setDay: Dispatch<SetStateAction<number>>, day: number, season: number,}) {
-    return (
-        <>
-            <div className="flex justify-center items-center mb-4 gap-4">
-                <button onClick={() => setDay((d) => Math.max(1, d - 2))}className="px-2 py-1 bg-theme-primary rounded">
-                    Prev
-                </button>
-                <div>Day {day}</div>
-                <button onClick={() => setDay((d) => Math.min(300, d + 2))} className="px-2 py-1 bg-theme-primary rounded">
-                    Next
-                </button>
-            </div>
-            
-            <h1 className="text-2xl font-bold text-center mb-2">
-                Season {season}, Regular Season, Day {day} Games
-            </h1>
-        </>
-    );
 }
 
 export default function GLGamesPage({ season, initialDay }: {season: number, initialDay: number}) {
@@ -56,7 +37,7 @@ export default function GLGamesPage({ season, initialDay }: {season: number, ini
                 setUpdating(true);
                 setGames([]);
                 setDayGames([]);
-                const gamesRes = await fetch(`/nextapi/day-games/${day}?limit=8`);
+                const gamesRes = await fetch(`/nextapi/day-games/${day}`);
                 if (!gamesRes.ok) throw new Error('Failed to load player data');
                 const gamesData = await gamesRes.json();
                 const games = gamesData.games.map((game: any) => MapDayGameAPIResponse(game));
