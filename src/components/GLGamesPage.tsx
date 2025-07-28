@@ -27,21 +27,27 @@ export default function GLGamesPage({ season, initialDay }: {season: number, ini
     const [dayGames, setDayGames] = useState<DayGame[]>([]);
     const [games, setGames] = useState<GameHeaderApiResponse[]>([]);
     const [loading, setLoading] = useState<boolean>(false);
+    const [updating, setUpdating] = useState<boolean>(false);
     const [day, setDay] = useState<number>(initialDay);
 
     useEffect(() => {
         async function APICalls() {
             try {
+                setUpdating(true);
+                setGames([]);
+                setDayGames([]);
                 const gamesRes = await fetch(`/nextapi/day-games/${day}`);
                 if (!gamesRes.ok) throw new Error('Failed to load player data');
                 const gamesData = await gamesRes.json();
                 const games = gamesData.games.map((game: any) => MapDayGameAPIResponse(game));
                 setDayGames(games);
 
+                if (games[0].status === 'Scheduled') return;
+
                 const res = await fetch('/nextapi/gameheaders', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ teamIds: games.map((game: any) => game.HomeTeamID) }),
+                    body: JSON.stringify({ teamIds: games.map((game: DayGame) => game.home_team_id) }),
                 });
                 if (!res.ok) throw new Error('Failed to load game headers');
                 const data: GameHeaderApiResponse[] = await res.json();
@@ -50,6 +56,7 @@ export default function GLGamesPage({ season, initialDay }: {season: number, ini
             } catch (err) {
                 console.error(err);
             } finally {
+                setUpdating(false);
                 setLoading(false);
             }
         }
@@ -57,7 +64,7 @@ export default function GLGamesPage({ season, initialDay }: {season: number, ini
         APICalls();
     }, [day]);
 
-    if (loading ) return (<Loading />);
+    if (loading) return (<Loading />);
 
     if (games.length === 0 && dayGames?.length) return (
         <main className="mt-16">
@@ -76,9 +83,9 @@ export default function GLGamesPage({ season, initialDay }: {season: number, ini
                     Season {season}, Regular Season, Day {day} Games
                 </h1>
                 <div className="text-center mb-4 font-semibold">Greater League</div>
-                {dayGames.map((game: DayGame) => {
+                {!updating && (dayGames.map((game: DayGame) => {
                     return <MinifiedGameHeader key={game.game_id} game={game} />
-                })}  
+                }))}  
             </div>
         </main>
     );
