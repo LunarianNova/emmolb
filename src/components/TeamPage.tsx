@@ -137,6 +137,7 @@ export default function TeamPage({ id }: { id: string }) {
   const [players, setPlayers] = useState<Player[]|undefined>(undefined);
   const [teamColors, setTeamColors] = useState<Record<string, string>[] | null>(null);
   const [seasonChamps, setSeasonChamps] = useState<Record<number, string>>({});
+  const [feed, setFeed] = useState<any[]>([]);
   const {settings} = useSettings();
 
   useEffect(() => {
@@ -162,8 +163,13 @@ export default function TeamPage({ id }: { id: string }) {
         setTeam(team);
         setExpandedPlayers(Object.fromEntries(team.players.map((player: TeamPlayer) => [player.player_id, false])))
 
-        const gamesPlayed = team.feed.filter((event: any) => event.type === 'game' && event.text.includes('FINAL'));
-        const team_ids = new Set(gamesPlayed.flatMap((game) => [game.links[0].id, game.links[1].id]));
+        const feedRes = await fetch(`/nextapi/feed/${id}`);
+        if (!feedRes.ok) throw new Error('Failed to load team data');
+        const feed = await feedRes.json();
+        setFeed(feed);
+
+        const gamesPlayed = feed.filter((event: any) => event.type === 'game' && event.text.includes('FINAL'));
+        const team_ids = new Set(gamesPlayed.flatMap((game: any) => [game.links[0].id, game.links[1].id]));
         const colorsRes = await fetch('/nextapi/cache/teamcolors', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -196,11 +202,11 @@ export default function TeamPage({ id }: { id: string }) {
   }, [id]);
 
     useEffect(() => {
-        if (team?.feed && feedFilters.length === 0) {
-            const uniqueTypes = Array.from(new Set(team.feed.map((event: any) => event.type)));
+        if (feed && feedFilters.length === 0) {
+            const uniqueTypes = Array.from(new Set(feed.map((event: any) => event.type)));
             setFeedFilters(uniqueTypes);
         }
-    }, [team?.feed]);
+    }, [feed]);
 
   function toggleFavorite(teamId: string) {
     setFavorites(prev => {
@@ -224,7 +230,7 @@ export default function TeamPage({ id }: { id: string }) {
     </>
   );
 
-  const uniqueTypes: string[] = Array.from(new Set(team.feed.map((event: any) => event.type)));
+  const uniqueTypes: string[] = Array.from(new Set(feed.map((event: any) => event.type)));
 
     const reverseSortStats = new Set([
         "era", "whip", "bb9", "h9", "hr9", "losses", "blown_saves", "errors"
@@ -250,7 +256,7 @@ export default function TeamPage({ id }: { id: string }) {
     });
 
     
-    const groupedFeed = team.feed.reduce((acc: Record<string, any[]>, game) => {
+    const groupedFeed = feed.reduce((acc: Record<string, any[]>, game) => {
         if (game.type !== 'game') return acc;
         const seasonKey = String(game.season);
         if (!acc[seasonKey]) acc[seasonKey] = [];
@@ -430,7 +436,7 @@ export default function TeamPage({ id }: { id: string }) {
                     </div>
                 </div>
                 <div className="bg-theme-primary rounded-xl p-3 max-h-60 overflow-y-auto text-sm space-y-1">
-                    {team.feed.filter((event: any) => 
+                    {feed.filter((event: any) => 
                         selectedSeasons.includes(event.season?.toString()) && feedFilters.includes(event.type)).slice().reverse().map((event: any, i: number) => {
                         const parts = event.text.split(/( vs\. | - )/);
                         
