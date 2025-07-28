@@ -37,9 +37,10 @@ interface EventBlockProps {
     messages: any[]; // Catch because I'm too lazy to implement Event checking for options event and schedule events
     onClick?: () => void;
     links?: boolean;
+    inning?: string;
 }
 
-export function EventBlock({ emoji, title, color, titleColor, messages, onClick, links=true }: EventBlockProps) {
+export function EventBlock({ emoji, title, color, titleColor, messages, onClick, links=true, inning }: EventBlockProps) {
     useHighlightEventOnHash();
     return (
         <div className="relative mt-6">
@@ -48,6 +49,11 @@ export function EventBlock({ emoji, title, color, titleColor, messages, onClick,
                     {emoji && <span className="mr-1">{emoji}</span>} {title}
                 </div>
             )}
+            {inning && 
+                <div className={`absolute -top-3 right-3 z-10 inline-block rounded-full px-3 py-1 text-base font-bold text-theme-secondary border border-theme-accent shadow-md ${onClick?'cursor-pointer':''}`} style={{background: 'var(--theme-secondary)', borderColor: 'var(--theme-accent)'}}>
+                    {inning}
+                </div>
+            }
             <div className="rounded-md pt-6 p-3 mt-4" style={{ background: color || 'var(--theme-primary)' }}>        
                 <div className="text-sm whitespace-pre-line space-y-1">
                     {messages.map(({index, message, pitch_info, zone}, i) => (

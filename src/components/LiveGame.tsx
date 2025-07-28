@@ -29,6 +29,7 @@ type EventBlockGroup = {
     onClick?: any;
     isStar?: boolean;
     isScore?: boolean;
+    inning?: string;
 };
 
 function getOPS(stats: any): string {
@@ -106,7 +107,7 @@ export default function LiveGame({ awayTeamArg, homeTeamArg, initialDataArg, gam
         killCon
     });
 
-    function getBlockMetadata(message: string): { emoji?: string; title?: string, titleColor?: string, onClick?: () => void } | null {
+    function getBlockMetadata(message: string): { emoji?: string; title?: string, titleColor?: string, inning?: string, onClick?: () => void } | null {
         if (message.includes('Now batting')) {
             const match = message.match(/Now batting: (.+)/);
             const player = match ? match[1].split("(")[0].trim() : null;
@@ -144,6 +145,7 @@ export default function LiveGame({ awayTeamArg, homeTeamArg, initialDataArg, gam
 
             const isStar = /falling star/i.test(event.message);
             const isScore = /scores!|homers|grand slam|steals home/i.test(event.message);
+            const inning = event.inning && meta?.title != 'Game Info' ? (event.inning_side === 0 ? '▲ ' : '▼ ') + event.inning : undefined;
 
             if (meta) {
                 currentBlock = {
@@ -151,6 +153,7 @@ export default function LiveGame({ awayTeamArg, homeTeamArg, initialDataArg, gam
                     messages: [eventMessage],
                     isStar,
                     isScore,
+                    inning,
                 };
                 blocks.unshift(currentBlock); // New block on top
             } else if (currentBlock) {
@@ -164,6 +167,7 @@ export default function LiveGame({ awayTeamArg, homeTeamArg, initialDataArg, gam
                     messages: [eventMessage],
                     isStar,
                     isScore,
+                    inning,
                 };
                 blocks.unshift(currentBlock);
             }
@@ -272,7 +276,7 @@ export default function LiveGame({ awayTeamArg, homeTeamArg, initialDataArg, gam
 
             <div className="mt-6 space-y-4">
                 {groupedEvents.map((block, idx) => (
-                    <EventBlock key={idx} emoji={block.emoji} title={block.title} color={block.color} titleColor={block.titleColor} messages={block.messages} onClick={block.onClick ? block.onClick : undefined}/>
+                    <EventBlock key={idx} emoji={block.emoji} title={block.title} color={block.color} titleColor={block.titleColor} messages={block.messages} onClick={block.onClick ? block.onClick : undefined} inning={block.inning}/>
                 ))}
             </div>
 
