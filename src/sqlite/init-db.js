@@ -1,14 +1,30 @@
-// const Database = require('better-sqlite3');
-// const db = new Database('./custom_leagues.sqlite');
+const sqlite3 = require('sqlite3').verbose();
+const { open } = require('sqlite');
 
-// db.prepare(`
-//     CREATE TABLE IF NOT EXISTS leagues (
-//         league_name TEXT PRIMARY KEY,
-//         league_emoji TEXT,
-//         league_color TEXT,
-//         league_teams TEXT
-//     )
-// `).run();
-// db.close();
+(async () => {
+    const db = await open({
+        filename: './custom_leagues.sqlite',
+        driver: sqlite3.Database
+    });
 
-// console.log('Database initialised.');
+    await db.exec(`
+        CREATE TABLE IF NOT EXISTS leagues (
+            league_name TEXT PRIMARY KEY,
+            league_emoji TEXT,
+            league_color TEXT,
+            league_teams TEXT
+        );
+    `);
+
+    await db.exec(`
+        CREATE TABLE IF NOT EXISTS season_winners (
+            league_id TEXT,
+            season INTEGER,
+            team_id TEXT,
+            PRIMARY KEY (league_id, season)
+        );
+    `);
+
+    await db.close();
+    console.log('Database initialised.');
+})();
