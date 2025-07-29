@@ -1,49 +1,26 @@
 'use client'
 import Loading from "@/components/Loading";
-import { useEffect, useState } from "react";
+import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import { MapAPITeamResponse, PlaceholderTeam, Team, TeamPlayer } from "@/types/Team";
 import { MapAPIPlayerResponse, Player } from "@/types/Player";
 
-export default function TeamItemsPage({ id }: { id: string }) {
+const battingAttrs = ['Aiming', 'Contact', 'Cunning', 'Determination', 'Discipline', 'Insight', 'Intimidation', 'Lift', 'Muscle', 'Selflessness', 'Vision', 'Wisdom'];
+const pitchingAttrs = ['Accuracy', 'Control', 'Defiance', 'Guts', 'Persuasion', 'Presence', 'Rotation', 'Stamina', 'Stuff', 'Velocity'];
+const defenseAttrs = ['Acrobatics', 'Agility', 'Arm', 'Awareness', 'Composure', 'Dexterity', 'Patience', 'Reaction'];
+const runningAttrs = ['Greed', 'Performance', 'Speed', 'Stealth'];
+const otherAttrs = ['Luck'];
+const attrTypes: Record<string, string> = {};
+for (const a of battingAttrs) attrTypes[a] = 'Batting';
+for (const a of pitchingAttrs) attrTypes[a] = 'Pitching';
+for (const a of defenseAttrs) attrTypes[a] = 'Defense';
+for (const a of runningAttrs) attrTypes[a] = 'Running';
+for (const a of otherAttrs) attrTypes[a] = 'Other';
 
+export default function TeamStatsPage({ id }: { id: string }) {
     const [loading, setLoading] = useState(true);
     const [team, setTeam] = useState<Team>(PlaceholderTeam);
     const [players, setPlayers] = useState<Player[] | undefined>(undefined);
-    const [highlights, setHighlights] = useState<Record<string, boolean>>({});
-
-    const battingAttrs = ['Aiming', 'Contact', 'Cunning', 'Determination', 'Discipline', 'Insight', 'Intimidation', 'Lift', 'Muscle', 'Selflessness', 'Vision', 'Wisdom'];
-    const pitchingAttrs = ['Accuracy', 'Control', 'Defiance', 'Guts', 'Persuasion', 'Presence', 'Rotation', 'Stamina', 'Stuff', 'Velocity'];
-    const defenseAttrs = ['Acrobatics', 'Agility', 'Arm', 'Awareness', 'Composure', 'Dexterity', 'Patience', 'Reaction'];
-    const runningAttrs = ['Greed', 'Performance', 'Speed', 'Stealth'];
-    const otherAttrs = ['Luck'];
-    const attrTypes: Record<string, string> = {};
-    for (const a of battingAttrs) attrTypes[a] = 'Batting';
-    for (const a of pitchingAttrs) attrTypes[a] = 'Pitching';
-    for (const a of defenseAttrs) attrTypes[a] = 'Defense';
-    for (const a of runningAttrs) attrTypes[a] = 'Running';
-    for (const a of otherAttrs) attrTypes[a] = 'Other';
-
-    function toggleAttr(attribute: string): void {
-        const newHighlights = { ...highlights };
-        newHighlights[attribute] = !highlights[attribute];
-        setHighlights(newHighlights);
-    }
-
-    function isRelevantAttr(player: TeamPlayer, attribute: string) {
-        const attrType = attrTypes[attribute];
-        switch (attrType) {
-            case 'Batting':
-            case 'Running':
-                return player.position_type == 'Batter';
-            case 'Pitching':
-                return player.position_type == 'Pitcher';
-            case 'Defense':
-                return player.slot != 'DH';
-            case 'Other':
-                return true;
-        }
-        return false
-    }
+    const [subpage, setSubpage] = useState<string>('items');
 
     async function APICalls() {
         try {
@@ -80,11 +57,161 @@ export default function TeamItemsPage({ id }: { id: string }) {
         </>
     );
 
+    return (<>
+        {subpage === 'items' && (<TeamItemsPage setSubpage={setSubpage} APICalls={APICalls} team={team} players={players} />)}
+        {subpage === 'summary' && (<TeamSummaryPage setSubpage={setSubpage} APICalls={APICalls} team={team} players={players} />)}
+    </>);
+}
+
+function TeamSummaryPage ({ setSubpage, APICalls, team, players, }: { setSubpage: Dispatch<SetStateAction<string>>; APICalls: () => void; team: Team; players: Player[] | undefined }) {
+    const [highlights, setHighlights] = useState<Record<string, boolean>>({});
+    
+    function toggleAttr(attribute: string): void {
+        const newHighlights = { ...highlights };
+        newHighlights[attribute] = !highlights[attribute];
+        setHighlights(newHighlights);
+    }
+
+    function isRelevantAttr(player: TeamPlayer, attribute: string) {
+        const attrType = attrTypes[attribute];
+        switch (attrType) {
+            case 'Batting':
+            case 'Running':
+                return player.position_type == 'Batter';
+            case 'Pitching':
+                return player.position_type == 'Pitcher';
+            case 'Defense':
+                return player.slot != 'DH';
+            case 'Other':
+                return true;
+        }
+        return false
+    }
+
     return (
         <>
             <main className='mt-16'>
                 <div className='flex flex-col items-center-safe min-h-screen bg-theme-background text-theme-text font-sans p-4 pt-24 mx-auto'>
-                    <h2 className='text-2xl font-bold mb-4 text-center'>Team Equipment</h2>
+                    <h2 className='text-2xl font-bold mb-2 text-center'>Team Stats Summary</h2>
+                    <button onClick={() => setSubpage('items')} className="self-center px-3 py-1 text-xs bg-theme-primary hover:opacity-80 rounded-md mb-4">
+                        Swap to Equipment
+                    </button>
+                    <div className='mt-4 flex flex-col'>
+                        <div className='text-md text-center'>Click on an attribute to highlight it.</div>
+                        <div className='flex mt-2 gap-2 justify-center'>
+                            <button onClick={() => APICalls()} className="self-center px-3 py-1 text-xs bg-theme-primary hover:opacity-80 rounded-md">
+                                Refresh items
+                            </button>
+                            <button onClick={() => setHighlights({})} className="self-center px-3 py-1 text-xs bg-theme-primary hover:opacity-80 rounded-md">
+                                Reset highlights
+                            </button>
+                        </div>
+                        <div className='flex mt-6 gap-2 justify-start'>
+                            <div className='text-sm font-semibold'>Batting:</div>
+                            {battingAttrs.map(attr =>
+                                <button key={attr} onClick={() => toggleAttr(attr)} className={`px-3 py-1 text-xs ${highlights[attr] ? 'bg-(--theme-score)' : 'bg-theme-primary'} hover:opacity-80 rounded-md`}>
+                                    {attr}
+                                </button>
+                            )}
+                        </div>
+                        <div className='flex mt-2 gap-2 justify-start'>
+                            <div className='text-sm font-semibold'>Pitching:</div>
+                            {pitchingAttrs.map(attr =>
+                                <button key={attr} onClick={() => toggleAttr(attr)} className={`px-3 py-1 text-xs ${highlights[attr] ? 'bg-(--theme-score)' : 'bg-theme-primary'} hover:opacity-80 rounded-md`}>
+                                    {attr}
+                                </button>
+                            )}
+                        </div>
+                        <div className='flex mt-2 gap-2 justify-start'>
+                            <div className='text-sm font-semibold'>Defense:</div>
+                            {defenseAttrs.map(attr =>
+                                <button key={attr} onClick={() => toggleAttr(attr)} className={`px-3 py-1 text-xs ${highlights[attr] ? 'bg-(--theme-score)' : 'bg-theme-primary'} hover:opacity-80 rounded-md`}>
+                                    {attr}
+                                </button>
+                            )}
+                        </div>
+                        <div className='flex mt-2 gap-2 justify-start'>
+                            <div className='text-sm font-semibold'>Baserunning:</div>
+                            {runningAttrs.map(attr =>
+                                <button key={attr} onClick={() => toggleAttr(attr)} className={`px-3 py-1 text-xs ${highlights[attr] ? 'bg-(--theme-score)' : 'bg-theme-primary'} hover:opacity-80 rounded-md`}>
+                                    {attr}
+                                </button>
+                            )}
+                            <div className='text-sm font-semibold ml-10'>Other:</div>
+                            {otherAttrs.map(attr =>
+                                <button key={attr} onClick={() => toggleAttr(attr)} className={`px-3 py-1 text-xs ${highlights[attr] ? 'bg-(--theme-score)' : 'bg-theme-primary'} hover:opacity-80 rounded-md`}>
+                                    {attr}
+                                </button>
+                            )}
+                        </div>
+                    </div>
+                    <div className='grid grid-cols-[auto_1fr_1fr_1fr_1fr_1fr_auto] gap-2 mt-6'>
+                        {team.players.map((player, i) => {
+                            const statsPlayer = players?.find((p: Player) => p.id === player.player_id);
+                            if (!statsPlayer) return null;
+                            const items = [statsPlayer.equipment.head, statsPlayer.equipment.body, statsPlayer.equipment.hands, statsPlayer.equipment.feet, statsPlayer.equipment.accessory];
+                            const totals: Map<string, number> = new Map<string, number>();
+                            return (
+                                <div key={i} className={`row-${i + 2} col-span-full grid grid-cols-subgrid pt-2 border-t border-(--theme-text)/50`}>
+                                    <div className='col-1'>
+                                        <div className='grid grid-cols-[min-content_max-content] grid-rows-[min-content_min-content] gap-x-2 gap-y-0'>
+                                            <div className='row-1 col-1 text-sm font-semibold self-baseline'>{player.slot}</div>
+                                            <div className='row-1 col-2 text-md self-baseline'>{player.first_name}</div>
+                                            <div className='row-2 col-2 text-md'>{player.last_name}</div>
+                                        </div>
+                                    </div>
+                                    <div className='col-7 grid grid-rows-5 grid-flow-col grid-auto-cols-min justify-start gap-x-1'>
+                                        {Array.from(totals).sort((a, b) => b[1] - a[1]).map(kvp =>
+                                            <div key={kvp[0]} className={`flex text-sm gap-1.5 w-32 px-1 rounded-lg ${!isRelevantAttr(player, kvp[0]) && 'text-(--theme-text)/60'} ${highlights[kvp[0]] && 'bg-(--theme-score) font-semibold'}`}>
+                                                <div className='w-5 text-right'>{kvp[1]}</div>
+                                                <div>{kvp[0]}</div>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+                </div>
+            </main>
+        </>
+    );
+}
+
+function TeamItemsPage({ setSubpage, APICalls, team, players, }: { setSubpage: Dispatch<SetStateAction<string>>; APICalls: () => void; team: Team; players: Player[] | undefined }) {
+
+    const [highlights, setHighlights] = useState<Record<string, boolean>>({});
+
+    function toggleAttr(attribute: string): void {
+        const newHighlights = { ...highlights };
+        newHighlights[attribute] = !highlights[attribute];
+        setHighlights(newHighlights);
+    }
+
+    function isRelevantAttr(player: TeamPlayer, attribute: string) {
+        const attrType = attrTypes[attribute];
+        switch (attrType) {
+            case 'Batting':
+            case 'Running':
+                return player.position_type == 'Batter';
+            case 'Pitching':
+                return player.position_type == 'Pitcher';
+            case 'Defense':
+                return player.slot != 'DH';
+            case 'Other':
+                return true;
+        }
+        return false
+    }
+
+    return (
+        <>
+            <main className='mt-16'>
+                <div className='flex flex-col items-center-safe min-h-screen bg-theme-background text-theme-text font-sans p-4 pt-24 mx-auto'>
+                    <h2 className='text-2xl font-bold mb-2 text-center'>Team Equipment</h2>
+                    <button onClick={() => setSubpage('summary')} className="self-center px-3 py-1 text-xs bg-theme-primary hover:opacity-80 rounded-md mb-4">
+                        Swap to Summary
+                    </button>
                     <div className='mt-4 flex flex-col'>
                         <div className='text-md text-center'>Click on an attribute to highlight it.</div>
                         <div className='flex mt-2 gap-2 justify-center'>
