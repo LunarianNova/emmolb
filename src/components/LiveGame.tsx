@@ -120,7 +120,7 @@ export default function LiveGame({ awayTeamArg, homeTeamArg, initialDataArg, gam
         }
 
         if (message.includes('"')) return { emoji: '🤖', title: 'ROBO-UMP' };
-        if (message.includes('mound visit')) return { emoji: '🚶', title: 'Mound Visit' };
+        if (message.includes('mound visit') || message.includes('making a pitching change')) return { emoji: '🚶', title: 'Mound Visit' };
         if (message.includes('7.') && message.includes(awayPlayers[0])) return { emoji: awayTeam.emoji, title: 'Away Lineup', titleColor: settings.useTeamColoredHeaders ? data.away_team_color : undefined };
         if (message.includes('7.') && message.includes(homePlayers[0])) return { emoji: homeTeam.emoji, title: 'Home Lineup', titleColor: settings.useTeamColoredHeaders ? data.home_team_color : undefined};
         if (message.includes('End') || message.includes('@') || message.includes('Start of the top of the 1st') || message.includes('Final score:')) return { emoji: 'ℹ️', title: 'Game Info' };
