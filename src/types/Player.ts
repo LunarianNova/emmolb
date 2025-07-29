@@ -60,10 +60,7 @@ export type Player = {
     season_stats: Record<string, Record<string, string>>;
     stats: Record<string, DerivedPlayerStats>;
     talk?: {
-        batting?: TalkEntry,
-        pitching?: TalkEntry,
-        defense?: TalkEntry,
-        base_running?: TalkEntry,
+        [category: string]: TalkEntry;
     } 
     team_id: string;
     throws: string;

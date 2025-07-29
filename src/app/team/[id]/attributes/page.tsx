@@ -1,4 +1,4 @@
-import TeamItemsPage from "@/components/TeamItemsPage";
+import TeamAttributesPage from "@/components/TeamAttributesPage";
 
 interface PageProps {
     params: Promise<{ id: string }>;
@@ -6,5 +6,5 @@ interface PageProps {
 
 export default async function LeagueServer({ params }: PageProps) {
     const {id} = await params;
-    return <TeamItemsPage id={id} />;
+    return <TeamAttributesPage id={id} />;
 }

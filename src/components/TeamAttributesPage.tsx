@@ -1,6 +1,6 @@
 'use client'
 import Loading from "@/components/Loading";
-import { Dispatch, SetStateAction, useEffect, useState } from "react";
+import { Dispatch, Fragment, SetStateAction, useEffect, useState } from "react";
 import { MapAPITeamResponse, PlaceholderTeam, Team, TeamPlayer } from "@/types/Team";
 import { MapAPIPlayerResponse, Player } from "@/types/Player";
 
@@ -16,7 +16,13 @@ for (const a of defenseAttrs) attrTypes[a] = 'Defense';
 for (const a of runningAttrs) attrTypes[a] = 'Running';
 for (const a of otherAttrs) attrTypes[a] = 'Other';
 
-export default function TeamStatsPage({ id }: { id: string }) {
+type OpenDropboxes = {
+    [name: string]: {
+        [category: string]: boolean;
+    };
+};
+
+export default function TeamAttributesPage({ id }: { id: string }) {
     const [loading, setLoading] = useState(true);
     const [team, setTeam] = useState<Team>(PlaceholderTeam);
     const [players, setPlayers] = useState<Player[] | undefined>(undefined);
@@ -65,27 +71,12 @@ export default function TeamStatsPage({ id }: { id: string }) {
 
 function TeamSummaryPage ({ setSubpage, APICalls, team, players, }: { setSubpage: Dispatch<SetStateAction<string>>; APICalls: () => void; team: Team; players: Player[] | undefined }) {
     const [highlights, setHighlights] = useState<Record<string, boolean>>({});
+    const [openDropboxes, setOpenDropboxes] = useState<OpenDropboxes>({}) // PlayerName: "batting: true, defense: false, etc"
     
     function toggleAttr(attribute: string): void {
         const newHighlights = { ...highlights };
         newHighlights[attribute] = !highlights[attribute];
         setHighlights(newHighlights);
-    }
-
-    function isRelevantAttr(player: TeamPlayer, attribute: string) {
-        const attrType = attrTypes[attribute];
-        switch (attrType) {
-            case 'Batting':
-            case 'Running':
-                return player.position_type == 'Batter';
-            case 'Pitching':
-                return player.position_type == 'Pitcher';
-            case 'Defense':
-                return player.slot != 'DH';
-            case 'Other':
-                return true;
-        }
-        return false
     }
 
     return (
@@ -100,7 +91,7 @@ function TeamSummaryPage ({ setSubpage, APICalls, team, players, }: { setSubpage
                         <div className='text-md text-center'>Click on an attribute to highlight it.</div>
                         <div className='flex mt-2 gap-2 justify-center'>
                             <button onClick={() => APICalls()} className="self-center px-3 py-1 text-xs bg-theme-primary hover:opacity-80 rounded-md">
-                                Refresh items
+                                Refresh stats
                             </button>
                             <button onClick={() => setHighlights({})} className="self-center px-3 py-1 text-xs bg-theme-primary hover:opacity-80 rounded-md">
                                 Reset highlights
@@ -137,22 +128,26 @@ function TeamSummaryPage ({ setSubpage, APICalls, team, players, }: { setSubpage
                                     {attr}
                                 </button>
                             )}
-                            <div className='text-sm font-semibold ml-10'>Other:</div>
-                            {otherAttrs.map(attr =>
-                                <button key={attr} onClick={() => toggleAttr(attr)} className={`px-3 py-1 text-xs ${highlights[attr] ? 'bg-(--theme-score)' : 'bg-theme-primary'} hover:opacity-80 rounded-md`}>
-                                    {attr}
-                                </button>
-                            )}
                         </div>
                     </div>
                     <div className='grid grid-cols-[auto_1fr_1fr_1fr_1fr_1fr_auto] gap-2 mt-6'>
                         {team.players.map((player, i) => {
                             const statsPlayer = players?.find((p: Player) => p.id === player.player_id);
+                            console.log(statsPlayer?.talk);
                             if (!statsPlayer) return null;
+                            const name = `${player.first_name} ${player.last_name}`;
                             const items = [statsPlayer.equipment.head, statsPlayer.equipment.body, statsPlayer.equipment.hands, statsPlayer.equipment.feet, statsPlayer.equipment.accessory];
-                            const totals: Map<string, number> = new Map<string, number>();
+                            const itemTotals: Map<string, number> = new Map<string, number>();
+                            items.map((item) => {
+                                if (item == null || item.rarity == 'Normal') return null;
+                                item.effects.map((effect) => {
+                                    const amount = Math.round(effect.value * 100);
+                                    itemTotals.set(effect.attribute, amount + (itemTotals.get(effect.attribute) ?? 0));
+                                })
+                            })
+                            const baseRow: number = i * 3 + 2;
                             return (
-                                <div key={i} className={`row-${i + 2} col-span-full grid grid-cols-subgrid pt-2 border-t border-(--theme-text)/50`}>
+                                <div key={`player-${i}`} className={`row-${baseRow} col-span-full grid grid-cols-subgrid pt-2 border-t border-[--theme-text]/50`}>
                                     <div className='col-1'>
                                         <div className='grid grid-cols-[min-content_max-content] grid-rows-[min-content_min-content] gap-x-2 gap-y-0'>
                                             <div className='row-1 col-1 text-sm font-semibold self-baseline'>{player.slot}</div>
@@ -160,13 +155,110 @@ function TeamSummaryPage ({ setSubpage, APICalls, team, players, }: { setSubpage
                                             <div className='row-2 col-2 text-md'>{player.last_name}</div>
                                         </div>
                                     </div>
-                                    <div className='col-7 grid grid-rows-5 grid-flow-col grid-auto-cols-min justify-start gap-x-1'>
-                                        {Array.from(totals).sort((a, b) => b[1] - a[1]).map(kvp =>
-                                            <div key={kvp[0]} className={`flex text-sm gap-1.5 w-32 px-1 rounded-lg ${!isRelevantAttr(player, kvp[0]) && 'text-(--theme-text)/60'} ${highlights[kvp[0]] && 'bg-(--theme-score) font-semibold'}`}>
-                                                <div className='w-5 text-right'>{kvp[1]}</div>
-                                                <div>{kvp[0]}</div>
-                                            </div>
-                                        )}
+                                    <div key={`stats-${i}`} className={`row-[${baseRow + 2}] col-[2/7] grid grid-cols-5 gap-2`}>
+                                        {['Pitching', 'Batting', 'Defense', 'Baserunning'].map((category, j) => {
+                                            let stats: string[] = [];
+                                            switch (category){
+                                                case 'Pitching':
+                                                    stats = pitchingAttrs;
+                                                    break;
+                                                case 'Batting':
+                                                    stats = battingAttrs;
+                                                    break;
+                                                case 'Defense':
+                                                    stats = defenseAttrs;
+                                                    break;
+                                                case 'Baserunning':
+                                                    stats = runningAttrs;
+                                                    break;
+                                            }
+                                            return (<>
+                                                <button
+                                                    key={`${name}-${category}`}
+                                                    onClick={() =>
+                                                    setOpenDropboxes(prev => ({
+                                                        ...prev,
+                                                        [name]: {
+                                                            ...prev[name],
+                                                            [category]: !prev[name]?.[category],
+                                                        },
+                                                    }))
+                                                    }
+                                                    className={`row-[${baseRow + 2 + j}] col-[1/6] w-[50rem] px-3 py-1 text-l bg-theme-primary hover:opacity-80 rounded-md`}
+                                                >
+                                                    {category}
+                                                </button>
+                                                <div className={`row-[${baseRow + 1 + 2 * j}] col-[1/6] w-full px-3 py-1 ${openDropboxes[name]?.[category] ? '' : 'hidden'}`}>
+                                                    <div className="grid grid-cols-[8.2rem_auto_8.2rem_8.2rem_8.2rem_8.2rem] mb-2">
+                                                        <div className="bg-theme-primary px-1 text-center font-bold py-2 text-md text-theme-secondary">
+                                                            Stat Name
+                                                        </div>
+                                                        <div className="bg-theme-primary px-1 text-center font-bold py-2 text-md text-theme-secondary">
+                                                            Stars
+                                                        </div>
+                                                        <div className="bg-theme-primary px-1 text-center font-bold py-2 text-md text-theme-secondary">
+                                                            Star Bucket
+                                                        </div>
+                                                        <div className="bg-theme-primary px-1 text-center font-bold py-2 text-md text-theme-secondary">
+                                                            Item Total
+                                                        </div>
+                                                        <div className="bg-theme-primary px-1 text-center font-bold py-2 text-md text-theme-secondary">
+                                                            Total Bucket
+                                                        </div>
+                                                        <div className="bg-theme-primary px-1 text-center font-bold py-2 text-md text-theme-secondary">
+                                                            Nominal Total
+                                                        </div>
+                                                        {stats.map((stat, k) => {
+                                                            const mappedCategory = category === 'Baserunning' ? 'base_running' : category.toLowerCase();
+                                                            const stars = statsPlayer.talk?.[mappedCategory] ? statsPlayer.talk?.[mappedCategory].stars?.[stat].length : null;
+                                                            const starText = (
+                                                                <div className="flex items-center">
+                                                                    {stars ? (
+                                                                        <>
+                                                                            <span className="text-xl">{"🌟".repeat(Math.floor(stars / 5))}</span>
+                                                                            <span>{"⭐".repeat(stars % 5)}</span>
+                                                                        </>
+                                                                    ) : ''}
+                                                                </div>
+                                                            );                                                            
+                                                            const itemTotal = itemTotals.get(stat) ?? 0;
+                                                            const bottomBucket = stars !== null ? Math.max(0, stars*25-12.5) : null;
+                                                            const topBucket = stars !== null ? Math.max(0, stars*25+12.5) : null;
+                                                            return (
+                                                                <Fragment key={stat}>
+                                                                    <div className={`${!highlights[stat] ? k%2==1 ? 'bg-theme-primary' : 'bg-theme-secondary' : 'bg-theme-score'} p-1 font-semibold`}>
+                                                                        {stat}
+                                                                    </div>
+                                                                    <div className={`${!highlights[stat] ? k%2==1 ? 'bg-theme-primary' : 'bg-theme-secondary' : 'bg-theme-score'} p-1 font-semibold`}>
+                                                                        {starText ? starText : '???'}
+                                                                    </div>
+                                                                    <div className={`${!highlights[stat] ? k%2==1 ? 'bg-theme-primary' : 'bg-theme-secondary' : 'bg-theme-score'} p-1 font-semibold`}>
+                                                                        <div className="flex justify-between w-full opacity-80">
+                                                                            <div className='text-start'>{stars !== null ? `${bottomBucket}` : '???'}</div>
+                                                                            <div className="absolute h-2 mt-0.7 ml-14 mx-2">–</div>
+                                                                            <div className='text-end'>{stars !== null ? `${topBucket}` : '???'}</div>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div className={`${!highlights[stat] ? k%2==1 ? 'bg-theme-primary' : 'bg-theme-secondary' : 'bg-theme-score'} p-1 text-center font-semibold`}>
+                                                                        {itemTotal}
+                                                                    </div>
+                                                                    <div className={`${!highlights[stat] ? k%2==1 ? 'bg-theme-primary' : 'bg-theme-secondary' : 'bg-theme-score'} p-1 font-semibold`}>
+                                                                        <div className="flex justify-between w-full opacity-80">
+                                                                            <span className="text-start">{stars !== null ? `${bottomBucket! + itemTotal}` : '???'}</span>
+                                                                            <div className="absolute h-2 mt-0.7 ml-14 mx-2">–</div>
+                                                                            <span className="text-end">{stars !== null ? `${topBucket! + itemTotal}` : '???'}</span>
+                                                                        </div>                                                                    
+                                                                    </div>
+                                                                    <div className={`${!highlights[stat] ? k%2==1 ? 'bg-theme-primary' : 'bg-theme-secondary' : 'bg-theme-score'} p-1 text-center font-semibold`}>
+                                                                        {stars !== null ? `${stars*25+itemTotal}` : `???`}
+                                                                    </div>
+                                                                </Fragment>
+                                                            );
+                                                        })}
+                                                    </div>
+                                                </div>
+                                            </>);
+                                        })}
                                     </div>
                                 </div>
                             );
