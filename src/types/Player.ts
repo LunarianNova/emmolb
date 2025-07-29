@@ -60,7 +60,7 @@ export type Player = {
     season_stats: Record<string, Record<string, string>>;
     stats: Record<string, DerivedPlayerStats>;
     talk?: {
-        [category: string]: TalkEntry;
+        [category: string]: TalkEntry | null;
     } 
     team_id: string;
     throws: string;
@@ -129,10 +129,10 @@ export function MapAPIPlayerResponse(data: any): Player {
         season_stats: data.SeasonStats,
         stats: Object.fromEntries(Object.entries(data.Stats ?? {}).map(([season, stats]) => [season, MapAPIPlayerStats(stats as Partial<PlayerStats>)])),
         talk: {
-            batting: data.Talk.Batting,
-            pitching: data.Talk.Pitching,
-            defense: data.Talk.Defense,
-            base_running: data.Talk.Baserunning,
+            batting: data.Talk?.Batting ?? null,
+            pitching: data.Talk?.Pitching ?? null,
+            defense: data.Talk?.Defense ?? null,
+            base_running: data.Talk?.Baserunning ?? null,
         },
         team_id: data.TeamID,
         throws: data.Throws,

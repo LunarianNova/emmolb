@@ -4,6 +4,7 @@ import Loading from "./Loading";
 import { MapAPITeamResponse, MapTeamLite, Team } from "@/types/Team";
 import MiniTeamHeader from "./MiniTeamHeader";
 import CustomLeagueHeader from "./CustomLeagueHeader";
+import { EditLeague } from "./EditCustomLeague";
 
 type CustomLeagueSubleaguePageProps = {
     league: any;
@@ -21,7 +22,7 @@ export default function CustomLeagueSubleaguePage({league}: CustomLeagueSubleagu
     const [time, setTime] = useState<any>();
     const [isEditing, setIsEditing] = useState<boolean>(false);
     const [loading, setLoading] = useState<boolean>(true);
-    const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+    const [status, setStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle');
 
     useEffect(() => {
         async function getTeams() {
@@ -51,7 +52,7 @@ export default function CustomLeagueSubleaguePage({league}: CustomLeagueSubleagu
         const trimmedId = input.trim();
         if (!trimmedId) return;
 
-        setIsSubmitting(true);
+        setStatus('submitting');
 
         try {
             const teamRes = await fetch(`/nextapi/team/${trimmedId}`);
@@ -78,12 +79,12 @@ export default function CustomLeagueSubleaguePage({league}: CustomLeagueSubleagu
         } catch (err: any) {
             console.error(err);
         } finally {
-            setIsSubmitting(false);
+            setStatus('idle');
         }
     };
 
     const removeTeamID = async (id: string) => {
-        setIsSubmitting(true);
+        setStatus('submitting');
 
         try {
             const removeRes = await fetch('/nextapi/db/remove-team', {
@@ -105,7 +106,7 @@ export default function CustomLeagueSubleaguePage({league}: CustomLeagueSubleagu
         } catch (err: any) {
             console.error(err);
         } finally {
-            setIsSubmitting(false);
+            setStatus('idle');
         }
     };
 
@@ -114,14 +115,20 @@ export default function CustomLeagueSubleaguePage({league}: CustomLeagueSubleagu
         <main className="mt-16">
             <div className="min-h-screen bg-theme-background text-theme-text font-sans p-4 pt-24 max-w-2xl mx-auto">
                 <div className="mb-8">
-                    <CustomLeagueHeader league={league} />
-                    <button onClick={() => setIsEditing(prev => !prev)} className="px-4 py-2 link-hover text-theme-secondary rounded mb-4">
-                        {isEditing ? 'Save Changes' : 'Edit Teams'}
-                    </button>
+                    {isEditing ?
+                        (<EditLeague league={league} status={status} setStatus={setStatus} />)
+                        : 
+                        (<>
+                            <CustomLeagueHeader league={league} />
+                            <button onClick={() => setIsEditing(prev => !prev)} className="px-4 py-2 link-hover text-theme-secondary rounded mb-4">
+                                {isEditing ? 'Save Changes' : 'Edit League'}
+                            </button>
+                        </>)
+                    }
                     {isEditing && (<>
                         <input type="text" placeholder="Enter Team ID" value={input} onChange={e => setInput(e.target.value)} className="w-full p-2 border rounded mb-2 text-theme-secondary opacity-80"/>
                         <button onClick={addTeamID} className="px-4 py-2 link-hover text-theme-secondary rounded mb-4">
-                            {isSubmitting ? 'Editing...' : 'Add Team'}
+                            {status === 'submitting' ? 'Editing...' : 'Add Team'}
                         </button>
                     </>)}
                 </div>
@@ -129,7 +136,17 @@ export default function CustomLeagueSubleaguePage({league}: CustomLeagueSubleagu
         </main>
     );
 
-    teams.sort((a, b) => (b.record.regular_season.wins - b.record.regular_season.losses) - (a.record.regular_season.wins - a.record.regular_season.losses));
+    teams.sort((a, b) => {
+        const aWins = a.record.regular_season.wins;
+        const aLosses = a.record.regular_season.losses;
+        const bWins = b.record.regular_season.wins;
+        const bLosses = b.record.regular_season.losses;
+
+        const winDiff = (bWins - bLosses) - (aWins - aLosses);
+        if (winDiff !== 0) return winDiff;
+
+        return b.record.regular_season.run_differential - a.record.regular_season.run_differential;
+    });
     const totalGamesInSeason = 120;
     const gamesPlayed = Math.floor(time.season_day / 2);
     const gamesLeft = totalGamesInSeason-gamesPlayed;
@@ -137,7 +154,7 @@ export default function CustomLeagueSubleaguePage({league}: CustomLeagueSubleagu
 
     const worstCaseTopTeam = time.season_day%2 == 0 ? topTeamWinDiff-gamesLeft+1 : topTeamWinDiff-gamesLeft;
     let cutoffIndex = teams.findIndex(team => (((team.record.regular_season.wins + gamesLeft) - team.record.regular_season.losses) < (worstCaseTopTeam)));
-    cutoffIndex = Math.max(1, cutoffIndex);
+    cutoffIndex = cutoffIndex === 0 ? 1 : cutoffIndex;
     
     const phase = getCurrentPhase(new Date(), Object.entries(time.phase_times as Record<string, string>).map(([name, start]) => ({name, start})));
     const isPostseason = phase === 'Postseason';
@@ -151,14 +168,20 @@ export default function CustomLeagueSubleaguePage({league}: CustomLeagueSubleagu
         <main className="mt-16">
             <div className="min-h-screen bg-theme-background text-theme-text font-sans p-4 pt-24 max-w-2xl mx-auto">
                 <div className="mb-8">
-                    <CustomLeagueHeader league={league} />
-                    <button onClick={() => setIsEditing(prev => !prev)} className="px-4 py-2 link-hover text-theme-secondary rounded mb-4">
-                        {isEditing ? 'Save Changes' : 'Edit Teams'}
-                    </button>
+                    {isEditing ?
+                        (<EditLeague league={league} status={status} setStatus={setStatus} />)
+                        : 
+                        (<>
+                            <CustomLeagueHeader league={league} />
+                            <button onClick={() => setIsEditing(prev => !prev)} className="px-4 py-2 link-hover text-theme-secondary rounded mb-4">
+                                {isEditing ? 'Save Changes' : 'Edit League'}
+                            </button>
+                        </>)
+                    }
                     {isEditing && (<>
                         <input type="text" placeholder="Enter Team ID" value={input} onChange={e => setInput(e.target.value)} className="w-full p-2 border rounded mb-2 text-theme-secondary opacity-80"/>
                         <button onClick={addTeamID} className="px-4 py-2 link-hover text-theme-secondary rounded mb-4">
-                            {isSubmitting ? 'Adding...' : 'Add Team'}
+                            {status === 'submitting' ? 'Adding...' : 'Add Team'}
                         </button>
                     </>)}
                     <div className="flex justify-center">
@@ -182,7 +205,7 @@ export default function CustomLeagueSubleaguePage({league}: CustomLeagueSubleagu
                                     )}
                                     <MiniTeamHeader team={team} leader={teams[0]} index={index + 1} alignValues={true} />
                                     {isEditing && (
-                                        <button onClick={() => removeTeamID(team.id)} className="text-red-500 hover:underline text-sm" disabled={isSubmitting}>
+                                        <button onClick={() => removeTeamID(team.id)} className="text-red-500 hover:underline text-sm" disabled={status === 'submitting'}>
                                             Remove
                                         </button>
                                     )}

@@ -1,0 +1,88 @@
+import { useState } from 'react';
+import Picker, { EmojiClickData } from 'emoji-picker-react';
+import { getContrastTextColor } from '@/helpers/ColorHelper';
+import { useRouter } from 'next/navigation';
+
+export function EditLeague({league, status, setStatus,}: {league?: any, status: 'idle' | 'submitting' | 'success' | 'error'; setStatus: (status: 'idle' | 'submitting' | 'success' | 'error') => void;}) {
+    const [leagueName, setLeagueName] = useState(league?.league_name || '');
+    const [leagueEmoji, setLeagueEmoji] = useState(league?.league_emoji || '⚾');
+    const [leagueColor, setLeagueColor] = useState(league?.league_color || '#FFFFFF');
+    const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+
+    const router = useRouter();
+
+    const handleEmojiClick = (emojiData: EmojiClickData) => {
+        setLeagueEmoji(emojiData.emoji);
+        setShowEmojiPicker(false);
+    };
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setStatus('submitting');
+
+        let res = {ok: false};
+        if (league){
+            res = await fetch('/nextapi/db/edit-league', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    league_name: leagueName,
+                    league_emoji: leagueEmoji,
+                    league_color: leagueColor,
+                    league_id: league.league_id,
+                }),
+            });
+        } else {
+            res = await fetch('/nextapi/db/create-league', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    league_name: leagueName,
+                    league_emoji: leagueEmoji,
+                    league_color: leagueColor,
+                }),
+            });
+        }
+
+        if (res.ok) {
+            router.push(`/custom-league/${leagueName}`);
+            window.location.reload();
+        } else {
+            setStatus('error');
+        }
+    };
+    return (
+        <form onSubmit={handleSubmit} className="flex flex-col items-center text-center space-y-10 max-w-lg mx-auto">
+            <div className='relative w-full h-28 px-6 py-4 border-2 rounded-2xl shadow-xl overflow-hidden mb-4 flex items-center' style={{background: leagueColor, color: getContrastTextColor(leagueColor)}}>
+                <button type="button" onClick={() => setShowEmojiPicker(!showEmojiPicker)} className="text-7xl flex-shrink-0 cursor-pointer">
+                    {leagueEmoji}
+                </button>
+                <div className="absolute inset-0 flex flex-col items-center justify-center px-2 pointer-events-none">
+                    <span className="text-2xl font-bold tracking-wide leading-tight text-center">
+                        <input type="text" value={leagueName} onChange={(e) => setLeagueName(e.target.value)} className=" w-32 text-2xl font-bold text-center border-b-2 border-theme-accent py-1 focus:outline-none pointer-events-auto" maxLength={24} required/> League
+                    </span>
+                    <span>
+                        Custom League
+                    </span>
+                </div>
+            </div>
+            {showEmojiPicker && (
+                <div className="absolute z-10 -translate-x-1/2 left-1/2 mt-2">
+                    <Picker onEmojiClick={handleEmojiClick} />
+                </div>
+            )}
+
+            <div>
+                <label className="block mb-2 text-[10px] sm:text-xs font-semibold uppercase tracking-wide opacity-70 leading-tight">League Color</label>
+                <input type="color" value={leagueColor} onChange={(e) => setLeagueColor(e.target.value)} className="w-24 h-12 rounded-md cursor-pointer" required/>
+            </div>
+            
+            <div>
+                <button type='submit' disabled={status === 'submitting'} className="px-4 py-2 link-hover text-theme-secondary rounded mb-4">
+                    {status === 'submitting' ? 'Please wait...' : 'Save League'}
+                </button>
+            </div>
+            {status === 'error' && <div className="text-theme-secondary text-sm">Error creating/editing league. Please try again.</div>} 
+        </form>
+    )
+}
