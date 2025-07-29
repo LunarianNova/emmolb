@@ -67,6 +67,7 @@ export function ProcessMessage(event: Event, players: string[], queue: Baserunne
     const stealsHome = /steals home/i.test(message);
     const inningEnd = event.outs === null || event.outs === undefined;
     const scoreCount = (message.match(/scores!/g) ?? []).length + (stealsHome ? 1 : 0);
+    let pitcher = event.pitcher;
 
     const {scoreboard, batterStats, pitcherStats} = (() => {
         if (!gameStats) return {scoreboard: null, batterStats: null, pitcherStats: null};
@@ -80,11 +81,16 @@ export function ProcessMessage(event: Event, players: string[], queue: Baserunne
             gameStats.batters[event.batter] = BatterGameStats();
         }
         const batterStats = (event.batter) ? gameStats.batters[event.batter] : null;
-        if (event.pitcher && !gameStats.pitchers[event.pitcher]) {
-            ((event.inning_side === 0) ? gameStats.home : gameStats.away).pitchingOrder.push(event.pitcher);
-            gameStats.pitchers[event.pitcher] = PitcherGameStats();
+
+        if (pitcher && message.includes(`Bench Player ${pitcher}`)) {
+            const pitchingOrder = ((event.inning_side === 0) ? gameStats.home : gameStats.away).pitchingOrder;
+            pitcher = pitchingOrder[pitchingOrder.length - 1];
         }
-        const pitcherStats = (event.pitcher) ? gameStats.pitchers[event.pitcher] : null;
+        if (pitcher && !gameStats.pitchers[pitcher]) {
+            ((event.inning_side === 0) ? gameStats.home : gameStats.away).pitchingOrder.push(pitcher);
+            gameStats.pitchers[pitcher] = PitcherGameStats();
+        }
+        const pitcherStats = (pitcher) ? gameStats.pitchers[pitcher] : null;
 
         for (let i = 0; i < scoreCount; i++) {
             const scoringPlayer = newQueue[i];
@@ -140,7 +146,7 @@ export function ProcessMessage(event: Event, players: string[], queue: Baserunne
     }
 
     if (hit || walk || hbp || error || fc)
-        newQueue.push({runner: event.batter ? event.batter : 'Unknown', pitcher: !error ? event.pitcher : undefined});
+        newQueue.push({runner: event.batter ? event.batter : 'Unknown', pitcher: !error ? pitcher : undefined});
 
     let outs = extractPlayers(message, playerSet, 'out at');
     outs = outs.concat(extractPlayers(message, playerSet, 'is caught stealing'));
