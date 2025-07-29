@@ -113,7 +113,7 @@ export function Navbar() {
           <div className="sm:hidden px-6 pb-4 pt-2 space-y-2 text-left z-10">
             <details className='group'>
               <summary className='cursor-pointer py-2'>
-                Home
+                Watch
               </summary>
               <div className='ml-4 space-y-1'>
                 <Link href='/' className='block'>Home</Link>
@@ -183,7 +183,7 @@ export function Navbar() {
                 }`}
             >
               <Link href='/' className="block w-full text-left px-3 py-2 rounded link-hover transition cursor-pointer">
-                Home
+                Watch
               </Link>
               <Link href='/gl-games' className="block w-full text-left px-3 py-2 rounded link-hover transition cursor-pointer">
                 GL Games
