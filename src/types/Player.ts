@@ -22,6 +22,15 @@ export type Equipment = {
     suffix?: string[];
 }
 
+export type TalkEntry = {
+    day: number,
+    quote: string,
+    season: number,
+    stars: {
+        [key: string]: string
+    }
+}
+
 export type Player = {
     augments: number;
     bats: string;
@@ -49,6 +58,12 @@ export type Player = {
     position_type: string;
     season_stats: Record<string, Record<string, string>>;
     stats: Record<string, DerivedPlayerStats>;
+    talk?: {
+        batting?: TalkEntry,
+        pitching?: TalkEntry,
+        defense?: TalkEntry,
+        base_running?: TalkEntry,
+    } 
     team_id: string;
     throws: string;
     id: string;
@@ -114,6 +129,12 @@ export function MapAPIPlayerResponse(data: any): Player {
         position_type: data.PositionType,
         season_stats: data.SeasonStats,
         stats: Object.fromEntries(Object.entries(data.Stats ?? {}).map(([season, stats]) => [season, MapAPIPlayerStats(stats as Partial<PlayerStats>)])),
+        talk: {
+            batting: data.Talk.Batting,
+            pitching: data.Talk.Pitching,
+            defense: data.Talk.Defense,
+            base_running: data.Talk.Baserunning,
+        },
         team_id: data.TeamID,
         throws: data.Throws,
         id: data._id,
