@@ -17,11 +17,11 @@ export default function TeamItemsPage({ id }: { id: string }) {
     const runningAttrs = ['Greed', 'Performance', 'Speed', 'Stealth'];
     const otherAttrs = ['Luck'];
     const attrTypes: Record<string, string> = {};
-    for (let a of battingAttrs) attrTypes[a] = 'Batting';
-    for (let a of pitchingAttrs) attrTypes[a] = 'Pitching';
-    for (let a of defenseAttrs) attrTypes[a] = 'Defense';
-    for (let a of runningAttrs) attrTypes[a] = 'Running';
-    for (let a of otherAttrs) attrTypes[a] = 'Other';
+    for (const a of battingAttrs) attrTypes[a] = 'Batting';
+    for (const a of pitchingAttrs) attrTypes[a] = 'Pitching';
+    for (const a of defenseAttrs) attrTypes[a] = 'Defense';
+    for (const a of runningAttrs) attrTypes[a] = 'Running';
+    for (const a of otherAttrs) attrTypes[a] = 'Other';
 
     function toggleAttr(attribute: string): void {
         const newHighlights = { ...highlights };
