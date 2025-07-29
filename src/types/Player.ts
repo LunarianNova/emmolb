@@ -65,7 +65,6 @@ function mapEffect(effect: any): EquipmentEffect {
 
 function mapEquipment(raw: any): Equipment | undefined {
     if (!raw) return;
-    console.log(raw);
 
     return {
         effects: Array.isArray(raw.Effects) ? raw.Effects.map(mapEffect) : [],
