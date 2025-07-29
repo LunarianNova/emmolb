@@ -105,7 +105,7 @@ export default function GLGamesPage({ season, initialDay }: {season: number, ini
                 {!updating && (dayGames.map((game: DayGame) => {
                     if (game.status === 'Upcoming') return <MinifiedGameHeader key={game.game_id} game={game} />
                     else return (
-                        <Link href={`/watch/${game.game_id}`}>
+                        <Link key={game.game_id} href={`/watch/${game.game_id}`}>
                             <MinifiedGameHeader key={game.game_id} game={game} />
                         </Link>
                     );

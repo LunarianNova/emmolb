@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-export async function GET(req: NextRequest, context: { params?: Record<string, string> }) {
-    const number = context.params?.number;
+export async function GET(req: NextRequest, {params}: {params: Promise<{ number: string }>}) {
+    const { number } = await params;
     const url = req.nextUrl;
 
     if (!number || isNaN(Number(number))) {
