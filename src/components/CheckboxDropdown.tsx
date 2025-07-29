@@ -1,13 +1,16 @@
 // components/CheckboxDropdown.tsx
 // Author: Navy
-export default function CheckboxDropdown({label, options, selected, setSelected, isOpen, toggleOpen,}: {
+
+type CheckboxDropdownProps = {
     label: string;
     options: string[];
     selected: string[];
     setSelected: React.Dispatch<React.SetStateAction<string[]>>;
     isOpen: boolean;
     toggleOpen: () => void;
-}) {
+};
+
+export default function CheckboxDropdown({label, options, selected, setSelected, isOpen, toggleOpen,}: CheckboxDropdownProps) {
     const toggleOption = (value: string) => {
         setSelected((prev) => prev.includes(value) ? prev.filter((v) => v !== value) : [...prev, value]);
     };

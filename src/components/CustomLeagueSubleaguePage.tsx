@@ -5,13 +5,17 @@ import { MapAPITeamResponse, MapTeamLite, Team } from "@/types/Team";
 import MiniTeamHeader from "./MiniTeamHeader";
 import CustomLeagueHeader from "./CustomLeagueHeader";
 
+type CustomLeagueSubleaguePageProps = {
+    league: any;
+};
+
 function getCurrentPhase(now: Date, phases: { name: string, start: string }[]): string {
     const preview = phases.find(p => p.name === "PostseasonPreview");
     if (!preview) return "Unknown";
     return now >= new Date(preview.start) ? "Postseason" : "Regular Season";
 }
 
-export default function CustomLeagueSubleaguePage({league}: {league: any}){
+export default function CustomLeagueSubleaguePage({league}: CustomLeagueSubleaguePageProps){
     const [input, setInput] = useState('');
     const [teams, setTeams] = useState<Team[]>([]);
     const [time, setTime] = useState<any>();

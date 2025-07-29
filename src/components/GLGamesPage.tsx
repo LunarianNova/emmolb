@@ -8,21 +8,27 @@ import { useSettings } from "./Settings";
 import { FullBlobileDisplay } from "./BlobileLayout";
 import Link from "next/link";
 import { LiveGameCompact } from "./LiveGameCompact";
-import { GameHeader, MinifiedGameHeader } from "./GameHeader";
+import { MinifiedGameHeader } from "./GameHeader";
 
-interface GameHeaderApiResponse {
+type GameHeaderApiResponse = {
     teamId: string;
     gameHeader: GameHeaderResponse;
 }
 
-interface GameHeaderResponse {
+type GameHeaderResponse = {
     game: any;
     gameId: any;
     awayTeam: any;
     homeTeam: any;
 }
 
-export function MMOLBWatchPageHeader({setDay, day, season,}: {setDay: Dispatch<SetStateAction<number>>, day: number, season: number,}) {
+type MMOLBWatchPageHeaderProps = {
+    setDay: Dispatch<SetStateAction<number>>;
+    day: number;
+    season: number;
+};
+
+export function MMOLBWatchPageHeader({setDay, day, season,}: MMOLBWatchPageHeaderProps) {
     return (
         <>
             <div className="flex justify-center items-center mb-4 gap-4">

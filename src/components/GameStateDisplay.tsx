@@ -8,8 +8,8 @@ import { useSettings } from './Settings'
 import { Player } from '@/types/Player'
 
 type PlayerInfo = {
-  player: TeamPlayer | string;
-  onClick?: () => void;
+    player: TeamPlayer | string;
+    onClick?: () => void;
 }
 
 type GameStateDisplayProps = {
@@ -22,15 +22,7 @@ type GameStateDisplayProps = {
     playerObjects?: Player[];
 }
 
-export function GameStateDisplay({
-  event,
-  bases,
-  pitcher,
-  batter,
-  onDeck,
-  showBases=false,
-  playerObjects,
-}: GameStateDisplayProps) {
+export function GameStateDisplay({ event, bases, pitcher, batter, onDeck, showBases=false, playerObjects, }: GameStateDisplayProps) {
   const {settings} = useSettings();
   const renderCircles = (count: number, max: number) =>
     Array.from({ length: max }).map((_, i) => (

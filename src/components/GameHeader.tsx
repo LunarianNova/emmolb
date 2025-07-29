@@ -8,14 +8,14 @@ import { Game } from '@/types/Game'
 import { Event } from '@/types/Event'
 import { DayGame } from '@/types/DayGame'
 
-interface GameHeaderProps {
+type GameHeaderProps = {
     homeTeam: Team;
     awayTeam: Team;
     game: Game | DayGame;
     killLinks?: boolean;
 }
 
-interface GameHeaderEventProps {
+type GameHeaderEventProps = {
     homeTeam: Team;
     awayTeam: Team;
     game: Game | DayGame;
@@ -23,7 +23,12 @@ interface GameHeaderEventProps {
     killLinks?: boolean;
 }
 
-export function MinifiedGameHeader({ game, killLinks = false }: { game: Game | DayGame, killLinks?: boolean }) {
+type MinifiedGameHeaderProps = { 
+    game: Game | DayGame;
+    killLinks?: boolean;
+}
+
+export function MinifiedGameHeader({ game, killLinks = false }: MinifiedGameHeaderProps) {
     const router = useRouter();
     const isFullGame = 'event_log' in game;
     const lastEvent = isFullGame ? game.event_log[game.event_log.length - 1] : null;

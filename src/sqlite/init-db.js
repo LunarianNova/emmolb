@@ -1,3 +1,4 @@
+// // This file is commented because nextjs hates me and will error on build if I use raw JS anywhere
 // const sqlite3 = require('sqlite3').verbose();
 // const { open } = require('sqlite');
 

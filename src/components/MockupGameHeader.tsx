@@ -1,17 +1,17 @@
 import { getContrastTextColor } from '@/helpers/Colors';
 
 type Team = {
-  id?: string;
-  name: string;
-  emoji: string;
-  color: string;
-  record?: string;
+    id?: string;
+    name: string;
+    emoji: string;
+    color: string;
+    record?: string;
 };
 
 type Props = {
-  homeTeam: Team;
-  awayTeam: Team;
-  label?: string;
+    homeTeam: Team;
+    awayTeam: Team;
+    label?: string;
 };
 
 export default function MockGameHeader({ homeTeam, awayTeam, label }: Props) {

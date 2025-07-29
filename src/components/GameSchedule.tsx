@@ -1,3 +1,5 @@
+// Note to self
+// REWRITE THIS PLEASE
 'use client';
 import { useEffect, useRef, useState } from "react";
 import { useSettings } from "./Settings";
@@ -5,7 +7,13 @@ import { getContrastTextColor } from "@/helpers/Colors";
 import Link from "next/link";
 import CheckboxDropdown from "./CheckboxDropdown";
 
-export default function GameSchedule({ id, feed, colors }: { id: string, feed: Record<string, any[]>; colors?: Record<string, string>[] }) {
+type GameScheduleProps = { 
+    id: string;
+    feed: Record<string, any[]>; 
+    colors?: Record<string, string>[];
+};
+
+export default function GameSchedule({ id, feed, colors }: GameScheduleProps) {
     const { settings } = useSettings();
     const [loading, setLoading] = useState(false);
     const [schedule, setSchedule] = useState<any>(null);
