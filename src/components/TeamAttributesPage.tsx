@@ -3,6 +3,7 @@ import Loading from "@/components/Loading";
 import { Dispatch, Fragment, SetStateAction, useEffect, useState } from "react";
 import { MapAPITeamResponse, PlaceholderTeam, Team, TeamPlayer } from "@/types/Team";
 import { MapAPIPlayerResponse, Player } from "@/types/Player";
+import { FeedMessage } from "@/types/FeedMessage";
 
 const battingAttrs = ['Aiming', 'Contact', 'Cunning', 'Determination', 'Discipline', 'Insight', 'Intimidation', 'Lift', 'Muscle', 'Selflessness', 'Vision', 'Wisdom'];
 const pitchingAttrs = ['Accuracy', 'Control', 'Defiance', 'Guts', 'Persuasion', 'Presence', 'Rotation', 'Stamina', 'Stuff', 'Velocity'];
@@ -27,6 +28,7 @@ export default function TeamAttributesPage({ id }: { id: string }) {
     const [team, setTeam] = useState<Team>(PlaceholderTeam);
     const [players, setPlayers] = useState<Player[] | undefined>(undefined);
     const [subpage, setSubpage] = useState<string>('items');
+    const [feed, setFeed] = useState<FeedMessage[]>([]);
 
     async function APICalls() {
         try {
@@ -39,6 +41,11 @@ export default function TeamAttributesPage({ id }: { id: string }) {
             if (!playersRes.ok) throw new Error('Failed to load player data');
             const players = await playersRes.json();
             setPlayers(players.players.map((p: any) => MapAPIPlayerResponse(p)));
+
+            const feedRes = await fetch(`/nextapi/feed/${id}`);
+            if (!feedRes.ok) throw new Error('Failed to load feed data');
+            const feed = await feedRes.json();
+            setFeed(feed.feed as FeedMessage[]);
 
         } catch (err) {
             console.error(err);
@@ -65,11 +72,11 @@ export default function TeamAttributesPage({ id }: { id: string }) {
 
     return (<>
         {subpage === 'items' && (<TeamItemsPage setSubpage={setSubpage} APICalls={APICalls} team={team} players={players} />)}
-        {subpage === 'summary' && (<TeamSummaryPage setSubpage={setSubpage} APICalls={APICalls} team={team} players={players} />)}
+        {subpage === 'summary' && (<TeamSummaryPage setSubpage={setSubpage} APICalls={APICalls} team={team} players={players} feed={feed} />)}
     </>);
 }
 
-function TeamSummaryPage ({ setSubpage, APICalls, team, players, }: { setSubpage: Dispatch<SetStateAction<string>>; APICalls: () => void; team: Team; players: Player[] | undefined }) {
+function TeamSummaryPage ({ setSubpage, APICalls, team, players, feed, }: { setSubpage: Dispatch<SetStateAction<string>>; APICalls: () => void; team: Team; players: Player[] | undefined; feed: FeedMessage[] }) {
     const [highlights, setHighlights] = useState<Record<string, boolean>>({});
     const [openDropboxes, setOpenDropboxes] = useState<OpenDropboxes>({}) // PlayerName: "batting: true, defense: false, etc"
     
@@ -78,6 +85,31 @@ function TeamSummaryPage ({ setSubpage, APICalls, team, players, }: { setSubpage
         newHighlights[attribute] = !highlights[attribute];
         setHighlights(newHighlights);
     }
+
+    const feedTotals: Record<string, Record<number, Record<number, Record<string, number>>>> = {} // Name: {Season: {Day: {Stat: Buff}}}
+    for (const message of feed) {
+        if (message.type != 'augment') continue;
+        const regex = /([\w\s.'-]+?) gained \+(\d+) (\w+). /g;
+        const matches = [...message.text.matchAll(regex)];
+
+        for (const match of matches) {
+            const name = match[1];
+            const amount = Number(match[2]);
+            const attribute = match[3];
+            let day = Number(message.day);
+            if (Number.isNaN(day)) day = 240;
+            const season = Number(message.season);
+
+            if (!feedTotals[name]) feedTotals[name] = {};
+            if (!feedTotals[name][season]) feedTotals[name][season] = {};
+            if (!feedTotals[name][season][day]) feedTotals[name][season][day] = {};
+            if (!feedTotals[name][season][day][attribute]) feedTotals[name][season][day][attribute] = 0;
+
+            feedTotals[name][season][day][attribute] += amount;
+        }
+    }
+
+    console.log(feedTotals)
 
     return (
         <>
@@ -133,7 +165,6 @@ function TeamSummaryPage ({ setSubpage, APICalls, team, players, }: { setSubpage
                     <div className='grid grid-cols-[auto_1fr_1fr_1fr_1fr_1fr_auto] gap-2 mt-6'>
                         {team.players.map((player, i) => {
                             const statsPlayer = players?.find((p: Player) => p.id === player.player_id);
-                            console.log(statsPlayer?.talk);
                             if (!statsPlayer) return null;
                             const name = `${player.first_name} ${player.last_name}`;
                             const items = [statsPlayer.equipment.head, statsPlayer.equipment.body, statsPlayer.equipment.hands, statsPlayer.equipment.feet, statsPlayer.equipment.accessory];
@@ -155,7 +186,7 @@ function TeamSummaryPage ({ setSubpage, APICalls, team, players, }: { setSubpage
                                             <div className='row-2 col-2 text-md'>{player.last_name}</div>
                                         </div>
                                     </div>
-                                    <div key={`stats-${i}`} className={`row-[${baseRow + 2}] col-[2/7] grid grid-cols-5 gap-2`}>
+                                    <div key={`stats-${i}`} className={`row-[${baseRow + 2}] col-[2/8] grid grid-cols-5 gap-2`}>
                                         {['Pitching', 'Batting', 'Defense', 'Baserunning'].map((category, j) => {
                                             let stats: string[] = [];
                                             switch (category){
@@ -184,12 +215,12 @@ function TeamSummaryPage ({ setSubpage, APICalls, team, players, }: { setSubpage
                                                         },
                                                     }))
                                                     }
-                                                    className={`row-[${baseRow + 2 + j}] col-[1/6] w-[50rem] px-3 py-1 text-l bg-theme-primary hover:opacity-80 rounded-md`}
+                                                    className={`row-[${baseRow + 2 + j}] col-[1/6] w-[60rem] px-3 py-1 text-l bg-theme-primary hover:opacity-80 rounded-md`}
                                                 >
                                                     {category}
                                                 </button>
                                                 <div className={`row-[${baseRow + 1 + 2 * j}] col-[1/6] w-full px-3 py-1 ${openDropboxes[name]?.[category] ? '' : 'hidden'}`}>
-                                                    <div className="grid grid-cols-[8.2rem_auto_8.2rem_8.2rem_8.2rem_8.2rem] mb-2">
+                                                    <div className="grid grid-cols-[8.2rem_auto_8.2rem_8.2rem_8.2rem_8.2rem_8.2rem] mb-2">
                                                         <div className="bg-theme-primary px-1 text-center font-bold py-2 text-md text-theme-secondary">
                                                             Stat Name
                                                         </div>
@@ -203,6 +234,9 @@ function TeamSummaryPage ({ setSubpage, APICalls, team, players, }: { setSubpage
                                                             Item Total
                                                         </div>
                                                         <div className="bg-theme-primary px-1 text-center font-bold py-2 text-md text-theme-secondary">
+                                                            Augment Total
+                                                        </div>
+                                                        <div className="bg-theme-primary px-1 text-center font-bold py-2 text-md text-theme-secondary">
                                                             Total Bucket
                                                         </div>
                                                         <div className="bg-theme-primary px-1 text-center font-bold py-2 text-md text-theme-secondary">
@@ -210,7 +244,28 @@ function TeamSummaryPage ({ setSubpage, APICalls, team, players, }: { setSubpage
                                                         </div>
                                                         {stats.map((stat, k) => {
                                                             const mappedCategory = category === 'Baserunning' ? 'base_running' : category.toLowerCase();
-                                                            const stars = statsPlayer.talk?.[mappedCategory] ? statsPlayer.talk?.[mappedCategory].stars?.[stat].length : null;
+                                                            const talk = statsPlayer.talk?.[mappedCategory];
+                                                            const talkDay = talk?.day ?? 0;
+                                                            const talkSeason = talk?.season ?? 0;
+
+                                                            let feedTotal = 0;
+                                                            const playerFeed = feedTotals[name];
+                                                            if (playerFeed) {
+                                                                for (const [seasonStr, seasonData] of Object.entries(playerFeed)) {
+                                                                    const season = Number(seasonStr);
+                                                                    if (season < talkSeason) continue;
+
+                                                                    for (const [dayStr, statMap] of Object.entries(seasonData)) {
+                                                                        const day = Number(dayStr);
+                                                                        if (season === talkSeason && day < talkDay) continue;
+
+                                                                        const amount = statMap[stat];
+                                                                        if (amount) feedTotal += amount;
+                                                                    }
+                                                                }
+                                                            }
+
+                                                            const stars = talk ? talk.stars?.[stat].length : null;
                                                             const starText = (
                                                                 <div className="flex items-center">
                                                                     {stars ? (
@@ -241,6 +296,9 @@ function TeamSummaryPage ({ setSubpage, APICalls, team, players, }: { setSubpage
                                                                     </div>
                                                                     <div className={`${!highlights[stat] ? k%2==1 ? 'bg-theme-primary' : 'bg-theme-secondary' : 'bg-theme-score'} p-1 text-center font-semibold`}>
                                                                         {itemTotal}
+                                                                    </div>
+                                                                    <div className={`${!highlights[stat] ? k%2==1 ? 'bg-theme-primary' : 'bg-theme-secondary' : 'bg-theme-score'} p-1 text-center font-semibold`}>
+                                                                        {feedTotal}
                                                                     </div>
                                                                     <div className={`${!highlights[stat] ? k%2==1 ? 'bg-theme-primary' : 'bg-theme-secondary' : 'bg-theme-score'} p-1 font-semibold`}>
                                                                         <div className="flex justify-between w-full opacity-80">

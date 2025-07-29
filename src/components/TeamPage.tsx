@@ -13,14 +13,14 @@ import GameSchedule from "./GameSchedule";
 import { MapAPIPlayerResponse, Player } from "@/types/Player";
 import ExpandedPlayerStats from "./ExpandedPlayerStats";
 import SeasonTrophy from "./SeasonTrophy";
-import { formattedNextDayCountdown } from "@/helpers/TimeHelper";
+import { useFormattedNextDayCountdown } from "@/helpers/TimeHelper";
 
 type TeamPageProps = {
     id: string;
 }
 
 export default function TeamPage({ id }: TeamPageProps) {
-  const countdown = formattedNextDayCountdown();
+  const countdown = useFormattedNextDayCountdown();
   const LeagueNames: Record<string, string> = {
     '6805db0cac48194de3cd3fe7': 'Baseball',
     '6805db0cac48194de3cd3fe8': 'Precision',

@@ -25,7 +25,7 @@ export function nextDayCountdown(): number {
     return targetUTC - nowUTC;
 }
 
-export function formattedNextDayCountdown(): string {
+export function useFormattedNextDayCountdown(): string {
     const [timeLeft, setTimeLeft] = useState(nextDayCountdown());
 
     useEffect(() => {
