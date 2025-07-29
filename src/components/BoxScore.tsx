@@ -31,7 +31,10 @@ export function BoxScore({ gameStats, team, isAway }: BoxScoreProps) {
                     <tbody className='table-row-group'>
                         {(isAway ? gameStats.away : gameStats.home).battingOrder.map(batter =>
                             <tr key={batter} className='table-row border-b-1 border-(--theme-text)/50 text-sm'>
-                                <td className='table-cell text-left'>{batter}</td>
+                                <td className='table-cell text-left'>
+                                    <span className={`${gameStats.batters[batter].ejected && 'opacity-60'}`}>{batter}</span>
+                                    {gameStats.batters[batter].ejected && <span className='ml-1'>⏏️</span>}
+                                </td>
                                 <td className='table-cell text-right pl-3'>{gameStats.batters[batter].atBats}</td>
                                 <td className='table-cell text-right pl-3'>{gameStats.batters[batter].hits}</td>
                                 <td className='table-cell text-right pl-3'>{gameStats.batters[batter].runs}</td>
@@ -57,7 +60,10 @@ export function BoxScore({ gameStats, team, isAway }: BoxScoreProps) {
                     <tbody className='table-row-group'>
                         {(isAway ? gameStats.away : gameStats.home).pitchingOrder.map(pitcher =>
                             <tr key={pitcher} className='table-row border-t-1 border-(--theme-text)/50 text-sm'>
-                                <td className='table-cell text-left'>{pitcher}</td>
+                                <td className='table-cell text-left'>
+                                    <span className={`${gameStats.pitchers[pitcher].ejected && 'opacity-60'}`}>{pitcher}</span>
+                                    {gameStats.pitchers[pitcher].ejected && <span className='ml-1'>⏏️</span>}
+                                </td>
                                 <td className='table-cell text-right pl-3'>{Math.floor(gameStats.pitchers[pitcher].outsRecorded / 3)}.{gameStats.pitchers[pitcher].outsRecorded % 3}</td>
                                 <td className='table-cell text-right pl-3'>{gameStats.pitchers[pitcher].earnedRuns}</td>
                                 <td className='table-cell text-right pl-3'>{gameStats.pitchers[pitcher].hits}</td>

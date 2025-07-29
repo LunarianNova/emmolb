@@ -4,6 +4,7 @@ export type BatterGameStats = {
     runs: number;
     homeRuns: number;
     rbi: number;
+    ejected: boolean;
 };
 
 export function BatterGameStats(): BatterGameStats {
@@ -12,7 +13,8 @@ export function BatterGameStats(): BatterGameStats {
         atBats: 0,
         runs: 0,
         homeRuns: 0,
-        rbi: 0
+        rbi: 0,
+        ejected: false,
     }
 }
 
@@ -24,6 +26,7 @@ export type PitcherGameStats = {
     strikeouts: number;
     strikesThrown: number;
     pitchCount: number;
+    ejected: boolean;
 }
 
 export function PitcherGameStats(): PitcherGameStats {
@@ -34,7 +37,8 @@ export function PitcherGameStats(): PitcherGameStats {
         walks: 0,
         strikeouts: 0,
         strikesThrown: 0,
-        pitchCount: 0
+        pitchCount: 0,
+        ejected: false,
     }
 }
 

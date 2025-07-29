@@ -48,6 +48,8 @@ export function ProcessMessage(event: Event, players: string[], queue: Baserunne
     const message = event.message;
     const playerSet = new Set(players);
     const newQueue = [...queue];
+    let pitcher = event.pitcher;
+    let batter = event.batter;
 
     const startsInning = /starts the inning on/i.test(message);
     const hit = /(singles on|doubles on|triples on)/i.test(message);
@@ -67,7 +69,8 @@ export function ProcessMessage(event: Event, players: string[], queue: Baserunne
     const stealsHome = /steals home/i.test(message);
     const inningEnd = event.outs === null || event.outs === undefined;
     const scoreCount = (message.match(/scores!/g) ?? []).length + (stealsHome ? 1 : 0);
-    let pitcher = event.pitcher;
+    const pitcherEjected = pitcher && message.includes(`Bench Player ${pitcher}`);
+    const batterEjected = batter && message.match(`ROBO-UMP ejected.*${batter}.*for.*Bench Player`) !== null;
 
     const {scoreboard, batterStats, pitcherStats} = (() => {
         if (!gameStats) return {scoreboard: null, batterStats: null, pitcherStats: null};
@@ -76,13 +79,13 @@ export function ProcessMessage(event: Event, players: string[], queue: Baserunne
         if (scoreboard.runsByInning.length < event.inning)
             scoreboard.runsByInning.push(0);
 
-        if (event.batter && !gameStats.batters[event.batter]) {
-            scoreboard.battingOrder.push(event.batter);
-            gameStats.batters[event.batter] = BatterGameStats();
+        if (batter && !gameStats.batters[batter]) {
+            scoreboard.battingOrder.push(batter);
+            gameStats.batters[batter] = BatterGameStats();
         }
-        const batterStats = (event.batter) ? gameStats.batters[event.batter] : null;
+        const batterStats = (batter) ? gameStats.batters[batter] : null;
 
-        if (pitcher && message.includes(`Bench Player ${pitcher}`)) {
+        if (pitcherEjected) {
             const pitchingOrder = ((event.inning_side === 0) ? gameStats.home : gameStats.away).pitchingOrder;
             pitcher = pitchingOrder[pitchingOrder.length - 1];
         }
@@ -121,6 +124,7 @@ export function ProcessMessage(event: Event, players: string[], queue: Baserunne
                 batterStats.runs++;
             }
             if (scoreCount > 0 && !error && !doublePlay && !stealsHome && !balk) batterStats.rbi += scoreCount;
+            if (batterEjected) batterStats.ejected = true;
         }
 
         if (pitcherStats) {
@@ -133,6 +137,7 @@ export function ProcessMessage(event: Event, players: string[], queue: Baserunne
             if (doublePlay) pitcherStats.outsRecorded += 2;
             if (strikeout) pitcherStats.strikeouts++;
             if (walk) pitcherStats.walks++;
+            if (pitcherEjected) pitcherStats.ejected = true;
         }
     }
 
@@ -146,7 +151,7 @@ export function ProcessMessage(event: Event, players: string[], queue: Baserunne
     }
 
     if (hit || walk || hbp || error || fc)
-        newQueue.push({runner: event.batter ? event.batter : 'Unknown', pitcher: !error ? pitcher : undefined});
+        newQueue.push({runner: batter ?? 'Unknown', pitcher: !error ? pitcher : undefined});
 
     let outs = extractPlayers(message, playerSet, 'out at');
     outs = outs.concat(extractPlayers(message, playerSet, 'is caught stealing'));
