@@ -10,8 +10,8 @@ export default function GameSchedule({ id, feed, colors }: { id: string, feed: R
     const [loading, setLoading] = useState(false);
     const [schedule, setSchedule] = useState<any>(null);
     const [visible, setVisible] = useState(false);
-    const [seasonOptions, setSeasonOptions] = useState<string[]>(["1", "2", "3"]);
-    const [selectedSeasons, setSelectedSeasons] = useState<string[]>(["3"]);
+    const [seasonOptions, setSeasonOptions] = useState<string[]>(["1", "2", "3", "4"]);
+    const [selectedSeasons, setSelectedSeasons] = useState<string[]>(["4"]);
     const [dropdownOpen, setDropdownOpen] = useState(false);
 
     const initializedRef = useRef(false);
@@ -27,8 +27,8 @@ export default function GameSchedule({ id, feed, colors }: { id: string, feed: R
             .sort((a, b) => a - b);
 
         if (numericSeasons.length === 0) {
-            setSeasonOptions(["1", "2", "3"]);
-            setSelectedSeasons(["3"]);
+            setSeasonOptions(["1", "2", "3", "4"]);
+            setSelectedSeasons(["4"]);
             initializedRef.current = true;
             return;
         }
@@ -42,7 +42,7 @@ export default function GameSchedule({ id, feed, colors }: { id: string, feed: R
     }, [feed]);
 
     useEffect(() => {
-        if (selectedSeasons.includes("3") && !schedule && !loading) {
+        if (selectedSeasons.includes("4") && !schedule && !loading) {
             loadSchedule();
         }
     }, [selectedSeasons]);
@@ -67,8 +67,8 @@ export default function GameSchedule({ id, feed, colors }: { id: string, feed: R
     }
 
     const allGames = [
-        ...(selectedSeasons.includes("3") && schedule?.games ? schedule.games : []),
-        ...selectedSeasons.filter((s) => s !== "3").flatMap((s) => feed[s] || []),
+        ...(selectedSeasons.includes("4") && schedule?.games ? schedule.games : []),
+        ...selectedSeasons.filter((s) => s !== "4").flatMap((s) => feed[s] || []),
     ];
 
     const normalizedGames = allGames.map((game, i) => {
@@ -77,7 +77,7 @@ export default function GameSchedule({ id, feed, colors }: { id: string, feed: R
                 ...game,
                 _source: "live",
                 _id: game.game_id || i,
-                season: "3",
+                season: "4",
             };
         }
 
@@ -124,7 +124,7 @@ export default function GameSchedule({ id, feed, colors }: { id: string, feed: R
 
     const gamesBySeason: Record<string, typeof normalizedGames> = {};
     for (const game of normalizedGames) {
-        const season = String(game.season || game.season_number || "unknown");
+        const season = String(game.season || "unknown");
         if (!gamesBySeason[season]) gamesBySeason[season] = [];
         gamesBySeason[season].push(game);
     }

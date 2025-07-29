@@ -131,7 +131,7 @@ export default function TeamPage({ id }: { id: string }) {
   const [gameID, setGameID] = useState<string>();
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
   const [expandedPlayers, setExpandedPlayers] = useState<Record<string, boolean>>({});
-  const [selectedSeasons, setSelectedSeasons] = useState<string[]>(["3"]);
+  const [selectedSeasons, setSelectedSeasons] = useState<string[]>(["4"]);
   const [feedFilters, setFeedFilters] = useState<string[]>(["game", "augment"]);
   const [dropdownOpen, setDropdownOpen] = useState<{ season: boolean; type: boolean }>({season: false, type: false});
   const [players, setPlayers] = useState<Player[]|undefined>(undefined);
@@ -165,10 +165,10 @@ export default function TeamPage({ id }: { id: string }) {
 
         const feedRes = await fetch(`/nextapi/feed/${id}`);
         if (!feedRes.ok) throw new Error('Failed to load team data');
-        const feed = await feedRes.json();
-        setFeed(feed.feed);
+        const apiFeed = await feedRes.json();
+        setFeed(apiFeed.feed);
 
-        const gamesPlayed = feed.filter((event: any) => event.type === 'game' && event.text.includes('FINAL'));
+        const gamesPlayed = apiFeed.feed.filter((event: any) => event.type === 'game' && event.text.includes('FINAL'));
         const team_ids = new Set(gamesPlayed.flatMap((game: any) => [game.links[0].id, game.links[1].id]));
         const colorsRes = await fetch('/nextapi/cache/teamcolors', {
             method: 'POST',
@@ -419,7 +419,7 @@ export default function TeamPage({ id }: { id: string }) {
                     <div className="flex gap-3 mb-2">
                     <CheckboxDropdown
                         label="Seasons"
-                        options={["1", "2", "3"]}
+                        options={["1", "2", "3", "4"]}
                         selected={selectedSeasons}
                         setSelected={setSelectedSeasons}
                         isOpen={dropdownOpen.season}
