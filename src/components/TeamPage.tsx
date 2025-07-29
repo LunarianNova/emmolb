@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { LiveGameCompact } from "./LiveGameCompact";
 import CheckboxDropdown from "./CheckboxDropdown";
-import { getContrastTextColor } from "@/helpers/Colors";
+import { getContrastTextColor } from "@/helpers/ColorHelper";
 import { MapAPIGameResponse } from "@/types/Game";
 import { MapAPITeamResponse, PlaceholderTeam, Team, TeamPlayer } from "@/types/Team";
 import { useSettings } from "./Settings";
@@ -13,55 +13,14 @@ import GameSchedule from "./GameSchedule";
 import { MapAPIPlayerResponse, Player } from "@/types/Player";
 import ExpandedPlayerStats from "./ExpandedPlayerStats";
 import SeasonTrophy from "./SeasonTrophy";
+import { formattedNextDayCountdown } from "@/helpers/TimeHelper";
 
 type TeamPageProps = {
     id: string;
 }
 
-function getCountdown() {
-    const now = new Date();
-    const nowUTC = Date.UTC(
-        now.getUTCFullYear(),
-        now.getUTCMonth(),
-        now.getUTCDate(),
-        now.getUTCHours(),
-        now.getUTCMinutes(),
-        now.getUTCSeconds()
-    );
-
-    let targetUTC = Date.UTC(
-        now.getUTCFullYear(),
-        now.getUTCMonth(),
-        now.getUTCDate(),
-        5, 0, 0
-    );
-
-    if (nowUTC >= targetUTC) {
-        targetUTC += 24 * 60 * 60 * 1000;
-    }
-
-    return targetUTC - nowUTC;
-}
-
-function useSimpleCountdown() {
-    const [timeLeft, setTimeLeft] = useState(getCountdown());
-
-    useEffect(() => {
-        const interval = setInterval(() => {
-            setTimeLeft(getCountdown());
-        }, 1000);
-        return () => clearInterval(interval);
-    }, []);
-
-    const pad = (n: number) => n.toString().padStart(2, '0');
-    const hours = Math.floor(timeLeft / (1000 * 60 * 60));
-    const minutes = Math.floor((timeLeft / (1000 * 60)) % 60);
-    const seconds = Math.floor((timeLeft / 1000) % 60);
-    return `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
-}
-
 export default function TeamPage({ id }: TeamPageProps) {
-  const countdown = useSimpleCountdown();
+  const countdown = formattedNextDayCountdown();
   const LeagueNames: Record<string, string> = {
     '6805db0cac48194de3cd3fe7': 'Baseball',
     '6805db0cac48194de3cd3fe8': 'Precision',

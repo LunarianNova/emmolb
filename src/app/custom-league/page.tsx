@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import Loading from "@/components/Loading";
 import Link from "next/link";
-import { getContrastTextColor } from "@/helpers/Colors";
+import { getContrastTextColor } from "@/helpers/ColorHelper";
 import { useRouter } from 'next/navigation';
 import CustomLeagueHeader from "@/components/CustomLeagueHeader";
 

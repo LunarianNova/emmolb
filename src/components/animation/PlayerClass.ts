@@ -1,5 +1,5 @@
 // PlayerClass.ts
-import { getContrastTextColor } from "@/helpers/Colors";
+import { getContrastTextColor } from "@/helpers/ColorHelper";
 import { positions } from "./Constants";
 import { Vector2 } from "@/types/Vector2";
 

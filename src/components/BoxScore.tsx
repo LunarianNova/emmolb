@@ -1,6 +1,6 @@
 'use client'
 import React from 'react'
-import { getContrastTextColor } from '@/helpers/Colors'
+import { getContrastTextColor } from '@/helpers/ColorHelper'
 import { Team } from '@/types/Team'
 import { GameStats } from '@/types/GameStats'
 

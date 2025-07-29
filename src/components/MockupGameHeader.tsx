@@ -1,4 +1,4 @@
-import { getContrastTextColor } from '@/helpers/Colors';
+import { getContrastTextColor } from '@/helpers/ColorHelper';
 
 type Team = {
     id?: string;

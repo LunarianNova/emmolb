@@ -3,7 +3,7 @@
 'use client';
 import { useEffect, useRef, useState } from "react";
 import { useSettings } from "./Settings";
-import { getContrastTextColor } from "@/helpers/Colors";
+import { getContrastTextColor } from "@/helpers/ColorHelper";
 import Link from "next/link";
 import CheckboxDropdown from "./CheckboxDropdown";
 

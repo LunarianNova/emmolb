@@ -2,7 +2,7 @@
 // Authors: Luna, Navy, Vivi
 import React, { useEffect } from "react";
 import PitchZone from "./PitchZone";
-import { getContrastTextColor } from "@/helpers/Colors";
+import { getContrastTextColor } from "@/helpers/ColorHelper";
 
 function useHighlightEventOnHash() {
     useEffect(() => {

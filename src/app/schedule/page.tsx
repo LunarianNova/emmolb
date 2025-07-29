@@ -1,28 +1,10 @@
 'use client';
 
 import { EventBlock } from '@/components/EventBlock';
+import { formatCountdown } from '@/helpers/TimeHelper';
 import React, { useEffect, useState } from 'react';
 
 type PhaseTimes = Record<string, string>;
-
-function formatCountdown(diffMs: number): string {
-    const totalSeconds = Math.max(0, Math.floor(diffMs / 1000));
-    const seconds = totalSeconds % 60;
-    const minutes = Math.floor(totalSeconds / 60) % 60;
-    const hours = Math.floor(totalSeconds / 3600) % 24;
-    const days = Math.floor(totalSeconds / (3600 * 24));
-
-    const parts: string[] = [];
-
-    if (days > 0) parts.push(`${days} ${days === 1 ? 'day' : 'days'}`);
-    if (hours > 0) parts.push(`${hours} ${hours === 1 ? 'hour' : 'hours'}`);
-    if (minutes > 0) parts.push(`${minutes} ${minutes === 1 ? 'minute' : 'minutes'}`);
-    if (parts.length === 0 || seconds > 0) {
-        parts.push(`${seconds} ${seconds === 1 ? 'second' : 'seconds'}`);
-    }
-
-    return `Starts in ${parts.join(', ')}`;
-}
 
 export default function PhaseCountdownList() {
   const [now, setNow] = useState(() => new Date());

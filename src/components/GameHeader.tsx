@@ -2,7 +2,7 @@
 import React from 'react'
 import { WeatherInfo } from './WeatherInfo'
 import { useRouter } from 'next/navigation'
-import { getContrastTextColor } from '@/helpers/Colors'
+import { getContrastTextColor } from '@/helpers/ColorHelper'
 import { Team } from '@/types/Team'
 import { Game } from '@/types/Game'
 import { Event } from '@/types/Event'

@@ -1,4 +1,4 @@
-import { getContrastTextColor } from "@/helpers/Colors";
+import { getContrastTextColor } from "@/helpers/ColorHelper";
 import { Team } from "@/types/Team";
 import Link from "next/link";
 
