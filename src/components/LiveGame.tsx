@@ -63,6 +63,7 @@ export default function LiveGame({ awayTeamArg, homeTeamArg, initialDataArg, gam
     const [eventLog, setEventLog] = useState<Event[]>(initialData.event_log);
     const [lastEvent, setLastEvent] = useState(initialData.event_log[initialData.event_log.length - 1]);
     const [data, setData] = useState(initialData);
+    const [isComplete, setIsComplete] = useState(data.state == 'Complete');
     const [showDetailedStats, setShowDetailedStats] = useState(false);
     const players: Record<string, any> = {};
     const homePlayers: string[] = [];
@@ -86,7 +87,7 @@ export default function LiveGame({ awayTeamArg, homeTeamArg, initialDataArg, gam
     const [playerType, setPlayerType] = useState<'pitching' | 'batting' | null>(null);
     const [showStats, setShowStats] = useState(false);
     const [followLive, setFollowLive] = useState(false);
-    const [showBoxScore, setShowBoxScore] = useState(data.state == 'Complete');
+    const [showBoxScore, setShowBoxScore] = useState(isComplete);
 
     useEffect(() => {
         lastEventIndexRef.current = lastEvent.index;
@@ -110,7 +111,12 @@ export default function LiveGame({ awayTeamArg, homeTeamArg, initialDataArg, gam
         onData: (newData) => {
             if (newData.entries?.length) {
                 setEventLog(prev => ([...prev, ...newData.entries]));
-                setLastEvent(newData.entries[newData.entries.length - 1]);
+                const lastEvent = newData.entries[newData.entries.length - 1];
+                setLastEvent(lastEvent);
+                if (lastEvent.event === 'Recordkeeping') {
+                    setIsComplete(true);
+                    setShowBoxScore(true);
+                }
             }
         },
         killCon
@@ -236,7 +242,7 @@ export default function LiveGame({ awayTeamArg, homeTeamArg, initialDataArg, gam
                 homeTeam={homeTeam}
             />}
 
-            {data.state != 'Complete' && <GameStateDisplay
+            {!isComplete && <GameStateDisplay
                 event={lastEvent}
                 bases={{first: (lastBases.first && lastBases.first !== 'Unknown') ? lastBases.first + ` (${getOPS(players[lastBases.first].stats)} OPS)` : lastBases.first, second: (lastBases.second && lastBases.second !== 'Unknown') ? lastBases.second + ` (${getOPS(players[lastBases.second].stats)} OPS)` : lastBases.second, third: (lastBases.third && lastBases.third !== 'Unknown') ? lastBases.third + ` (${getOPS(players[lastBases.third].stats)} OPS)` : lastBases.third}}
                 pitcher={{
