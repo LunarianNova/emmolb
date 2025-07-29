@@ -321,6 +321,11 @@ export default function TeamPage({ id }: { id: string }) {
                 </a>
             </div></>)}
             <GameSchedule id={id} feed={groupedFeed} colors={teamColors ? teamColors : undefined} />
+            <div className='flex justify-center'>
+                <Link href={`/team/${team.id}/items`} className="block px-4 py-2 link-hover text-theme-secondary rounded mb-4 self-center">
+                    View Team Equipment
+                </Link>
+            </div>
             <h2 className="text-xl font-bold mb-4 text-center">Roster</h2>
             <div className="mb-4 text-center">
                 <label className="mr-2 font-semibold">Sort by:</label>
