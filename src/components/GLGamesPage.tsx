@@ -57,7 +57,7 @@ export default function GLGamesPage({ season, initialDay }: {season: number, ini
                 setGames([]);
                 setDayGames([]);
                 const gamesRes = await fetch(`/nextapi/day-games/${day}?limit=8`);
-                if (!gamesRes.ok) throw new Error('Failed to load player data');
+                if (!gamesRes.ok) throw new Error('Failed to load game data');
                 const gamesData = await gamesRes.json();
                 const games = gamesData.games.map((game: any) => MapDayGameAPIResponse(game));
                 setDayGames(games);

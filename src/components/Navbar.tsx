@@ -118,6 +118,7 @@ export function Navbar() {
               <div className='ml-4 space-y-1'>
                 <Link href='/' className='block'>Home</Link>
                 <Link href='/gl-games' className='block'>GL Games</Link>
+                <Link href='/ll-games' className='block'>LL Games</Link>
               </div>
             </details>
             
@@ -186,6 +187,9 @@ export function Navbar() {
               </Link>
               <Link href='/gl-games' className="block w-full text-left px-3 py-2 rounded link-hover transition cursor-pointer">
                 GL Games
+              </Link>
+              <Link href='/ll-games' className="block w-full text-left px-3 py-2 rounded link-hover transition cursor-pointer">
+                LL Games
               </Link>
             </div>
           </div>

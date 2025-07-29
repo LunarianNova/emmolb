@@ -1,19 +1,23 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-export async function GET(req: NextRequest, {params}: {params: Promise<{ number: string }>}) {
-    const { number } = await params;
-    const limitParam = req.nextUrl.searchParams.get('limit');
-    const leagueParam = req.nextUrl.searchParams.get('league');
-  
-    if (!limitParam) {
-        return NextResponse.json({ error: 'Missing "limit" query parameter' }, { status: 400 });
+export async function GET(req: NextRequest, context: { params?: Record<string, string> }) {
+    const number = context.params?.number;
+    const url = req.nextUrl;
+
+    if (!number || isNaN(Number(number))) {
+        return NextResponse.json({ error: 'Invalid or missing "number" route parameter' }, { status: 400 });
     }
 
-    const response = await fetch(`https://mmolb.com/api/day-games/${number}?limit=${limitParam}${leagueParam ? `&league=${leagueParam}` : ''}`, {
-        headers: {
-            'Accept': 'application/json',
-        },
-        next: { revalidate: 0 }, // Make sure it's not cached
+    const limit = url.searchParams.get('limit');
+    const league = url.searchParams.get('league');
+
+    const apiUrl = new URL(`https://mmolb.com/api/day-games/${number}`);
+    if (limit) apiUrl.searchParams.set('limit', limit);
+    if (league) apiUrl.searchParams.set('league', league);
+
+    const response = await fetch(apiUrl.toString(), {
+        headers: { 'Accept': 'application/json' },
+        next: { revalidate: 0 },
     });
 
     const data = await response.json();
