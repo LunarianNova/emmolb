@@ -32,6 +32,14 @@ type EventBlockGroup = {
     inning?: string;
 };
 
+type LiveGameProps = { 
+    awayTeamArg: any;
+    homeTeamArg: any; 
+    initialDataArg: any; 
+    gameId: string;
+    playerObjects: Player[];
+ };
+
 function getOPS(stats: any): string {
     const singles = stats.singles ?? 0;
     const doubles = stats.doubles ?? 0;
@@ -47,7 +55,7 @@ function getOPS(stats: any): string {
     return (Number(obp) + Number(slg)).toFixed(3);
 }
 
-export default function LiveGame({ awayTeamArg, homeTeamArg, initialDataArg, gameId, playerObjects }: { awayTeamArg: any, homeTeamArg: any, initialDataArg: any; gameId: string, playerObjects: Player[] }) {
+export default function LiveGame({ awayTeamArg, homeTeamArg, initialDataArg, gameId, playerObjects }: LiveGameProps) {
     const awayTeam = MapAPITeamResponse(awayTeamArg);
     const homeTeam = MapAPITeamResponse(homeTeamArg);
     const initialData = MapAPIGameResponse(initialDataArg);

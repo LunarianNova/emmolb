@@ -2,7 +2,14 @@ import { getContrastTextColor } from "@/helpers/Colors";
 import { Team } from "@/types/Team";
 import Link from "next/link";
 
-export default function MiniTeamHeader({team, leader, index, alignValues}: { team: Team, leader?: Team, index?: number, alignValues?: boolean }) {
+type MiniTeamHeaderProps = {
+    team: Team;
+    leader?: Team;
+    index?: number;
+    alignValues?: boolean;
+};
+
+export default function MiniTeamHeader({team, leader, index, alignValues}: MiniTeamHeaderProps) {
     if (!team) return null;
     if (!('color' in team)) return null;
 

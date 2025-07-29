@@ -8,13 +8,17 @@ import MiniTeamHeader from "./MiniTeamHeader";
 import { MapAPILeagueTeamResponse, Team } from "@/types/Team";
 import { League, MapAPILeagueResponse } from "@/types/League";
 
+type LeaguePageProps = {
+    id: string;
+}
+
 function getCurrentPhase(now: Date, phases: { name: string, start: string }[]): string {
     const preview = phases.find(p => p.name === "PostseasonPreview");
     if (!preview) return "Unknown";
     return now >= new Date(preview.start) ? "Postseason" : "Regular Season";
 }
 
-export default function LeaguePage({ id }: { id: string }) {
+export default function LeaguePage({ id }: LeaguePageProps) {
     const [loading, setLoading] = useState(true);
     const [league, setLeague] = useState<League | undefined>(undefined);
     const [teams, setTeams] = useState<Team[]>([]);

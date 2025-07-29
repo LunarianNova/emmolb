@@ -1,8 +1,11 @@
 'use client'
-
 import { useState } from "react";
 
-export default function SeasonTrophy({ season }: { season: number }) {
+type SeasonTrophyProps = {
+    season: number;
+};
+
+export default function SeasonTrophy({ season }: SeasonTrophyProps) {
     const [isOpen, setIsOpen] = useState(false);
 
     return (

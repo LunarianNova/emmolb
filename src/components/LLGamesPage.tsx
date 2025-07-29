@@ -11,19 +11,25 @@ import { LiveGameCompact } from "./LiveGameCompact";
 import { MinifiedGameHeader } from "./GameHeader";
 import { MMOLBWatchPageHeader } from "./GLGamesPage";
 
-interface GameHeaderApiResponse {
+type GameHeaderApiResponse = {
     teamId: string;
     gameHeader: GameHeaderResponse;
 }
 
-interface GameHeaderResponse {
+type GameHeaderResponse = {
     game: any;
     gameId: any;
     awayTeam: any;
     homeTeam: any;
 }
 
-export default function LLGamesPage({ season, initialDay, league }: {season: number; initialDay: number; league: string;}) {
+type LLGamesPageProps = {
+    season: number;
+    initialDay: number; 
+    league: string;
+}
+
+export default function LLGamesPage({ season, initialDay, league }: LLGamesPageProps) {
     const { settings } = useSettings();
     const [dayGames, setDayGames] = useState<DayGame[]>([]);
     const [leagueName, setLeagueName] = useState<string>('');
@@ -32,7 +38,7 @@ export default function LLGamesPage({ season, initialDay, league }: {season: num
     const [updating, setUpdating] = useState<boolean>(false);
     const [teamOrder, setTeamOrder] = useState<string[]>([]);
     const [page, setPage] = useState<number>(1);
-    const [gamesPerPage, setGamesPerPage] = useState<number>(20);
+    const [gamesPerPage, setGamesPerPage] = useState<number>(20); // Unused currently
     const [favoriteTeams, setFavoriteTeams] = useState<string[]>();
     const [day, setDay] = useState<number>(initialDay);
 

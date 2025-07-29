@@ -1,5 +1,4 @@
 'use client'
-
 import { useCallback, useState } from 'react';
 import { GameStateDisplay } from '@/components/GameStateDisplay';
 import LastUpdatedCounter from './LastUpdatedCounter';
@@ -9,7 +8,20 @@ import { Game } from '@/types/Game';
 import { Event } from '@/types/Event';
 import { usePolling } from '@/hooks/Poll';
 
-export function LiveGameCompact({ gameId, homeTeam, awayTeam, game, killLinks = false }: { gameId: string, homeTeam: Team, awayTeam: Team, game: Game , killLinks?: boolean}){
+type LiveGameCompactProps = {
+    gameId: string;
+    homeTeam: Team;
+    awayTeam: Team;
+    game: Game;
+    killLinks?: boolean;
+}
+
+type GameStateDisplayCompactProps = { 
+    event: Event;
+    lastUpdated: any;
+}
+
+export function LiveGameCompact({ gameId, homeTeam, awayTeam, game, killLinks = false }: LiveGameCompactProps){
     const [event, setEvent] = useState<Event | null>(null);
     const [hasError, setHasError] = useState(false);
     const [lastUpdated, setLastUpdated] = useState<number>(Date.now());
@@ -45,7 +57,7 @@ export function LiveGameCompact({ gameId, homeTeam, awayTeam, game, killLinks = 
     </>);
 }
 
-export function GameStateDisplayCompact({ event, lastUpdated }: { event: Event, lastUpdated: any }) {
+export function GameStateDisplayCompact({ event, lastUpdated }: GameStateDisplayCompactProps) {
     const background = (event.message.includes('scores!') || event.message.includes('homers')) ? 'bg-theme-score' : event.message.includes('star') ? 'bg-theme-star' : 'bg-theme-secondary';
 
     return (

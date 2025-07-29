@@ -1,7 +1,11 @@
 import { Weather } from '@/types/Weather'
 import React, { useState } from 'react'
 
-export function WeatherInfo({ weather }: { weather: Weather }) {
+type WeatherInfoProps = {
+    weather: Weather;
+}
+
+export function WeatherInfo({ weather }: WeatherInfoProps) {
     const [isOpen, setIsOpen] = useState(false);
 
     return (

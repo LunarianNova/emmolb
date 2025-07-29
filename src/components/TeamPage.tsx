@@ -14,6 +14,10 @@ import { MapAPIPlayerResponse, Player } from "@/types/Player";
 import ExpandedPlayerStats from "./ExpandedPlayerStats";
 import SeasonTrophy from "./SeasonTrophy";
 
+type TeamPageProps = {
+    id: string;
+}
+
 function getCountdown() {
     const now = new Date();
     const nowUTC = Date.UTC(
@@ -56,7 +60,7 @@ function useSimpleCountdown() {
     return `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
 }
 
-export default function TeamPage({ id }: { id: string }) {
+export default function TeamPage({ id }: TeamPageProps) {
   const countdown = useSimpleCountdown();
   const LeagueNames: Record<string, string> = {
     '6805db0cac48194de3cd3fe7': 'Baseball',
