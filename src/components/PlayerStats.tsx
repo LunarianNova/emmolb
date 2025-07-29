@@ -10,6 +10,11 @@ type StatTooltipProps = {
     onToggle: () => void;
 }
 
+type PlayerStatsProps = {
+    player: TeamPlayer | Player | null;
+    category?: any;
+}
+
 function StatTooltip({ label, value, tooltip, isActive, onToggle }: StatTooltipProps) {
     return (
         <div className="relative group bg-theme-secondary border border-theme-accent rounded-md p-2 flex flex-col items-center" onClick={(e) => {e.stopPropagation(); onToggle();}}>
@@ -20,7 +25,7 @@ function StatTooltip({ label, value, tooltip, isActive, onToggle }: StatTooltipP
     );
 }
 
-export default function PlayerStats({ player, category }: {player: TeamPlayer | Player | null, category?: any}) {
+export default function PlayerStats({ player, category }: PlayerStatsProps) {
     const [activeTooltip, setActiveTooltip] = useState<string | null>(null);
     if (player === null) {
         return (

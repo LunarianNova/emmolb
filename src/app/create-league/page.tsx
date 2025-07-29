@@ -1,7 +1,7 @@
 'use client';
 import { useState } from 'react';
 import Picker, { EmojiClickData } from 'emoji-picker-react';
-import { getContrastTextColor } from '@/helpers/Colors';
+import { getContrastTextColor } from '@/helpers/ColorHelper';
 import { useRouter } from 'next/navigation';
 
 export default function CreateLeague() {

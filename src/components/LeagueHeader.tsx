@@ -1,6 +1,6 @@
 // components/LeagueHeader.tsx
 // Author: Navy
-import { getContrastTextColor } from "@/helpers/Colors";
+import { getContrastTextColor } from "@/helpers/ColorHelper";
 import { League } from "@/types/League";
 
 export default function LeagueHeader({ league }: { league: League }) {

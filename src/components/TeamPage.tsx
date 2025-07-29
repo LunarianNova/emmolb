@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { LiveGameCompact } from "./LiveGameCompact";
 import CheckboxDropdown from "./CheckboxDropdown";
-import { getContrastTextColor } from "@/helpers/Colors";
+import { getContrastTextColor } from "@/helpers/ColorHelper";
 import { MapAPIGameResponse } from "@/types/Game";
 import { MapAPITeamResponse, PlaceholderTeam, Team, TeamPlayer } from "@/types/Team";
 import { useSettings } from "./Settings";
@@ -13,51 +13,14 @@ import GameSchedule from "./GameSchedule";
 import { MapAPIPlayerResponse, Player } from "@/types/Player";
 import ExpandedPlayerStats from "./ExpandedPlayerStats";
 import SeasonTrophy from "./SeasonTrophy";
+import { formattedNextDayCountdown } from "@/helpers/TimeHelper";
 
-function getCountdown() {
-    const now = new Date();
-    const nowUTC = Date.UTC(
-        now.getUTCFullYear(),
-        now.getUTCMonth(),
-        now.getUTCDate(),
-        now.getUTCHours(),
-        now.getUTCMinutes(),
-        now.getUTCSeconds()
-    );
-
-    let targetUTC = Date.UTC(
-        now.getUTCFullYear(),
-        now.getUTCMonth(),
-        now.getUTCDate(),
-        5, 0, 0
-    );
-
-    if (nowUTC >= targetUTC) {
-        targetUTC += 24 * 60 * 60 * 1000;
-    }
-
-    return targetUTC - nowUTC;
+type TeamPageProps = {
+    id: string;
 }
 
-function useSimpleCountdown() {
-    const [timeLeft, setTimeLeft] = useState(getCountdown());
-
-    useEffect(() => {
-        const interval = setInterval(() => {
-            setTimeLeft(getCountdown());
-        }, 1000);
-        return () => clearInterval(interval);
-    }, []);
-
-    const pad = (n: number) => n.toString().padStart(2, '0');
-    const hours = Math.floor(timeLeft / (1000 * 60 * 60));
-    const minutes = Math.floor((timeLeft / (1000 * 60)) % 60);
-    const seconds = Math.floor((timeLeft / 1000) % 60);
-    return `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
-}
-
-export default function TeamPage({ id }: { id: string }) {
-  const countdown = useSimpleCountdown();
+export default function TeamPage({ id }: TeamPageProps) {
+  const countdown = formattedNextDayCountdown();
   const LeagueNames: Record<string, string> = {
     '6805db0cac48194de3cd3fe7': 'Baseball',
     '6805db0cac48194de3cd3fe8': 'Precision',
@@ -131,12 +94,13 @@ export default function TeamPage({ id }: { id: string }) {
   const [gameID, setGameID] = useState<string>();
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
   const [expandedPlayers, setExpandedPlayers] = useState<Record<string, boolean>>({});
-  const [selectedSeasons, setSelectedSeasons] = useState<string[]>(["3"]);
+  const [selectedSeasons, setSelectedSeasons] = useState<string[]>(["4"]);
   const [feedFilters, setFeedFilters] = useState<string[]>(["game", "augment"]);
   const [dropdownOpen, setDropdownOpen] = useState<{ season: boolean; type: boolean }>({season: false, type: false});
   const [players, setPlayers] = useState<Player[]|undefined>(undefined);
   const [teamColors, setTeamColors] = useState<Record<string, string>[] | null>(null);
   const [seasonChamps, setSeasonChamps] = useState<Record<number, string>>({});
+  const [feed, setFeed] = useState<any[]>([]);
   const {settings} = useSettings();
 
   useEffect(() => {
@@ -162,8 +126,13 @@ export default function TeamPage({ id }: { id: string }) {
         setTeam(team);
         setExpandedPlayers(Object.fromEntries(team.players.map((player: TeamPlayer) => [player.player_id, false])))
 
-        const gamesPlayed = team.feed.filter((event: any) => event.type === 'game' && event.text.includes('FINAL'));
-        const team_ids = new Set(gamesPlayed.flatMap((game) => [game.links[0].id, game.links[1].id]));
+        const feedRes = await fetch(`/nextapi/feed/${id}`);
+        if (!feedRes.ok) throw new Error('Failed to load team data');
+        const apiFeed = await feedRes.json();
+        setFeed(apiFeed.feed);
+
+        const gamesPlayed = apiFeed.feed.filter((event: any) => event.type === 'game' && event.text.includes('FINAL'));
+        const team_ids = new Set(gamesPlayed.flatMap((game: any) => [game.links[0].id, game.links[1].id]));
         const colorsRes = await fetch('/nextapi/cache/teamcolors', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -196,11 +165,11 @@ export default function TeamPage({ id }: { id: string }) {
   }, [id]);
 
     useEffect(() => {
-        if (team?.feed && feedFilters.length === 0) {
-            const uniqueTypes = Array.from(new Set(team.feed.map((event: any) => event.type)));
+        if (feed && feedFilters.length === 0) {
+            const uniqueTypes = Array.from(new Set(feed.map((event: any) => event.type)));
             setFeedFilters(uniqueTypes);
         }
-    }, [team?.feed]);
+    }, [feed]);
 
   function toggleFavorite(teamId: string) {
     setFavorites(prev => {
@@ -224,7 +193,7 @@ export default function TeamPage({ id }: { id: string }) {
     </>
   );
 
-  const uniqueTypes: string[] = Array.from(new Set(team.feed.map((event: any) => event.type)));
+  const uniqueTypes: string[] = Array.from(new Set(feed.map((event: any) => event.type)));
 
     const reverseSortStats = new Set([
         "era", "whip", "bb9", "h9", "hr9", "losses", "blown_saves", "errors"
@@ -250,7 +219,7 @@ export default function TeamPage({ id }: { id: string }) {
     });
 
     
-    const groupedFeed = team.feed.reduce((acc: Record<string, any[]>, game) => {
+    const groupedFeed = feed.reduce((acc: Record<string, any[]>, game) => {
         if (game.type !== 'game') return acc;
         const seasonKey = String(game.season);
         if (!acc[seasonKey]) acc[seasonKey] = [];
@@ -315,6 +284,11 @@ export default function TeamPage({ id }: { id: string }) {
                 </a>
             </div></>)}
             <GameSchedule id={id} feed={groupedFeed} colors={teamColors ? teamColors : undefined} />
+            <div className='flex justify-center'>
+                <Link href={`/team/${team.id}/items`} className="block px-4 py-2 link-hover text-theme-secondary rounded mb-4 self-center">
+                    View Team Equipment
+                </Link>
+            </div>
             <h2 className="text-xl font-bold mb-4 text-center">Roster</h2>
             <div className="mb-4 text-center">
                 <label className="mr-2 font-semibold">Sort by:</label>
@@ -413,7 +387,7 @@ export default function TeamPage({ id }: { id: string }) {
                     <div className="flex gap-3 mb-2">
                     <CheckboxDropdown
                         label="Seasons"
-                        options={["1", "2", "3"]}
+                        options={["1", "2", "3", "4"]}
                         selected={selectedSeasons}
                         setSelected={setSelectedSeasons}
                         isOpen={dropdownOpen.season}
@@ -430,7 +404,7 @@ export default function TeamPage({ id }: { id: string }) {
                     </div>
                 </div>
                 <div className="bg-theme-primary rounded-xl p-3 max-h-60 overflow-y-auto text-sm space-y-1">
-                    {team.feed.filter((event: any) => 
+                    {feed.filter((event: any) => 
                         selectedSeasons.includes(event.season?.toString()) && feedFilters.includes(event.type)).slice().reverse().map((event: any, i: number) => {
                         const parts = event.text.split(/( vs\. | - )/);
                         

@@ -1,5 +1,5 @@
 // It's bad I know
-import { getContrastTextColor } from "@/helpers/Colors";
+import { getContrastTextColor } from "@/helpers/ColorHelper";
 import { Team } from "@/types/Team";
 import { useRef, useEffect, useState } from "react";
 

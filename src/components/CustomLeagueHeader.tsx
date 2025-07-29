@@ -1,6 +1,10 @@
-import { getContrastTextColor } from "@/helpers/Colors";
+import { getContrastTextColor } from "@/helpers/ColorHelper";
 
-export default function CustomLeagueHeader({ league }: { league: any }) {
+type CustomLeagueHeaderProps = {
+    league: any;
+};
+
+export default function CustomLeagueHeader({ league }: CustomLeagueHeaderProps) {
     return (
         <div className='relative w-full h-28 px-6 py-4 border-2 rounded-2xl shadow-xl overflow-hidden mb-4 flex items-center' style={{background: `${league.league_color}`, color: getContrastTextColor(league.league_color ? league.league_color : '')}}>
             <span className="text-7xl flex-shrink-0">

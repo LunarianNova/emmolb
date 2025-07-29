@@ -9,48 +9,48 @@ import { MapAPIGameResponse } from '@/types/Game';
 import Link from 'next/link';
 
 type BracketTeam = {
-  id?: string;
-  name: string;
-  emoji: string;
-  color: string;
-  record?: string;
+    id?: string;
+    name: string;
+    emoji: string;
+    color: string;
+    record?: string;
 };
 
 type BracketResponse = {
-  [key: string]: BracketTeam;
+    [key: string]: BracketTeam;
 };
 
 type GameInfo = {
-  gameId: string;
-  homeTeam: any;
-  awayTeam: any;
-  game: any;
+    gameId: string;
+    homeTeam: any;
+    awayTeam: any;
+    game: any;
 };
 
 export default function PostseasonPage() {
-  const [bracket, setBracket] = useState<BracketResponse | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [activeGames, setActiveGames] = useState<Record<string, GameInfo>>({});
-  const gamePollingRefs = useRef<Record<string, NodeJS.Timeout>>({});
+    const [bracket, setBracket] = useState<BracketResponse | null>(null);
+    const [loading, setLoading] = useState(true);
+    const [activeGames, setActiveGames] = useState<Record<string, GameInfo>>({});
+    const gamePollingRefs = useRef<Record<string, NodeJS.Timeout>>({});
 
   // Fetch bracket
-  useEffect(() => {
-    const fetchBracket = async () => {
-      try {
-        const res = await fetch('/nextapi/postseason-bracket');
-        const data = await res.json();
-        setBracket(data);
-      } catch (err) {
-        console.error('Failed to load bracket:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
+    useEffect(() => {
+        const fetchBracket = async () => {
+            try {
+                const res = await fetch('/nextapi/postseason-bracket');
+                const data = await res.json();
+                setBracket(data);
+            } catch (err) {
+                console.error('Failed to load bracket:', err);
+            } finally {
+                setLoading(false);
+            }
+        };
 
-    fetchBracket();
-    const interval = setInterval(fetchBracket, 30000);
-    return () => clearInterval(interval);
-  }, []);
+        fetchBracket();
+        const interval = setInterval(fetchBracket, 30000);
+        return () => clearInterval(interval);
+    }, []);
 
   // Check which teams are playing
   useEffect(() => {

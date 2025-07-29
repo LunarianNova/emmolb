@@ -8,13 +8,17 @@ import MiniTeamHeader from "./MiniTeamHeader";
 import { MapAPILeagueTeamResponse, Team } from "@/types/Team";
 import { League, MapAPILeagueResponse } from "@/types/League";
 
+type LeaguePageProps = {
+    id: string;
+}
+
 function getCurrentPhase(now: Date, phases: { name: string, start: string }[]): string {
     const preview = phases.find(p => p.name === "PostseasonPreview");
     if (!preview) return "Unknown";
     return now >= new Date(preview.start) ? "Postseason" : "Regular Season";
 }
 
-export default function LeaguePage({ id }: { id: string }) {
+export default function LeaguePage({ id }: LeaguePageProps) {
     const [loading, setLoading] = useState(true);
     const [league, setLeague] = useState<League | undefined>(undefined);
     const [teams, setTeams] = useState<Team[]>([]);
@@ -58,7 +62,7 @@ export default function LeaguePage({ id }: { id: string }) {
 
     const worstCaseTopTeam = time.season_day%2 == 0 ? topTeamWinDiff-gamesLeft+1 : topTeamWinDiff-gamesLeft;
     let cutoffIndex = teams.findIndex(team => (((team.record.regular_season.wins + gamesLeft) - team.record.regular_season.losses) < (worstCaseTopTeam)));
-    cutoffIndex = Math.max(1, cutoffIndex);
+    cutoffIndex = cutoffIndex === 0 ? 1 : cutoffIndex;
     
     const phase = getCurrentPhase(new Date(), Object.entries(time.phase_times as Record<string, string>).map(([name, start]) => ({name, start})));
     const isPostseason = phase === 'Postseason';

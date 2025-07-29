@@ -13,6 +13,19 @@ type StatTooltipProps = {
     onToggle: () => void;
 }
 
+type ExpandedPlayerStatsProps = {
+    player: TeamPlayer & Player | undefined;
+    category?: any;
+};
+
+type EquipmentTooltipProps = {
+    equipment: Equipment | undefined;
+    emoji: string;
+    name: string;
+    isActive: boolean;
+    onToggle: () => void;
+};
+
 function StatTooltip({ label, value, tooltip, isActive, onToggle }: StatTooltipProps) {
     return (
         <div className="relative group bg-theme-secondary border border-theme-accent rounded-md p-2 flex flex-col items-center" onClick={(e) => {e.stopPropagation(); onToggle();}}>
@@ -23,7 +36,7 @@ function StatTooltip({ label, value, tooltip, isActive, onToggle }: StatTooltipP
     );
 }
 
-function EquipmentTooltip({ equipment, emoji, name, isActive, onToggle }: { equipment: Equipment | undefined, emoji: string, name: string, isActive: boolean, onToggle: () => void }) {
+function EquipmentTooltip({ equipment, emoji, name, isActive, onToggle }: EquipmentTooltipProps) {
     const itemBorder: Record<string, string> = {'Normal': '#1c2a3a', 'Magic': '#42A5F5', 'Rare': '#FFEE58'}
     const formattedName = equipment ? `${equipment.prefix?.join(' ') ?? ''} ${equipment.name ?? ''} ${equipment.suffix?.join(' ') ?? ''}`.trim() : name;    
     const stats = equipment?.effects ? equipment.effects.map(({ value, attribute }) => `<br>+${(value*100).toFixed(0)} ${attribute}`).join('') : '';    
@@ -41,7 +54,7 @@ function EquipmentTooltip({ equipment, emoji, name, isActive, onToggle }: { equi
     );
 }
 
-export default function ExpandedPlayerStats({ player, category }: {player: TeamPlayer & Player | undefined, category?: any}) {
+export default function ExpandedPlayerStats({ player, category }: ExpandedPlayerStatsProps) {
     const [activeTooltip, setActiveTooltip] = useState<string | null>(null);
     if (player === undefined || player === null) {
         return (

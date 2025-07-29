@@ -1,20 +1,20 @@
-import { getContrastTextColor } from '@/helpers/Colors';
+import { getContrastTextColor } from '@/helpers/ColorHelper';
 
 type Team = {
-  id?: string;
-  name: string;
-  emoji: string;
-  color: string;
-  record?: string;
+    id?: string;
+    name: string;
+    emoji: string;
+    color: string;
+    record?: string;
 };
 
-type Props = {
-  homeTeam: Team;
-  awayTeam: Team;
-  label?: string;
+type MockGameHeaderProps = {
+    homeTeam: Team;
+    awayTeam: Team;
+    label?: string;
 };
 
-export default function MockGameHeader({ homeTeam, awayTeam, label }: Props) {
+export default function MockGameHeader({ homeTeam, awayTeam, label }: MockGameHeaderProps) {
   return (
     <div className="rounded-xl shadow-lg overflow-visible border-2 border-theme-accent" style={{background: `linear-gradient(60deg, #${awayTeam.color} 36%, rgb(12, 17, 27) 50%, rgb(12, 17, 27) 50%, #${homeTeam.color} 64%)`,}}>
         <div className="grid grid-cols-[minmax(100px,1fr)_auto_minmax(100px,1fr)] items-center gap-x-2 px-2 py-3">

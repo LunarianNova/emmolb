@@ -2,6 +2,10 @@
 import { ThemeColors } from '@/types/ThemeColors';
 import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
 
+type SettingsProviderProps = { 
+    children: React.ReactNode;
+}
+
 export type Settings = {
     theme?: ThemeColors;
     homePage?: {
@@ -70,7 +74,7 @@ const SettingsContext = createContext<SettingsContextType>({
     ready: false,
 });
 
-export const SettingsProvider = ({ children }: { children: React.ReactNode }) => {
+export const SettingsProvider = ({ children }: SettingsProviderProps) => {
     const [settings, setSettings] = useState<Settings>(defaultSettings);
     const [ready, setReady] = useState(false);
     const hasLoadedRef = useRef(false);
