@@ -170,6 +170,7 @@ export default function CustomLeagueSubleaguePage({league}: CustomLeagueSubleagu
     const isEvenDay = time.season_day % 2 === 0;
     const pluralGamesLeft = gamesLeft !== 1;
     const formattedGL = `${gamesLeft}${isEvenDay ? `-${gamesLeft + 1}` : ''} Game${pluralGamesLeft ? 's' : ''} Remain${pluralGamesLeft ? '' : 's'}`;
+    const columnWidths = [14, 9, 10, 9];
 
     return (
         <main className="mt-16">
@@ -215,7 +216,7 @@ export default function CustomLeagueSubleaguePage({league}: CustomLeagueSubleagu
                                             <div className="flex-grow border-t-2 border-theme-text"></div>
                                         </div>
                                     )}
-                                    <MiniTeamHeader team={team} leader={teams[0]} index={index + 1} alignValues={true} />
+                                    <MiniTeamHeader team={team} leader={teams[0]} index={index + 1} columnWidths={columnWidths} />
                                     {isEditing && (
                                         <button onClick={() => removeTeamID(team.id)} className="text-red-500 hover:underline text-sm" disabled={status === 'submitting'}>
                                             Remove
