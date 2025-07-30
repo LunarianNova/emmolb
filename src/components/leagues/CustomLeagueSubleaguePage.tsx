@@ -122,12 +122,12 @@ export default function CustomLeagueSubleaguePage({ league }: CustomLeagueSublea
                     </button>
                 </>)
             }
-            {isEditing && (<>
-                <input type="text" placeholder="Enter Team ID" value={input} onChange={e => setInput(e.target.value)} className="w-full p-2 border rounded mb-2 text-theme-secondary opacity-80" />
+            {isEditing && (<div className="flex flex-col w-2xl">
+                <input type="text" placeholder="Enter Team ID" value={input} onChange={e => setInput(e.target.value)} className="p-2 border rounded mb-2 text-theme-secondary opacity-80" />
                 <button onClick={addTeamID} className="px-4 py-2 link-hover text-theme-secondary rounded mb-4">
                     {status === 'submitting' ? 'Editing...' : 'Add Team'}
                 </button>
-            </>)}
+            </div>)}
         </div>
     );
 
@@ -161,12 +161,12 @@ export default function CustomLeagueSubleaguePage({ league }: CustomLeagueSublea
                     </button>
                 </>)
             }
-            {isEditing && (<>
-                <input type="text" placeholder="Enter Team ID" value={input} onChange={e => setInput(e.target.value)} className="w-full p-2 border rounded mb-2 text-theme-secondary opacity-80" />
-                <button onClick={addTeamID} className="px-4 py-2 link-hover text-theme-secondary rounded mb-4">
+            {isEditing && (<div className="flex flex-col w-2xl">
+                <input type="text" placeholder="Enter Team ID" value={input} onChange={e => setInput(e.target.value)} className="p-2 border rounded mb-2 text-theme-secondary opacity-80" />
+                <button onClick={addTeamID} className="self-start px-4 py-2 link-hover text-theme-secondary rounded mb-4">
                     {status === 'submitting' ? 'Adding...' : 'Add Team'}
                 </button>
-            </>)}
+            </div>)}
             <GamesRemaining time={time} playsOnOddDays={false} />
 
             <div className='w-[36rem]'>

@@ -34,7 +34,7 @@ export default function CustomLeaguePage() {
 
     return (<>
         <div className="text-2xl font-bold text-center mb-6">Custom League Subleagues</div>
-        <div className="flex flex-col items-center gap-y-3">
+        <div className="flex flex-col items-center">
             <button onClick={() => router.push('/create-league')} className="px-4 py-2 link-hover text-theme-secondary rounded mb-4">
                 Create Subleague
             </button>
