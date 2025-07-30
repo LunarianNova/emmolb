@@ -1,5 +1,5 @@
-import LeaguePage from "@/components/leagues/LeaguePage";
+import GreaterLeaguePage from "@/components/leagues/GreaterLeaguePage";
 
 export default async function LeagueServer() {
-    return <LeaguePage greaterLeague={true} />;
+    return <GreaterLeaguePage />;
 }

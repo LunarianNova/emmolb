@@ -30,7 +30,7 @@ export async function fetchTopTeamsFromLeague(id: string): Promise<Team[]> {
 }
 
 export async function fetchTime(): Promise<Time> {
-    const res = await fetch(`/nextapi/time`);
+    const res = await fetch(`https://mmolb.com/api/time`);
     if (!res.ok) throw new Error('Failed to load time');
     const data = await res.json();
     return {

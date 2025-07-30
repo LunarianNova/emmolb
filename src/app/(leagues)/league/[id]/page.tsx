@@ -1,4 +1,4 @@
-import LeaguePage from "@/components/leagues/LeaguePage";
+import LeaguePage from "@/components/leagues/LesserLeaguePage";
 
 interface PageProps {
     params: Promise<{ id: string }>;
