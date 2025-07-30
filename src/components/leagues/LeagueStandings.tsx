@@ -9,9 +9,10 @@ export type LeagueStandingsProps = {
     teams: Team[];
     cutoff?: { winDiff: number, gamesLeft: number, text: string },
     showIndex?: boolean;
+    customElement?: (team: Team) => React.ReactNode;
 }
 
-export function LeagueStandings({ league, teams, cutoff, showIndex }: LeagueStandingsProps) {
+export function LeagueStandings({ league, teams, cutoff, showIndex, customElement }: LeagueStandingsProps) {
     if (!league || !teams.length) return (<div className="text-white text-center mt-10">Can't find that league</div>);
     const columnWidths = [14, 9, 10, 9];
 
@@ -40,6 +41,7 @@ export function LeagueStandings({ league, teams, cutoff, showIndex }: LeagueStan
                     </div>
                 )}
                 <MiniTeamHeader team={team} leader={teams[0]} index={showIndex ? index + 1 : undefined} columnWidths={columnWidths} />
+                {customElement && customElement(team)}
             </div>
         ))}
     </div>;
