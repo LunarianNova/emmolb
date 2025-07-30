@@ -5,7 +5,8 @@ import Loading from "@/components/Loading";
 import { Navbar } from "@/components/Navbar";
 import LeagueHeader from "@/components/leagues/LeagueHeader";
 import Link from "next/link";
-import { MapAPILeagueResponse } from "@/types/League";
+import { League } from "@/types/League";
+import { fetchLeague } from "@/types/League";
 
 export default function LesserLeaguePage() {
     const [loading, setLoading] = useState(true);
@@ -33,12 +34,8 @@ export default function LesserLeaguePage() {
     useEffect(() => {
         async function fetchLeagues() {
             try {
-                const responses = await Promise.all(
-                    league_ids.map(id =>
-                        fetch(`/nextapi/league/${id}`).then(res => res.ok ? res.json() : null)
-                ));
-                const validLeagues = responses.filter(Boolean);
-                setLeagues(validLeagues);
+                const responses = await Promise.all(league_ids.map(id => fetchLeague(id)));
+                setLeagues(responses);
             } catch (error) {
                 console.error("Failed to fetch leagues", error);
             } finally {
@@ -61,8 +58,8 @@ export default function LesserLeaguePage() {
                     <div>
                         <div className="space-y-3">
                             {leagues.map((league, index) => (
-                                <Link key={index} href={`/league/${league._id}`}>
-                                    <LeagueHeader league={MapAPILeagueResponse(league)} />
+                                <Link key={index} href={`/league/${league.id}`}>
+                                    <LeagueHeader league={league} />
                                 </Link>
                             ))}
                         </div>

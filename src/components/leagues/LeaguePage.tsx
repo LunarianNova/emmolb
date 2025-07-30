@@ -4,10 +4,11 @@
 import Loading from "@/components/Loading";
 import { useEffect, useState } from "react";
 import LeagueHeader from "./LeagueHeader";
-import { MapAPILeagueTeamResponse, Team } from "@/types/Team";
-import { League, MapAPILeagueResponse } from "@/types/League";
+import { Team } from "@/types/Team";
+import { fetchLeague, fetchTopTeamsFromLeague, League } from "@/types/League";
 import GamesRemaining, { getGamesLeft } from "./GamesRemaining";
 import { LeagueStandings } from "./LeagueStandings";
+import { fetchTime } from "@/types/Time";
 
 export type LeagueStandingsProps = {
     league: League;
@@ -22,7 +23,7 @@ type LeaguePageProps = {
 }
 
 export default function LeaguePage({ id, greaterLeague }: LeaguePageProps) {
-    const ids = greaterLeague ? ['6805db0cac48194de3cd3fe4', '6805db0cac48194de3cd3fe5',] : [id];
+    const ids = greaterLeague ? ['6805db0cac48194de3cd3fe4', '6805db0cac48194de3cd3fe5',] : [id!];
     const [loading, setLoading] = useState(true);
     const [leagueStandingsProps, setLeagueStandingsProps] = useState<LeagueStandingsProps[]>([]);
     const [time, setTime] = useState<any>();
@@ -31,23 +32,12 @@ export default function LeaguePage({ id, greaterLeague }: LeaguePageProps) {
         async function APICalls() {
             try {
                 const responses = await Promise.all(ids.map(async id => {
-                    const leagueRes = await fetch(`/nextapi/league/${id}`);
-                    if (!leagueRes.ok) throw new Error('Failed to load league data');
-                    const league = MapAPILeagueResponse(await leagueRes.json());
-
-                    const teamsRes = await fetch(`/nextapi/league-top-teams/${id}`);
-                    if (!teamsRes.ok) throw new Error('Failed to load teams');
-                    const json = await teamsRes.json();
-
-                    if (!Array.isArray(json.teams)) throw new Error('Teams response was not an array');
-                    const teams = json.teams.map((team: any) => MapAPILeagueTeamResponse(team));
+                    const league = await fetchLeague(id);
+                    const teams = await fetchTopTeamsFromLeague(id);
                     return { league, teams };
                 }));
                 setLeagueStandingsProps(responses);
-
-                const timeRes = await fetch(`/nextapi/time`);
-                if (!timeRes.ok) throw new Error('Failed to load time');
-                setTime(await timeRes.json());
+                setTime(await fetchTime());
             } catch (err) {
                 console.error(err);
             } finally {
@@ -66,7 +56,7 @@ export default function LeaguePage({ id, greaterLeague }: LeaguePageProps) {
             .map(team => team.record.regular_season.wins - team.record.regular_season.losses).sort()[3]
         : undefined;
 
-    const isCurrentGameDay = time.season_day % 2 === (greaterLeague ? 1 : 0);
+    const isCurrentGameDay = time.seasonDay % 2 === (greaterLeague ? 1 : 0);
 
     return (
         <div className="flex flex-col items-center min-h-screen">
