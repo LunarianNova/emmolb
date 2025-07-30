@@ -52,9 +52,9 @@ export default function LesserLeaguePage() {
 
     return (<>
         <div className="text-2xl font-bold text-center mb-6">Lesser League Subleagues</div>
-        <div className="flex flex-col items-center">
+        <div className="flex flex-col mx-auto">
             {leagues.map((league, index) => (
-                <Link key={index} href={`/league/${league.id}`}>
+                <Link key={index} className="flex justify-center"href={`/league/${league.id}`}>
                     <LeagueHeader league={league} />
                 </Link>
             ))}

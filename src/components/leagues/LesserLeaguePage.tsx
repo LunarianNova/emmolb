@@ -48,12 +48,12 @@ export default function LesserLeaguePage({ id }: PageProps) {
             <LeagueHeader league={league} />
             <GamesRemaining time={time} playsOnOddDays={false} />
 
-            <div className='w-[36rem]'>
+            <div className='w-[36rem] max-w-full'>
                 <LeagueStandings
                     league={league}
                     teams={teams}
                     cutoff={{winDiff: topTeamWinDiff, gamesLeft: gamesLeft[1], text: '#1 CUTOFF'}}
-                    showIndex={false} />
+                    showIndex={true} />
             </div>
         </div>
     );

@@ -43,18 +43,18 @@ export default function Page() {
         .map(team => team.record.regular_season.wins - team.record.regular_season.losses).sort()[3];
 
     return (
-        <div className="flex flex-col items-center min-h-screen">
+        <div className="flex flex-col items-center min-h-screen w-full">
             <h1 className="text-2xl font-bold text-center mb-2">Greater League Standings</h1>
             <GamesRemaining time={time} playsOnOddDays={true} />
-            <div className="flex flex-wrap justify-center gap-8">
+            <div className="flex flex-wrap md:flex-nowrap justify-center gap-8">
                 {leagues.map(({ league, teams }, i) => {
-                    return <div key={i} className='w-[28rem]'>
+                    return <div key={i} className='w-[28rem] max-w-full px-2'>
                         <h2 className="text-xl font-bold text-center mb-4">{league.name} Division</h2>
                         <LeagueStandings
                             league={league}
                             teams={teams}
                             cutoff={{ winDiff: wildcardWinDiff, gamesLeft: gamesLeft[1], text: 'PLAYOFF' }}
-                            showIndex={false} />
+                            showIndex={true} />
                     </div>
                 })}
             </div>

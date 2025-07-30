@@ -45,7 +45,7 @@ export function EditLeague({league, status, setStatus,}: {league?: any, status: 
         }
 
         if (res.ok) {
-            router.push(`/custom-league/${leagueName}`);
+            router.push(`/custom-league/${league ? league.league_id : ''}`);
             window.location.reload();
         } else {
             setStatus('error');
@@ -53,7 +53,7 @@ export function EditLeague({league, status, setStatus,}: {league?: any, status: 
     };
     return (
         <form onSubmit={handleSubmit} className="flex flex-col items-center text-center space-y-10 max-w-lg mx-auto">
-            <div className='relative w-2xl h-28 px-6 py-4 border-2 rounded-2xl shadow-xl overflow-hidden mb-4 flex items-center' style={{background: leagueColor, color: getContrastTextColor(leagueColor)}}>
+            <div className='relative w-2xl max-w-full h-28 px-6 py-4 border-2 rounded-2xl shadow-xl overflow-hidden mb-4 flex items-center' style={{background: leagueColor, color: getContrastTextColor(leagueColor)}}>
                 <button type="button" onClick={() => setShowEmojiPicker(!showEmojiPicker)} className="text-7xl flex-shrink-0 cursor-pointer">
                     {leagueEmoji}
                 </button>

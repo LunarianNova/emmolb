@@ -147,21 +147,23 @@ export default function CustomLeagueSubleaguePage({ league }: CustomLeagueSublea
     const topTeamWinDiff = teams[0].record.regular_season.wins - teams[0].record.regular_season.losses;
 
     return (
-        <div className="flex flex-col items-center min-h-screen">
+        <div className="min-h-screen">
             {isEditing ?
                 (<EditLeague league={league} status={status} setStatus={setStatus} />)
                 :
                 (<>
                     <CustomLeagueHeader league={league} />
-                    <button onClick={() => setIsEditing(prev => !prev)} className="px-4 py-2 link-hover text-theme-secondary rounded mb-4">
-                        {isEditing ? 'Save Changes' : 'Edit League'}
-                    </button>
-                    <button onClick={() => setHideInactive(prev => !prev)} className="px-4 py-2 link-hover text-theme-secondary rounded mb-4">
-                        {hideInactive ? 'Show Inactive Teams' : 'Hide Inactive Teams'}
-                    </button>
+                    <div className="flex justify-between">
+                        <button onClick={() => setIsEditing(prev => !prev)} className="px-4 py-2 link-hover text-theme-secondary rounded mb-4">
+                            {isEditing ? 'Save Changes' : 'Edit League'}
+                        </button>
+                        <button onClick={() => setHideInactive(prev => !prev)} className="px-4 py-2 link-hover text-theme-secondary rounded mb-4">
+                            {hideInactive ? 'Show Inactive Teams' : 'Hide Inactive Teams'}
+                        </button>
+                    </div>
                 </>)
             }
-            {isEditing && (<div className="flex flex-col w-2xl">
+            {isEditing && (<div className="flex flex-col w-2xl max-w-full">
                 <input type="text" placeholder="Enter Team ID" value={input} onChange={e => setInput(e.target.value)} className="p-2 border rounded mb-2 text-theme-secondary opacity-80" />
                 <button onClick={addTeamID} className="self-start px-4 py-2 link-hover text-theme-secondary rounded mb-4">
                     {status === 'submitting' ? 'Adding...' : 'Add Team'}
@@ -169,19 +171,21 @@ export default function CustomLeagueSubleaguePage({ league }: CustomLeagueSublea
             </div>)}
             <GamesRemaining time={time} playsOnOddDays={false} />
 
-            <div className='w-[36rem]'>
-                <LeagueStandings
-                    league={league}
-                    teams={teams}
-                    cutoff={{ winDiff: topTeamWinDiff, gamesLeft: gamesLeft[1], text: '#1 CUTOFF' }}
-                    showIndex={false}
-                    customElement={(team) =>
-                        isEditing && (
-                            <button onClick={() => removeTeamID(team.id)} className="text-red-500 hover:underline text-sm" disabled={status === 'submitting'}>
-                                Remove
-                            </button>
-                        )
-                    } />
+            <div className="flex justify-center">
+                <div className='w-full max-w-[36rem]'>
+                    <LeagueStandings
+                        league={league}
+                        teams={teams}
+                        cutoff={{ winDiff: topTeamWinDiff, gamesLeft: gamesLeft[1], text: '#1 CUTOFF' }}
+                        showIndex={true}
+                        customElement={(team) =>
+                            isEditing && (
+                                <button onClick={() => removeTeamID(team.id)} className="text-red-500 hover:underline text-sm" disabled={status === 'submitting'}>
+                                    Remove
+                                </button>
+                            )
+                        } />
+                </div>
             </div>
         </div>
     );

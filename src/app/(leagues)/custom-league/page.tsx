@@ -34,12 +34,12 @@ export default function CustomLeaguePage() {
 
     return (<>
         <div className="text-2xl font-bold text-center mb-6">Custom League Subleagues</div>
-        <div className="flex flex-col items-center">
-            <button onClick={() => router.push('/create-league')} className="px-4 py-2 link-hover text-theme-secondary rounded mb-4">
+        <div className="flex flex-col">
+            <button onClick={() => router.push('/create-league')} className="px-4 py-2 link-hover text-theme-secondary rounded mb-4 w-fit">
                 Create Subleague
             </button>
             {leagues.map((league, index) => (
-                <Link key={index} href={`/custom-league/${league.league_name}`}>
+                <Link key={index} href={`/custom-league/${league.league_id}`}>
                     <CustomLeagueHeader league={league} />
                 </Link>
             ))}
