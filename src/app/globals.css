@@ -48,6 +48,10 @@
   background-color: var(--theme-falling_star);
 }
 
+.bg-theme-ejection {
+  background-color: var(--theme-ejection);
+}
+
 .bg-theme-accent {
   background-color: var(--theme-accent);
 }

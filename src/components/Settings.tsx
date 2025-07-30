@@ -46,7 +46,8 @@ const defaultSettings: Settings = {
         background: '#0c111b',
         text: '#ffffff',
         secondary_text: '#fef4e5',
-        falling_star: '#0D47A1'
+        falling_star: '#0D47A1',
+        ejection: '#7f1d1d',
     },
     homePage: {
         useBlasesloaded: false,

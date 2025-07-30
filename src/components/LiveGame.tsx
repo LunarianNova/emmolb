@@ -27,8 +27,9 @@ type EventBlockGroup = {
     titleColor?: string;
     messages: Event[];
     onClick?: any;
-    isStar?: boolean;
+    isWeatherEvent?: boolean;
     isScore?: boolean;
+    isEjection?: boolean;
     inning?: string;
 };
 
@@ -62,6 +63,7 @@ export default function LiveGame({ awayTeamArg, homeTeamArg, initialDataArg, gam
     const [eventLog, setEventLog] = useState<Event[]>(initialData.event_log);
     const [lastEvent, setLastEvent] = useState(initialData.event_log[initialData.event_log.length - 1]);
     const [data, setData] = useState(initialData);
+    const [isComplete, setIsComplete] = useState(data.state == 'Complete');
     const [showDetailedStats, setShowDetailedStats] = useState(false);
     const players: Record<string, any> = {};
     const homePlayers: string[] = [];
@@ -85,7 +87,7 @@ export default function LiveGame({ awayTeamArg, homeTeamArg, initialDataArg, gam
     const [playerType, setPlayerType] = useState<'pitching' | 'batting' | null>(null);
     const [showStats, setShowStats] = useState(false);
     const [followLive, setFollowLive] = useState(false);
-    const [showBoxScore, setShowBoxScore] = useState(data.state == 'Complete');
+    const [showBoxScore, setShowBoxScore] = useState(isComplete);
 
     useEffect(() => {
         lastEventIndexRef.current = lastEvent.index;
@@ -109,7 +111,12 @@ export default function LiveGame({ awayTeamArg, homeTeamArg, initialDataArg, gam
         onData: (newData) => {
             if (newData.entries?.length) {
                 setEventLog(prev => ([...prev, ...newData.entries]));
-                setLastEvent(newData.entries[newData.entries.length - 1]);
+                const lastEvent = newData.entries[newData.entries.length - 1];
+                setLastEvent(lastEvent);
+                if (lastEvent.event === 'Recordkeeping') {
+                    setIsComplete(true);
+                    setShowBoxScore(true);
+                }
             }
         },
         killCon
@@ -151,30 +158,34 @@ export default function LiveGame({ awayTeamArg, homeTeamArg, initialDataArg, gam
             const meta = getBlockMetadata(event.message);
             const eventMessage = getEventMessageObject(event);
 
-            const isStar = /falling star/i.test(event.message);
-            const isScore = /scores!|homers|grand slam|steals home/i.test(event.message);
-            const inning = event.inning && meta?.title != 'Game Info' ? (event.inning_side === 0 ? '▲ ' : '▼ ') + event.inning : undefined;
+            const isWeatherEvent = /falling star|geomagnetic storms intensify/i.test(event.message);
+            const isScore = /scores!|homers on a|grand slam|steals home/i.test(event.message);
+            const isEjection = /ROBO-UMP ejected/i.test(event.message);
+            const inning = event.inning && (meta?.title != 'Game Info' && meta?.title != 'ROBO-UMP') ? (event.inning_side === 0 ? '▲ ' : '▼ ') + event.inning : undefined;
 
             if (meta) {
                 currentBlock = {
                     ...meta,
                     messages: [eventMessage],
-                    isStar,
+                    isWeatherEvent: isWeatherEvent,
                     isScore,
+                    isEjection,
                     inning,
                 };
                 blocks.unshift(currentBlock); // New block on top
             } else if (currentBlock) {
                 // Set flags on the block if not already set
-                currentBlock.isStar ||= isStar;
+                currentBlock.isWeatherEvent ||= isWeatherEvent;
                 currentBlock.isScore ||= isScore;
+                currentBlock.isEjection ||= isEjection;
 
                 currentBlock.messages.unshift(eventMessage);
             } else {
                 currentBlock = {
                     messages: [eventMessage],
-                    isStar,
+                    isWeatherEvent: isWeatherEvent,
                     isScore,
+                    isEjection,
                     inning,
                 };
                 blocks.unshift(currentBlock);
@@ -183,9 +194,15 @@ export default function LiveGame({ awayTeamArg, homeTeamArg, initialDataArg, gam
 
         // Post-process to assign gradient class
         for (const block of blocks) {
-            if (block.isStar && block.isScore) {
-                block.color = 'linear-gradient(-43deg, var(--theme-score) 36%, var(--theme-falling_star) 64%)';
-            } else if (block.isStar) {
+            if (block.isEjection && block.isScore) {
+                block.color = 'linear-gradient(to right bottom, var(--theme-score), var(--theme-ejection))';
+            } else if (block.isWeatherEvent && block.isScore) {
+                block.color = 'linear-gradient(to right bottom, var(--theme-score), var(--theme-falling_star))';
+            } else if (block.isWeatherEvent && block.isEjection) {
+                block.color = 'linear-gradient(to right bottom, var(--theme-falling_star), var(--theme-ejection))';
+            } else if (block.isEjection) {
+                block.color = 'var(--theme-ejection)';
+            } else if (block.isWeatherEvent) {
                 block.color = 'var(--theme-falling_star)';
             } else if (block.isScore) {
                 block.color = 'var(--theme-score)';
@@ -225,7 +242,7 @@ export default function LiveGame({ awayTeamArg, homeTeamArg, initialDataArg, gam
                 homeTeam={homeTeam}
             />}
 
-            {data.state != 'Complete' && <GameStateDisplay
+            {!isComplete && <GameStateDisplay
                 event={lastEvent}
                 bases={{first: (lastBases.first && lastBases.first !== 'Unknown') ? lastBases.first + ` (${getOPS(players[lastBases.first].stats)} OPS)` : lastBases.first, second: (lastBases.second && lastBases.second !== 'Unknown') ? lastBases.second + ` (${getOPS(players[lastBases.second].stats)} OPS)` : lastBases.second, third: (lastBases.third && lastBases.third !== 'Unknown') ? lastBases.third + ` (${getOPS(players[lastBases.third].stats)} OPS)` : lastBases.third}}
                 pitcher={{
