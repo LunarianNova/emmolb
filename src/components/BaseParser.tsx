@@ -49,7 +49,7 @@ export function ProcessMessage(event: Event, players: string[], queue: Baserunne
     const playerSet = new Set(players);
     const newQueue = [...queue];
     let pitcher = event.pitcher;
-    let batter = event.batter;
+    const batter = event.batter;
 
     const startsInning = /starts the inning on/i.test(message);
     const hit = /(singles on|doubles on|triples on)/i.test(message);

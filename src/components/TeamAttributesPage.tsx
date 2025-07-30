@@ -203,6 +203,10 @@ function TeamSummaryPage ({ setSubpage, APICalls, team, players, feed, }: { setS
                                                     stats = runningAttrs;
                                                     break;
                                             }
+                                            const mappedCategory = category === 'Baserunning' ? 'base_running' : category.toLowerCase();
+                                            const talk = statsPlayer.talk?.[mappedCategory];
+                                            const talkDay = talk?.day ?? 0;
+                                            const talkSeason = talk?.season ?? 0;
                                             return (<>
                                                 <button
                                                     key={`${name}-${category}`}
@@ -215,7 +219,7 @@ function TeamSummaryPage ({ setSubpage, APICalls, team, players, feed, }: { setS
                                                         },
                                                     }))
                                                     }
-                                                    className={`row-[${baseRow + 2 + j}] col-[1/6] w-[60rem] px-3 py-1 text-l bg-theme-primary hover:opacity-80 rounded-md`}
+                                                    className={`row-[${baseRow + 2 + j}] col-[1/6] w-[60rem] px-3 py-1 text-l ${talk ? `bg-theme-primary hover:opacity-80` : `bg-theme-secondary opacity-80 hover:opacity-60`} rounded-md`}
                                                 >
                                                     {category}
                                                 </button>
@@ -243,11 +247,6 @@ function TeamSummaryPage ({ setSubpage, APICalls, team, players, feed, }: { setS
                                                             Nominal Total
                                                         </div>
                                                         {stats.map((stat, k) => {
-                                                            const mappedCategory = category === 'Baserunning' ? 'base_running' : category.toLowerCase();
-                                                            const talk = statsPlayer.talk?.[mappedCategory];
-                                                            const talkDay = talk?.day ?? 0;
-                                                            const talkSeason = talk?.season ?? 0;
-
                                                             let feedTotal = 0;
                                                             const playerFeed = feedTotals[name];
                                                             if (playerFeed) {
