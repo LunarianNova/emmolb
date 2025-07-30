@@ -4,7 +4,7 @@ import Loading from "@/components/Loading";
 import Link from "next/link";
 import { getContrastTextColor } from "@/helpers/ColorHelper";
 import { useRouter } from 'next/navigation';
-import CustomLeagueHeader from "@/components/CustomLeagueHeader";
+import CustomLeagueHeader from "@/components/leagues/CustomLeagueHeader";
 
 export default function CustomLeaguePage() {
     const [loading, setLoading] = useState(true);

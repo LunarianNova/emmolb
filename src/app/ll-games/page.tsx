@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Loading from "@/components/Loading";
-import LeagueHeader from "@/components/LeagueHeader";
+import LeagueHeader from "@/components/leagues/LeagueHeader";
 import Link from "next/link";
 import { MapAPILeagueResponse } from "@/types/League";
 

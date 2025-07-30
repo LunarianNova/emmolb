@@ -1,10 +1,10 @@
-import LeaguePage from "@/components/LeaguePage";
+import LeaguePage from "@/components/leagues/LeaguePage";
 
 interface PageProps {
     params: Promise<{ id: string }>;
 }
 
-export default async function LeagueServer({ params }: PageProps) {
+export default async function Page({ params }: PageProps) {
     const {id} = await params;
     return <LeaguePage id={id} />;
 }

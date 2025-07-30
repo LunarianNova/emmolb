@@ -1,8 +1,8 @@
 'use client'
 import { useEffect, useState } from "react";
-import Loading from "./Loading";
+import Loading from "../Loading";
 import { MapAPITeamResponse, MapTeamLite, Team } from "@/types/Team";
-import MiniTeamHeader from "./MiniTeamHeader";
+import MiniTeamHeader from "../MiniTeamHeader";
 import CustomLeagueHeader from "./CustomLeagueHeader";
 import { EditLeague } from "./EditCustomLeague";
 
@@ -16,7 +16,7 @@ function getCurrentPhase(now: Date, phases: { name: string, start: string }[]): 
     return now >= new Date(preview.start) ? "Postseason" : "Regular Season";
 }
 
-export default function CustomLeagueSubleaguePage({league}: CustomLeagueSubleaguePageProps){
+export default function CustomLeagueSubleaguePage({ league }: CustomLeagueSubleaguePageProps) {
     const [input, setInput] = useState('');
     const [teams, setTeams] = useState<Team[]>([]);
     const [time, setTime] = useState<any>();
@@ -29,7 +29,7 @@ export default function CustomLeagueSubleaguePage({league}: CustomLeagueSubleagu
         async function getTeams() {
             try {
 
-                if (league?.league_teams?.trim()){
+                if (league?.league_teams?.trim()) {
                     const res = await fetch(`/nextapi/cashews-teams-lite?ids=${league.league_teams}`);
                     if (!res.ok) throw new Error('Failed to fetch team!');
                     const data = await res.json();
@@ -73,7 +73,7 @@ export default function CustomLeagueSubleaguePage({league}: CustomLeagueSubleagu
                 const errorData = await addRes.json();
                 throw new Error(errorData.message || 'Failed to add team.');
             }
-            
+
             const newTeam = MapAPITeamResponse(await teamRes.json());
             setTeams(prevTeams => [...prevTeams, newTeam]);
             setInput('');
@@ -97,12 +97,12 @@ export default function CustomLeagueSubleaguePage({league}: CustomLeagueSubleagu
                     team_id: id,
                 }),
             });
-            
+
             if (!removeRes.ok) {
                 const errorData = await removeRes.json();
                 throw new Error(errorData.message || 'Failed to remove team.');
             }
-            
+
             setTeams(prevTeams => prevTeams.filter(team => team.id !== id));
 
         } catch (err: any) {
@@ -113,13 +113,13 @@ export default function CustomLeagueSubleaguePage({league}: CustomLeagueSubleagu
     };
 
     if (loading || !time) return (<Loading />);
-    if (!teams.length) return ( 
+    if (!teams.length) return (
         <main className="mt-16">
             <div className="min-h-screen bg-theme-background text-theme-text font-sans p-4 pt-24 max-w-2xl mx-auto">
                 <div className="mb-8">
                     {isEditing ?
                         (<EditLeague league={league} status={status} setStatus={setStatus} />)
-                        : 
+                        :
                         (<>
                             <CustomLeagueHeader league={league} />
                             <div className="flex justify-between">
@@ -133,7 +133,7 @@ export default function CustomLeagueSubleaguePage({league}: CustomLeagueSubleagu
                         </>)
                     }
                     {isEditing && (<>
-                        <input type="text" placeholder="Enter Team ID" value={input} onChange={e => setInput(e.target.value)} className="w-full p-2 border rounded mb-2 text-theme-secondary opacity-80"/>
+                        <input type="text" placeholder="Enter Team ID" value={input} onChange={e => setInput(e.target.value)} className="w-full p-2 border rounded mb-2 text-theme-secondary opacity-80" />
                         <button onClick={addTeamID} className="px-4 py-2 link-hover text-theme-secondary rounded mb-4">
                             {status === 'submitting' ? 'Editing...' : 'Add Team'}
                         </button>
@@ -156,14 +156,14 @@ export default function CustomLeagueSubleaguePage({league}: CustomLeagueSubleagu
     });
     const totalGamesInSeason = 120;
     const gamesPlayed = Math.floor(time.season_day / 2);
-    const gamesLeft = totalGamesInSeason-gamesPlayed;
+    const gamesLeft = totalGamesInSeason - gamesPlayed;
     const topTeamWinDiff = teams[0].record.regular_season.wins - teams[0].record.regular_season.losses;
 
-    const worstCaseTopTeam = time.season_day%2 == 0 ? topTeamWinDiff-gamesLeft+1 : topTeamWinDiff-gamesLeft;
+    const worstCaseTopTeam = time.season_day % 2 == 0 ? topTeamWinDiff - gamesLeft + 1 : topTeamWinDiff - gamesLeft;
     let cutoffIndex = teams.findIndex(team => (((team.record.regular_season.wins + gamesLeft) - team.record.regular_season.losses) < (worstCaseTopTeam)));
     cutoffIndex = cutoffIndex === 0 ? 1 : cutoffIndex;
-    
-    const phase = getCurrentPhase(new Date(), Object.entries(time.phase_times as Record<string, string>).map(([name, start]) => ({name, start})));
+
+    const phase = getCurrentPhase(new Date(), Object.entries(time.phase_times as Record<string, string>).map(([name, start]) => ({ name, start })));
     const isPostseason = phase === 'Postseason';
     const postSeasonGL = `Final Standings for Season ${time.season_number}`
 
@@ -173,61 +173,59 @@ export default function CustomLeagueSubleaguePage({league}: CustomLeagueSubleagu
     const columnWidths = [14, 9, 10, 9];
 
     return (
-        <main className="mt-16">
-            <div className="min-h-screen bg-theme-background text-theme-text font-sans p-4 pt-24 max-w-2xl mx-auto">
-                <div className="mb-8">
-                    {isEditing ?
-                        (<EditLeague league={league} status={status} setStatus={setStatus} />)
-                        : 
-                        (<>
-                            <CustomLeagueHeader league={league} />
-                            <div className="flex justify-between">
-                                <button onClick={() => setIsEditing(prev => !prev)} className="px-4 py-2 link-hover text-theme-secondary rounded mb-4">
-                                    {isEditing ? 'Save Changes' : 'Edit League'}
-                                </button>
-                                <button onClick={() => setHideInactive(prev => !prev)} className="px-4 py-2 link-hover text-theme-secondary rounded mb-4">
-                                    {hideInactive ? 'Show Inactive Teams' : 'Hide Inactive Teams'}
-                                </button>
-                            </div>
-                        </>)
-                    }
-                    {isEditing && (<>
-                        <input type="text" placeholder="Enter Team ID" value={input} onChange={e => setInput(e.target.value)} className="w-full p-2 border rounded mb-2 text-theme-secondary opacity-80"/>
-                        <button onClick={addTeamID} className="px-4 py-2 link-hover text-theme-secondary rounded mb-4">
-                            {status === 'submitting' ? 'Adding...' : 'Add Team'}
-                        </button>
-                    </>)}
-                    <div className="flex justify-center">
-                        <div className="w-full max-w-[36rem] space-y-2">
-                            <div className="text-center mt-0 mb-4 text-lg font-bold">{isPostseason ? postSeasonGL : formattedGL}</div>
-                            <div className='flex justify-end px-2 text-xs font-semibold uppercase'>
-                                <div className='ml-1 w-14 text-right'>Record</div>
-                                <div className='ml-1 w-9 text-right'>WD</div>
-                                <div className='ml-1 w-10 text-right'>RD</div>
-                                <div className='ml-1 w-9 text-right'>GB</div>
-                            </div>
-                            {teams.filter((team) => hideInactive ? team.record.regular_season.losses + team.record.regular_season.wins > 0 : true).map((team: any, index) => (
-                                <div key={team.id || index}>
-                                    {index === cutoffIndex && (
-                                        <div className="relative my-4 flex items-center" aria-label="Cutoff line">
-                                            <div className="absolute -left-2 sm:left-0 sm:-translate-x-full bg-theme-text text-xs font-bold px-2 py-0.5 rounded-sm select-none text-theme-background whitespace-nowrap">
-                                                #1 CUTOFF
-                                            </div>
-                                            <div className="flex-grow border-t-2 border-theme-text"></div>
-                                        </div>
-                                    )}
-                                    <MiniTeamHeader team={team} leader={teams[0]} index={index + 1} columnWidths={columnWidths} />
-                                    {isEditing && (
-                                        <button onClick={() => removeTeamID(team.id)} className="text-red-500 hover:underline text-sm" disabled={status === 'submitting'}>
-                                            Remove
-                                        </button>
-                                    )}
-                                </div>
-                            ))}
+        <div className="min-h-screen bg-theme-background text-theme-text font-sans p-4 pt-24 max-w-2xl mx-auto">
+            <div className="mb-8">
+                {isEditing ?
+                    (<EditLeague league={league} status={status} setStatus={setStatus} />)
+                    :
+                    (<>
+                        <CustomLeagueHeader league={league} />
+                        <div className="flex justify-between">
+                            <button onClick={() => setIsEditing(prev => !prev)} className="px-4 py-2 link-hover text-theme-secondary rounded mb-4">
+                                {isEditing ? 'Save Changes' : 'Edit League'}
+                            </button>
+                            <button onClick={() => setHideInactive(prev => !prev)} className="px-4 py-2 link-hover text-theme-secondary rounded mb-4">
+                                {hideInactive ? 'Show Inactive Teams' : 'Hide Inactive Teams'}
+                            </button>
                         </div>
+                    </>)
+                }
+                {isEditing && (<>
+                    <input type="text" placeholder="Enter Team ID" value={input} onChange={e => setInput(e.target.value)} className="w-full p-2 border rounded mb-2 text-theme-secondary opacity-80" />
+                    <button onClick={addTeamID} className="px-4 py-2 link-hover text-theme-secondary rounded mb-4">
+                        {status === 'submitting' ? 'Adding...' : 'Add Team'}
+                    </button>
+                </>)}
+                <div className="flex justify-center">
+                    <div className="w-full max-w-[36rem] space-y-2">
+                        <div className="text-center mt-0 mb-4 text-lg font-bold">{isPostseason ? postSeasonGL : formattedGL}</div>
+                        <div className='flex justify-end px-2 text-xs font-semibold uppercase'>
+                            <div className='ml-1 w-14 text-right'>Record</div>
+                            <div className='ml-1 w-9 text-right'>WD</div>
+                            <div className='ml-1 w-10 text-right'>RD</div>
+                            <div className='ml-1 w-9 text-right'>GB</div>
+                        </div>
+                        {teams.filter((team) => hideInactive ? team.record.regular_season.losses + team.record.regular_season.wins > 0 : true).map((team: any, index) => (
+                            <div key={team.id || index}>
+                                {index === cutoffIndex && (
+                                    <div className="relative my-4 flex items-center" aria-label="Cutoff line">
+                                        <div className="absolute -left-2 sm:left-0 sm:-translate-x-full bg-theme-text text-xs font-bold px-2 py-0.5 rounded-sm select-none text-theme-background whitespace-nowrap">
+                                            #1 CUTOFF
+                                        </div>
+                                        <div className="flex-grow border-t-2 border-theme-text"></div>
+                                    </div>
+                                )}
+                                <MiniTeamHeader team={team} leader={teams[0]} index={index + 1} columnWidths={columnWidths} />
+                                {isEditing && (
+                                    <button onClick={() => removeTeamID(team.id)} className="text-red-500 hover:underline text-sm" disabled={status === 'submitting'}>
+                                        Remove
+                                    </button>
+                                )}
+                            </div>
+                        ))}
                     </div>
                 </div>
             </div>
-        </main>
+        </div>
     );
 }

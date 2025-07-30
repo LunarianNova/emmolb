@@ -4,7 +4,7 @@
 import Loading from "@/components/Loading";
 import { useEffect, useState } from "react";
 import LeagueHeader from "./LeagueHeader";
-import MiniTeamHeader from "./MiniTeamHeader";
+import MiniTeamHeader from "../MiniTeamHeader";
 import { MapAPILeagueTeamResponse, Team } from "@/types/Team";
 import { League, MapAPILeagueResponse } from "@/types/League";
 
@@ -111,35 +111,33 @@ export default function LeaguePage({ id, greaterLeague }: LeaguePageProps) {
     const formattedGL = `${gamesLeft}${isCurrentGameDay ? `-${gamesLeft + 1}` : ''} Game${pluralGamesLeft ? 's' : ''} Remain${pluralGamesLeft ? '' : 's'}`;
 
     return (
-        <main className="mt-16">
-            <div className="flex flex-col items-center min-h-screen bg-theme-background text-theme-text font-sans p-4 pt-20 mx-auto">
-                {greaterLeague
-                    ? <h1 className="text-2xl font-bold text-center mb-2">Greater League Standings</h1>
-                    : (ids.length == 1 ? <LeagueHeader league={leagueStandingsProps[0].league} /> : '')}
-                <div className="text-center mt-0 mb-4 text-lg font-bold">{isPostseason ? postSeasonGL : formattedGL}</div>
-                <div className="flex flex-wrap justify-center gap-8 mb-8">
+        <div className="flex flex-col items-center min-h-screen">
+            {greaterLeague
+                ? <h1 className="text-2xl font-bold text-center mb-2">Greater League Standings</h1>
+                : (ids.length == 1 ? <LeagueHeader league={leagueStandingsProps[0].league} /> : '')}
+            <div className="text-center mt-0 mb-4 text-lg font-bold">{isPostseason ? postSeasonGL : formattedGL}</div>
+            <div className="flex flex-wrap justify-center gap-8 mb-8">
 
-                    {leagueStandingsProps.map(({ league, teams }, i) => {
-                        const topTeamWinDiff = greaterLeague
-                            ? wildcardWinDiff!
-                            : teams[0].record.regular_season.wins - teams[0].record.regular_season.losses;
+                {leagueStandingsProps.map(({ league, teams }, i) => {
+                    const topTeamWinDiff = greaterLeague
+                        ? wildcardWinDiff!
+                        : teams[0].record.regular_season.wins - teams[0].record.regular_season.losses;
 
-                        const worstCaseTopTeam = isCurrentGameDay ? topTeamWinDiff - gamesLeft + 1 : topTeamWinDiff - gamesLeft;
-                        let cutoffIndex = teams.findIndex(team => (((team.record.regular_season.wins + gamesLeft) - team.record.regular_season.losses) < (worstCaseTopTeam)));
-                        cutoffIndex = cutoffIndex === 0 ? 1 : cutoffIndex;
-                        const cutoff = { index: cutoffIndex, text: greaterLeague ? 'PLAYOFFS' : '#1 CUTOFF' }
+                    const worstCaseTopTeam = isCurrentGameDay ? topTeamWinDiff - gamesLeft + 1 : topTeamWinDiff - gamesLeft;
+                    let cutoffIndex = teams.findIndex(team => (((team.record.regular_season.wins + gamesLeft) - team.record.regular_season.losses) < (worstCaseTopTeam)));
+                    cutoffIndex = cutoffIndex === 0 ? 1 : cutoffIndex;
+                    const cutoff = { index: cutoffIndex, text: greaterLeague ? 'PLAYOFFS' : '#1 CUTOFF' }
 
-                        return <div className={`w-[${greaterLeague ? '30' : '36'}rem]`}>
-                            {greaterLeague
-                                ? <h2 className="text-xl font-bold text-center mb-4">{league.name} Division</h2>
-                                : (ids.length > 1 ? <LeagueHeader league={league} /> : '')}
-                            <div className="flex justify-center">
-                                <LeagueStandings league={league} teams={teams} cutoff={cutoff} showIndex={!greaterLeague} />
-                            </div>
+                    return <div className={`w-[${greaterLeague ? '30' : '36'}rem]`}>
+                        {greaterLeague
+                            ? <h2 className="text-xl font-bold text-center mb-4">{league.name} Division</h2>
+                            : (ids.length > 1 ? <LeagueHeader league={league} /> : '')}
+                        <div className="flex justify-center">
+                            <LeagueStandings league={league} teams={teams} cutoff={cutoff} showIndex={!greaterLeague} />
                         </div>
-                    })}
-                </div>
+                    </div>
+                })}
             </div>
-        </main>
+        </div>
     );
 }
