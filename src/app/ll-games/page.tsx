@@ -2,13 +2,14 @@
 
 import { useEffect, useState } from "react";
 import Loading from "@/components/Loading";
-import LeagueHeader from "@/components/LeagueHeader";
+import LeagueHeader from "@/components/leagues/LeagueHeader";
 import Link from "next/link";
-import { MapAPILeagueResponse } from "@/types/League";
+import { League } from "@/types/League";
+import { fetchLeague } from "@/types/Api";
 
 export default function LesserLeaguePage() {
     const [loading, setLoading] = useState(true);
-    const [leagues, setLeagues] = useState<any[]>([]);
+    const [leagues, setLeagues] = useState<League[]>([]);
 
     const league_ids: string[] = [
         '6805db0cac48194de3cd3fe7',
@@ -32,12 +33,8 @@ export default function LesserLeaguePage() {
     useEffect(() => {
         async function fetchLeagues() {
             try {
-                const responses = await Promise.all(
-                    league_ids.map(id =>
-                        fetch(`/nextapi/league/${id}`).then(res => res.ok ? res.json() : null)
-                ));
-                const validLeagues = responses.filter(Boolean);
-                setLeagues(validLeagues);
+                const responses = await Promise.all(league_ids.map(id => fetchLeague(id)));
+                setLeagues(responses);
             } catch (error) {
                 console.error("Failed to fetch leagues", error);
             } finally {
@@ -60,8 +57,8 @@ export default function LesserLeaguePage() {
                     <div>
                         <div className="space-y-3">
                             {leagues.map((league, index) => (
-                                <Link key={index} href={`/ll-games/${league._id}`}>
-                                    <LeagueHeader league={MapAPILeagueResponse(league)} />
+                                <Link key={index} href={`/ll-games/${league.id}`}>
+                                    <LeagueHeader league={league} />
                                 </Link>
                             ))}
                         </div>

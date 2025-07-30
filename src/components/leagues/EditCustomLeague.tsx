@@ -53,13 +53,13 @@ export function EditLeague({league, status, setStatus,}: {league?: any, status: 
     };
     return (
         <form onSubmit={handleSubmit} className="flex flex-col items-center text-center space-y-10 max-w-lg mx-auto">
-            <div className='relative w-full h-28 px-6 py-4 border-2 rounded-2xl shadow-xl overflow-hidden mb-4 flex items-center' style={{background: leagueColor, color: getContrastTextColor(leagueColor)}}>
+            <div className='relative w-2xl h-28 px-6 py-4 border-2 rounded-2xl shadow-xl overflow-hidden mb-4 flex items-center' style={{background: leagueColor, color: getContrastTextColor(leagueColor)}}>
                 <button type="button" onClick={() => setShowEmojiPicker(!showEmojiPicker)} className="text-7xl flex-shrink-0 cursor-pointer">
                     {leagueEmoji}
                 </button>
                 <div className="absolute inset-0 flex flex-col items-center justify-center px-2 pointer-events-none">
                     <span className="text-2xl font-bold tracking-wide leading-tight text-center">
-                        <input type="text" value={leagueName} onChange={(e) => setLeagueName(e.target.value)} className=" w-32 text-2xl font-bold text-center border-b-2 border-theme-accent py-1 focus:outline-none pointer-events-auto" maxLength={24} required/> League
+                        <input type="text" value={leagueName} onChange={(e) => setLeagueName(e.target.value)} className="text-2xl font-bold text-center border-b-2 border-theme-accent py-1 focus:outline-none pointer-events-auto" maxLength={24} required/> League
                     </span>
                     <span>
                         Custom League
