@@ -1,4 +1,4 @@
-import CustomLeagueSubleaguePage from "@/components/CustomLeagueSubleaguePage";
+import CustomLeagueSubleaguePage from "@/components/leagues/CustomLeagueSubleaguePage";
 
 interface PageProps {
     params: Promise<{ id: string }>;
