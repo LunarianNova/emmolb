@@ -8,7 +8,8 @@
   --theme-accent: #17212b;
   --theme-text: #ffffff;
   --theme-secondary_text: #fef4e5;
-  --theme-falling_star: #0D47A1;
+  --theme-weather_event: #0D47A1;
+  --theme-ejection: #7f1d1d;
 }
 
 
@@ -44,8 +45,8 @@
   background-color: var(--theme-score);
 }
 
-.bg-theme-star {
-  background-color: var(--theme-falling_star);
+.bg-theme-weather {
+  background-color: var(--theme-weather_event);
 }
 
 .bg-theme-ejection {
