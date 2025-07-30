@@ -5,10 +5,12 @@ import Loading from "@/components/Loading";
 import { useEffect, useState } from "react";
 import LeagueHeader from "./LeagueHeader";
 import { Team } from "@/types/Team";
-import { fetchLeague, fetchTopTeamsFromLeague, League } from "@/types/League";
+import { League } from "@/types/League";
+import { fetchTopTeamsFromLeague } from "@/types/Api";
+import { fetchLeague } from "@/types/Api";
 import GamesRemaining, { getGamesLeft } from "./GamesRemaining";
 import { LeagueStandings } from "./LeagueStandings";
-import { fetchTime } from "@/types/Time";
+import { fetchTime } from "@/types/Api";
 
 export type LeagueStandingsProps = {
     league: League;

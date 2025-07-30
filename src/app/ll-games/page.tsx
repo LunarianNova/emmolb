@@ -5,7 +5,7 @@ import Loading from "@/components/Loading";
 import LeagueHeader from "@/components/leagues/LeagueHeader";
 import Link from "next/link";
 import { League } from "@/types/League";
-import { fetchLeague } from "@/types/League";
+import { fetchLeague } from "@/types/Api";
 
 export default function LesserLeaguePage() {
     const [loading, setLoading] = useState(true);
