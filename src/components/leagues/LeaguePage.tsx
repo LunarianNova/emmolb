@@ -4,11 +4,12 @@
 import Loading from "@/components/Loading";
 import { useEffect, useState } from "react";
 import LeagueHeader from "./LeagueHeader";
-import MiniTeamHeader from "../MiniTeamHeader";
 import { MapAPILeagueTeamResponse, Team } from "@/types/Team";
 import { League, MapAPILeagueResponse } from "@/types/League";
+import GamesRemaining, { getGamesLeft } from "./GamesRemaining";
+import { LeagueStandings } from "./LeagueStandings";
 
-type LeagueStandingsProps = {
+export type LeagueStandingsProps = {
     league: League;
     teams: Team[];
     cutoff?: { index: number, text: string },
@@ -18,39 +19,6 @@ type LeagueStandingsProps = {
 type LeaguePageProps = {
     id?: string;
     greaterLeague?: boolean;
-}
-
-function getCurrentPhase(now: Date, phases: { name: string, start: string }[]): string {
-    const preview = phases.find(p => p.name === "PostseasonPreview");
-    if (!preview) return "Unknown";
-    return now >= new Date(preview.start) ? "Postseason" : "Regular Season";
-}
-
-function LeagueStandings({ league, teams, cutoff, showIndex }: LeagueStandingsProps) {
-    if (!league || !teams.length) return (<div className="text-white text-center mt-10">Can't find that league</div>);
-    const columnWidths = [14, 9, 10, 9];
-
-    return <div className="w-full space-y-2">
-        <div className='flex justify-end px-2 text-xs font-semibold uppercase'>
-            <div className={`ml-1 w-${columnWidths[0]} text-right`}>Record</div>
-            <div className={`ml-1 w-${columnWidths[1]} text-right`}>WD</div>
-            <div className={`ml-1 w-${columnWidths[2]} text-right`}>RD</div>
-            <div className={`ml-1 w-${columnWidths[3]} text-right`}>GB</div>
-        </div>
-        {teams.map((team: any, index) => (
-            <div key={team.id || index}>
-                {index === cutoff?.index && (
-                    <div className="relative my-4 flex items-center" aria-label="Cutoff line">
-                        <div className="absolute -left-2 sm:left-0 sm:-translate-x-full bg-theme-text text-xs font-bold px-2 py-0.5 rounded-sm select-none text-theme-background whitespace-nowrap">
-                            {cutoff?.text}
-                        </div>
-                        <div className="flex-grow border-t-2 border-theme-text"></div>
-                    </div>
-                )}
-                <MiniTeamHeader team={team} leader={teams[0]} index={showIndex ? index + 1 : undefined} columnWidths={columnWidths} />
-            </div>
-        ))}
-    </div>
 }
 
 export default function LeaguePage({ id, greaterLeague }: LeaguePageProps) {
@@ -92,30 +60,20 @@ export default function LeaguePage({ id, greaterLeague }: LeaguePageProps) {
 
     if (loading) return (<Loading />);
 
-    const totalGamesInSeason = 120;
-    const day = time.season_day;
-    const gamesPlayed = greaterLeague ? Math.floor((day+1)/2) : Math.floor(day/2);
-    const gamesLeft = totalGamesInSeason - gamesPlayed;
-
+    const gamesLeft = getGamesLeft(time, !!greaterLeague);
     const wildcardWinDiff = greaterLeague
         ? [...leagueStandingsProps[0].teams.slice(1), ...leagueStandingsProps[1].teams.slice(1)]
             .map(team => team.record.regular_season.wins - team.record.regular_season.losses).sort()[3]
         : undefined;
 
-    const phase = getCurrentPhase(new Date(), Object.entries(time.phase_times as Record<string, string>).map(([name, start]) => ({ name, start })));
-    const isPostseason = phase === 'Postseason';
-    const postSeasonGL = `Final Standings for Season ${time.season_number}`
-
     const isCurrentGameDay = time.season_day % 2 === (greaterLeague ? 1 : 0);
-    const pluralGamesLeft = gamesLeft !== 1;
-    const formattedGL = `${gamesLeft}${isCurrentGameDay ? `-${gamesLeft + 1}` : ''} Game${pluralGamesLeft ? 's' : ''} Remain${pluralGamesLeft ? '' : 's'}`;
 
     return (
         <div className="flex flex-col items-center min-h-screen">
             {greaterLeague
                 ? <h1 className="text-2xl font-bold text-center mb-2">Greater League Standings</h1>
                 : (ids.length == 1 ? <LeagueHeader league={leagueStandingsProps[0].league} /> : '')}
-            <div className="text-center mt-0 mb-4 text-lg font-bold">{isPostseason ? postSeasonGL : formattedGL}</div>
+            <GamesRemaining time={time} playsOnOddDays={!!greaterLeague} />
             <div className="flex flex-wrap justify-center gap-8 mb-8">
 
                 {leagueStandingsProps.map(({ league, teams }, i) => {
