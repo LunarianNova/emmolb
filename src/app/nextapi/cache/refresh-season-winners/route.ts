@@ -69,7 +69,7 @@ export async function GET(req: NextRequest) {
         }
 
         const leagueRecords: Record<string, Record<string, Record<number, number>>> = {}; // league_id: {team_id: {season: winDiff}}
-        for (let team of results) {
+        for (const team of results) {
             const feed = team.data.feed;
             const id = team.entity_id;
             if (id === '6805f2d34277d0dcecdd3b2e') continue; // Danny's team can't be pulled-up

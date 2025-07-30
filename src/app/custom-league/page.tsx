@@ -44,7 +44,7 @@ export default function CustomLeaguePage() {
                                 Create Subleague
                             </button>
                             {leagues.map((league, index) => (
-                                <Link key={index} href={`/custom-league/${league.league_name}`}>
+                                <Link key={index} href={`/custom-league/${league.league_id}`}>
                                     <CustomLeagueHeader league={league} />
                                 </Link>
                             ))}

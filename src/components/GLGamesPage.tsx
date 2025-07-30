@@ -54,6 +54,7 @@ export default function GLGamesPage({ season, initialDay }: {season: number, ini
     const [games, setGames] = useState<GameHeaderApiResponse[]>([]);
     const [loading, setLoading] = useState<boolean>(false);
     const [updating, setUpdating] = useState<boolean>(false);
+    const [gridView, setGridView] = useState<boolean>(false);
     const [day, setDay] = useState<number>(initialDay);
 
     useEffect(() => {
@@ -104,39 +105,53 @@ export default function GLGamesPage({ season, initialDay }: {season: number, ini
 
     if (games.length === 0 && dayGames?.length) return (
         <main className="mt-16">
-            <div className="min-h-screen bg-theme-background text-theme-text font-sans p-4 pt-20 max-w-3xl mx-auto">
+            <div className={`min-h-screen bg-theme-background text-theme-text font-sans p-4 pt-20 ${gridView ? '' : 'max-w-3xl mx-auto'}`}>
                 <MMOLBWatchPageHeader setDay={setDay} day={day} season={season} />
 
                 <div className="text-center mb-4 font-semibold">Greater League</div>
-                {!updating && (dayGames.map((game: DayGame) => {
-                    if (game.status === 'Upcoming') return <MinifiedGameHeader key={game.game_id} game={game} />
-                    else return (
-                        <Link key={game.game_id} href={`/watch/${game.game_id}`}>
-                            <MinifiedGameHeader key={game.game_id} game={game} />
-                        </Link>
-                    );
-                }))}  
+                <div className="flex justify-center mb-4">
+                    <button onClick={() => setGridView((prev) => !prev)}className="px-2 py-1 bg-theme-primary rounded">
+                        Toggle Grid View
+                    </button>
+                </div>
+                <div className={`${gridView ? 'grid grid-cols-[repeat(auto-fit,minmax(20rem,1fr))] sm:grid-cols-[repeat(auto-fit,minmax(40rem,1fr))] gap-4' : 'flex flex-col gap-4'}`}>
+                    {!updating && (dayGames.map((game: DayGame) => {
+                        if (game.status === 'Upcoming') return <MinifiedGameHeader key={game.game_id} game={game} />
+                        else return (
+                            <Link key={game.game_id} href={`/watch/${game.game_id}`}>
+                                <MinifiedGameHeader key={game.game_id} game={game} />
+                            </Link>
+                        );
+                    }))}  
+                </div>
             </div>
         </main>
     );
 
     return (
         <main className="mt-16">
-            <div className="min-h-screen bg-theme-background text-theme-text font-sans p-4 pt-20 max-w-3xl mx-auto">
+            <div className={`min-h-screen bg-theme-background text-theme-text font-sans p-4 pt-20 ${gridView ? '' : 'max-w-3xl mx-auto'}`}>
                 <MMOLBWatchPageHeader setDay={setDay} day={day} season={season} />
 
-                <div className="text-center mb-4 font-semibold">Greater League</div>
-                {settings.homePage?.useBlasesloaded ? games.map(({ teamId, gameHeader }) => (
-                    <Link key={teamId + "link"} href={"/game/" + gameHeader.gameId}>
-                        <FullBlobileDisplay key={teamId} gameId={gameHeader.gameId} homeTeam={gameHeader.homeTeam} awayTeam={gameHeader.awayTeam} game={gameHeader.game} />
-                    </Link>
-                )) : (<>
-                    {games.map(({ teamId, gameHeader }) => (
-                        <Link key={teamId + "link"} href={"/game/" + gameHeader.gameId}>
-                            <LiveGameCompact key={teamId} gameId={gameHeader.gameId} homeTeam={MapAPITeamResponse(gameHeader.homeTeam)} awayTeam={MapAPITeamResponse(gameHeader.awayTeam)} game={MapAPIGameResponse(gameHeader.game)} killLinks={true} />
-                        </Link>
-                    ))}
-            </>)}  
+                <div className="text-center mb-1 font-semibold">Greater League</div>
+                <div className="flex justify-center mb-4">
+                    <button onClick={() => setGridView((prev) => !prev)}className="px-2 py-1 bg-theme-primary rounded">
+                        Toggle Grid View
+                    </button>
+                </div>
+                <div className={`${gridView ? 'grid grid-cols-[repeat(auto-fit,minmax(20rem,1fr))] sm:grid-cols-[repeat(auto-fit,minmax(40rem,1fr))] gap-4' : 'flex flex-col gap-4'}`}>
+                    {settings.homePage?.useBlasesloaded ? games.map(({ teamId, gameHeader }) => (
+                            <Link key={teamId + 'link'} href={'/game/' + gameHeader.gameId}>
+                                <FullBlobileDisplay key={teamId} gameId={gameHeader.gameId} homeTeam={gameHeader.homeTeam} awayTeam={gameHeader.awayTeam} game={gameHeader.game} />
+                            </Link>
+                        ))
+                        : games.map(({ teamId, gameHeader }) => (
+                            <Link key={teamId + 'link'} href={'/game/' + gameHeader.gameId}>
+                                <LiveGameCompact key={teamId} gameId={gameHeader.gameId} homeTeam={MapAPITeamResponse(gameHeader.homeTeam)} awayTeam={MapAPITeamResponse(gameHeader.awayTeam)} game={MapAPIGameResponse(gameHeader.game)} killLinks={true} />
+                            </Link>
+                        ))
+                    }
+                </div>
             </div>
         </main>
     );

@@ -1,18 +1,17 @@
 import CustomLeagueSubleaguePage from "@/components/CustomLeagueSubleaguePage";
 
 interface PageProps {
-    params: Promise<{ name: string }>;
+    params: Promise<{ id: string }>;
 }
 
 export default async function CustomLeagueSubleagueServerPage({ params }: PageProps) {
-    let { name } = await params;
-    name = name.replace(/%20/g, ' ');
+    const { id } = await params;
 
     const res = await fetch('https://lunanova.space/nextapi/db/get-league', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-            league_name: name,
+            league_id: id,
         }),
     });
     if (!res.ok) throw new Error('Failed to fetch league!');

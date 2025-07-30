@@ -307,7 +307,7 @@ function TeamSummaryPage ({ setSubpage, APICalls, team, players, feed, }: { setS
                                                                         </div>                                                                    
                                                                     </div>
                                                                     <div className={`${!highlights[stat] ? k%2==1 ? 'bg-theme-primary' : 'bg-theme-secondary' : 'bg-theme-score'} p-1 text-center font-semibold`}>
-                                                                        {stars !== null ? `${stars*25+itemTotal}` : `???`}
+                                                                        {stars !== null ? `${stars*25+itemTotal+feedTotal}` : `???`}
                                                                     </div>
                                                                 </Fragment>
                                                             );

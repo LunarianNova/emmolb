@@ -40,6 +40,7 @@ export default function LLGamesPage({ season, initialDay, league }: LLGamesPageP
     const [page, setPage] = useState<number>(1);
     const [gamesPerPage, setGamesPerPage] = useState<number>(20); // Unused currently
     const [favoriteTeams, setFavoriteTeams] = useState<string[]>();
+    const [gridView, setGridView] = useState<boolean>(false);
     const [day, setDay] = useState<number>(initialDay);
 
     useEffect(() => {
@@ -145,13 +146,13 @@ export default function LLGamesPage({ season, initialDay, league }: LLGamesPageP
 
     return (
         <main className="mt-16">
-            <div className="min-h-screen bg-theme-background text-theme-text font-sans p-4 pt-20 max-w-3xl mx-auto">
+            <div className={`min-h-screen bg-theme-background text-theme-text font-sans p-4 pt-20 ${gridView ? '' : 'max-w-3xl mx-auto'}`}>
                 <MMOLBWatchPageHeader setDay={setDay} day={day} season={season} />
 
                 <div className="text-center mb-4 font-semibold">{leagueName} League</div>
 
                 {totalPages > 1 && (
-                    <div className="flex justify-center items-center mb-4 gap-4">
+                    <div className="flex justify-center items-center mb-2 gap-4">
                         <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1 || updating} className="px-2 py-1 bg-theme-primary rounded">
                             Prev
                         </button>
@@ -161,6 +162,11 @@ export default function LLGamesPage({ season, initialDay, league }: LLGamesPageP
                         </button>
                     </div>
                 )}
+                <div className="flex justify-center mb-4">
+                    <button onClick={() => setGridView((prev) => !prev)}className="px-2 py-1 bg-theme-primary rounded">
+                        Toggle Grid View
+                    </button>
+                </div>
 
                 {updating && (<div className="text-center">Loading Games...</div>)}
 
@@ -168,27 +174,29 @@ export default function LLGamesPage({ season, initialDay, league }: LLGamesPageP
 
                 {!updating && day > initialDay && (<div className="text-center">You're in the future 🎉<br></br>As far as the eye can see... no games... <br></br>MMOLB promises unlimited games... but... no games</div>)}
 
-                {!updating && paginatedDayGames.map((game) => {
-                    const gameHeader = gameHeaders[game.home_team_id];
+                <div className={`${gridView ? 'grid grid-cols-[repeat(auto-fit,minmax(20rem,1fr))] sm:grid-cols-[repeat(auto-fit,minmax(40rem,1fr))] gap-4' : 'flex flex-col gap-4'}`}>
+                    {!updating && paginatedDayGames.map((game) => {
+                        const gameHeader = gameHeaders[game.home_team_id];
 
-                    if (gameHeader) {
-                        return settings.homePage?.useBlasesloaded ? (
-                            <Link key={game.game_id} href={"/game/" + game.game_id}>
-                                <FullBlobileDisplay gameId={gameHeader.gameId} homeTeam={gameHeader.homeTeam} awayTeam={gameHeader.awayTeam} game={gameHeader.game} />
-                            </Link>
-                        ) : (
-                            <Link key={game.game_id} href={"/game/" + game.game_id}>
-                                <LiveGameCompact gameId={gameHeader.gameId} homeTeam={MapAPITeamResponse(gameHeader.homeTeam)} awayTeam={MapAPITeamResponse(gameHeader.awayTeam)} game={MapAPIGameResponse(gameHeader.game)} killLinks={true} />
-                            </Link>
-                        )
-                    } else {
-                        return (
-                            <Link key={game.game_id} href={`/watch/${game.game_id}`}>
-                                <MinifiedGameHeader game={game} />
-                            </Link>
-                        );
-                    }
-                })}
+                        if (gameHeader) {
+                            return settings.homePage?.useBlasesloaded ? (
+                                <Link key={game.game_id} href={"/game/" + game.game_id}>
+                                    <FullBlobileDisplay gameId={gameHeader.gameId} homeTeam={gameHeader.homeTeam} awayTeam={gameHeader.awayTeam} game={gameHeader.game} />
+                                </Link>
+                            ) : (
+                                <Link key={game.game_id} href={"/game/" + game.game_id}>
+                                    <LiveGameCompact gameId={gameHeader.gameId} homeTeam={MapAPITeamResponse(gameHeader.homeTeam)} awayTeam={MapAPITeamResponse(gameHeader.awayTeam)} game={MapAPIGameResponse(gameHeader.game)} killLinks={true} />
+                                </Link>
+                            )
+                        } else {
+                            return (
+                                <Link key={game.game_id} href={`/watch/${game.game_id}`}>
+                                    <MinifiedGameHeader game={game} />
+                                </Link>
+                            );
+                        }
+                    })}
+                </div>
             </div>
         </main>
     );

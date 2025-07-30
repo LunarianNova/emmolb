@@ -21,13 +21,15 @@ export default function CustomLeagueSubleaguePage({league}: CustomLeagueSubleagu
     const [teams, setTeams] = useState<Team[]>([]);
     const [time, setTime] = useState<any>();
     const [isEditing, setIsEditing] = useState<boolean>(false);
+    const [hideInactive, setHideInactive] = useState<boolean>(false);
     const [loading, setLoading] = useState<boolean>(true);
     const [status, setStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle');
 
     useEffect(() => {
         async function getTeams() {
             try {
-                if (league.league_teams?.trim()){
+
+                if (league?.league_teams?.trim()){
                     const res = await fetch(`/nextapi/cashews-teams-lite?ids=${league.league_teams}`);
                     if (!res.ok) throw new Error('Failed to fetch team!');
                     const data = await res.json();
@@ -46,7 +48,7 @@ export default function CustomLeagueSubleaguePage({league}: CustomLeagueSubleagu
         }
 
         getTeams();
-    }, [league.league_teams]);
+    }, [league?.league_teams]);
 
     const addTeamID = async () => {
         const trimmedId = input.trim();
@@ -120,9 +122,14 @@ export default function CustomLeagueSubleaguePage({league}: CustomLeagueSubleagu
                         : 
                         (<>
                             <CustomLeagueHeader league={league} />
-                            <button onClick={() => setIsEditing(prev => !prev)} className="px-4 py-2 link-hover text-theme-secondary rounded mb-4">
-                                {isEditing ? 'Save Changes' : 'Edit League'}
-                            </button>
+                            <div className="flex justify-between">
+                                <button onClick={() => setIsEditing(prev => !prev)} className="px-4 py-2 link-hover text-theme-secondary rounded mb-4">
+                                    {isEditing ? 'Save Changes' : 'Edit League'}
+                                </button>
+                                <button onClick={() => setHideInactive(prev => !prev)} className="px-4 py-2 link-hover text-theme-secondary rounded mb-4">
+                                    {hideInactive ? 'Show Inactive Teams' : 'Hide Inactive Teams'}
+                                </button>
+                            </div>
                         </>)
                     }
                     {isEditing && (<>
@@ -173,9 +180,14 @@ export default function CustomLeagueSubleaguePage({league}: CustomLeagueSubleagu
                         : 
                         (<>
                             <CustomLeagueHeader league={league} />
-                            <button onClick={() => setIsEditing(prev => !prev)} className="px-4 py-2 link-hover text-theme-secondary rounded mb-4">
-                                {isEditing ? 'Save Changes' : 'Edit League'}
-                            </button>
+                            <div className="flex justify-between">
+                                <button onClick={() => setIsEditing(prev => !prev)} className="px-4 py-2 link-hover text-theme-secondary rounded mb-4">
+                                    {isEditing ? 'Save Changes' : 'Edit League'}
+                                </button>
+                                <button onClick={() => setHideInactive(prev => !prev)} className="px-4 py-2 link-hover text-theme-secondary rounded mb-4">
+                                    {hideInactive ? 'Show Inactive Teams' : 'Hide Inactive Teams'}
+                                </button>
+                            </div>
                         </>)
                     }
                     {isEditing && (<>
@@ -193,7 +205,7 @@ export default function CustomLeagueSubleaguePage({league}: CustomLeagueSubleagu
                                 <div className='ml-1 w-10 text-right'>RD</div>
                                 <div className='ml-1 w-9 text-right'>GB</div>
                             </div>
-                            {teams.map((team: any, index) => (
+                            {teams.filter((team) => hideInactive ? team.record.regular_season.losses + team.record.regular_season.wins > 0 : true).map((team: any, index) => (
                                 <div key={team.id || index}>
                                     {index === cutoffIndex && (
                                         <div className="relative my-4 flex items-center" aria-label="Cutoff line">
