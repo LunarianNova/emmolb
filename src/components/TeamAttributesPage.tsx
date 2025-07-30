@@ -86,14 +86,265 @@ function TeamSummaryPage ({ setSubpage, APICalls, team, players, feed, }: { setS
         setHighlights(newHighlights);
     }
 
+    const boonTable: Record<string, Record<string, number>> = {
+        "ROBO": {
+            "Accuracy": 1.5,
+            "Discipline": 1.5,
+            "Arm": 1.5,
+            "Cunning": .5,
+            "Presence": .5,
+            "Speed": .5,
+        },
+        "Demonic": {
+            "Muscle": 1.5,
+            "Velocity": 1.5,
+            "Reaction": 1.5,
+            "Discipline": .5,
+            "Control": .5,
+            "Composure": .5,
+        },
+        "Angelic": {
+            "Discipline": 1.5,
+            "Control": 1.5,
+            "Awareness": 1.5,
+            "Muscle": 0.5,
+            "Velocity": 0.5,
+            "Reaction": 0.5,
+        },
+        "Undead": {
+            "Determination": 1.5,
+            "Stamina": 1.5,
+            "Composure": 1.5,
+            "Contact": 0.5,
+            "Presence": 0.5,
+            "Speed": 0.5,
+        },
+        "Giant": {
+            "Muscle": 1.5,
+            "Stamina": 1.5,
+            "Arm": 1.5,
+            "Contact": 0.5,
+            "Control": 0.5,
+            "Agility": 0.5,
+        },
+        "Fire Elemental": {
+            "Lift": 1.5,
+            "Velocity": 1.5,
+            "Speed": 1.5,
+            "Vision": 0.5,
+            "Control": 0.5,
+            "Composure": 0.5,
+        },
+        "Water Elemental": {
+            "Contact": 1.5,
+            "Control": 1.5,
+            "Dexterity": 1.5,
+            "Muscle": 0.5,
+            "Velocity": 0.5,
+            "Reaction": 0.5,
+        },
+        "Air Elemental": {
+            "Aiming": 1.5,
+            "Accuracy": 1.5,
+            "Agility": 1.5,
+            "Muscle": 0.5,
+            "Velocity": 0.5,
+            "Arm": 0.5,
+        },
+        "Earth Elemental": {
+            "Contact": 1.5,
+            "Stamina": 1.5,
+            "Patience": 1.5,
+            "Vision": 0.5,
+            "Control": 0.5,
+            "Speed": 0.5,
+        },
+        "Draconic": {
+            "Lift": 1.5,
+            "Presence": 1.5,
+            "Arm": 1.5,
+            "Discipline": 0.5,
+            "Control": 0.5,
+            "Agility": 0.5,
+        },
+        "Fae": {
+            "Cunning": 1.5,
+            "Persuasion": 1.5,
+            "Dexterity": 1.5,
+            "Muscle": 0.5,
+            "Velocity": 0.5,
+            "Arm": 0.5,
+        },
+        "One With All": {
+            "Selflessness": 1.3,
+            "Contact": 1.3,
+            "Control": 1.3,
+            "Velocity": 1.3,
+            "Determination": 0.7,
+            "Greed": 0.7,
+            "Persuasion": 0.7,
+            "Presence": 0.7,
+        },
+        "Archer's Mark": {
+            "Aiming": 1.3,
+            "Vision": 1.3,
+            "Velocity": 1.3,
+            "Accuracy": 1.3,
+            "Intimidation": 0.7,
+            "Greed": 0.7,
+            "Stuff": 0.7,
+            "Presence": 0.7,
+        },
+        "Geometry Expert": {
+            "Insight": 1.3,
+            "Contact": 1.3,
+            "Control": 1.3,
+            "Rotation": 1.3,
+            "Muscle": 0.7,
+            "Vision": 0.7,
+            "Velocity": 0.7,
+            "Defiance": 0.7,
+        },
+        "Scooter": {
+            "Speed": 1.3,
+            "Intimidation": 1.3,
+            "Velocity": 1.3,
+            "Defiance": 1.3,
+            "Muscle": 0.7,
+            "Discipline": 0.7,
+            "Control": 0.7,
+            "Stamina": 0.7,
+        },
+        "The Light": {
+            "Vision": 1.3,
+            "Discipline": 1.3,
+            "Control": 1.3,
+            "Presence": 1.3,
+            "Contact": 0.7,
+            "Performance": 0.7,
+            "Velocity": 0.7,
+            "Stuff": 0.7,
+        },
+        "Tenacious Badger": {
+            "Determination": 1.3,
+            "Muscle": 1.3,
+            "Stamina": 1.3,
+            "Guts": 1.3,
+            "Vision": 0.7,
+            "Speed": 0.7,
+            "Persuasion": 0.7,
+            "Defiance": 0.7,
+        },
+        "Stormrider": {
+            "Lift": 1.3,
+            "Speed": 1.3,
+            "Velocity": 1.3,
+            "Stuff": 1.3,
+            "Wisdom": 0.7,
+            "Stealth": 0.7,
+            "Control": 0.7,
+            "Rotation": 0.7,
+        },
+        "Insectoid": {
+            "Intimidation": 1.3,
+            "Muscle": 1.3,
+            "Accuracy": 1.3,
+            "Persuasion": 1.3,
+            "Discipline": 0.7,
+            "Insight": 0.7,
+            "Defiance": 0.7,
+            "Presence": 0.7,
+        },
+        "Clean": {
+            "Determination": 1.3,
+            "Discipline": 1.3,
+            "Persuasion": 1.3,
+            "Presence": 1.3,
+            "Wisdom": 0.7,
+            "Insight": 0.7,
+            "Velocity": 0.7,
+            "Defiance": 0.7,
+        },
+        "Shiny": {
+            "Insight": 1.3,
+            "Vision": 1.3,
+            "Presence": 1.3,
+            "Accuracy": 1.3,
+            "Cunning": 0.7,
+            "Stealth": 0.7,
+            "Stuff": 0.7,
+            "Guts": 0.7,
+        },
+        "Psychic": {
+            "Vision": 1.3,
+            "Wisdom": 1.3,
+            "Accuracy": 1.3,
+            "Persuasion": 1.3,
+            "Intimidation": 0.7,
+            "Muscle": 0.7,
+            "Velocity": 0.7,
+            "Stuff": 0.7,
+        },
+        "UFO": {
+            "Contact": 1.3,
+            "Lift": 1.3,
+            "Rotation": 1.3,
+            "Stuff": 1.3,
+            "Discipline": 0.7,
+            "Wisdom": 0.7,
+            "Control": 0.7,
+            "Stamina": 0.7,
+        },
+        "Spectral": {
+            "Stealth": 1.3,
+            "Intimidation": 1.3,
+            "Presence": 1.3,
+            "Rotation": 1.3,
+            "Muscle": 0.7,
+            "Contact": 0.7,
+            "Stuff": 0.7,
+            "Guts": 0.7,
+        },
+        "Amphibian": {
+            "Speed": 1.3,
+            "Performance": 1.3,
+            "Velocity": 1.3,
+            "Persuasion": 1.3,
+            "Insight": 0.7,
+            "Muscle": 0.7,
+            "Presence": 0.7,
+            "Defiance": 0.7,
+        },
+        "Mer": {
+            "Determination": 1.3,
+            "Wisdom": 1.3,
+            "Control": 1.3,
+            "Stuff": 1.3,
+            "Lift": 0.7,
+            "Aiming": 0.7,
+            "Rotation": 0.7,
+            "Guts": 0.7,
+        },
+        "Calculated": {
+            "Discipline": 1.3,
+            "Insight": 1.3,
+            "Control": 1.3,
+            "Accuracy": 1.3,
+            "Muscle": 0.7,
+            "Greed": 0.7,
+            "Guts": 0.7,
+            "Stamina": 0.7,
+        },
+    };
+
     const feedTotals: Record<string, Record<number, Record<number, Record<string, number>>>> = {} // Name: {Season: {Day: {Stat: Buff}}}
     for (const message of feed) {
         if (message.type != 'augment') continue;
-        const regex = /([\w\s.'-]+?) gained \+(\d+) (\w+). /g;
+        const regex = /([\p{L}\s.'-]+?) gained \+(\d+) (\w+)\./gu;
         const matches = [...message.text.matchAll(regex)];
 
         for (const match of matches) {
-            const name = match[1];
+            const name = match[1].trim();
             const amount = Number(match[2]);
             const attribute = match[3];
             let day = Number(message.day);
@@ -108,8 +359,6 @@ function TeamSummaryPage ({ setSubpage, APICalls, team, players, feed, }: { setS
             feedTotals[name][season][day][attribute] += amount;
         }
     }
-
-    console.log(feedTotals)
 
     return (
         <>
@@ -167,6 +416,7 @@ function TeamSummaryPage ({ setSubpage, APICalls, team, players, feed, }: { setS
                             const statsPlayer = players?.find((p: Player) => p.id === player.player_id);
                             if (!statsPlayer) return null;
                             const name = `${player.first_name} ${player.last_name}`;
+                            const boon = statsPlayer.lesser_boon?.name;
                             const items = [statsPlayer.equipment.head, statsPlayer.equipment.body, statsPlayer.equipment.hands, statsPlayer.equipment.feet, statsPlayer.equipment.accessory];
                             const itemTotals: Map<string, number> = new Map<string, number>();
                             items.map((item) => {
@@ -249,6 +499,7 @@ function TeamSummaryPage ({ setSubpage, APICalls, team, players, feed, }: { setS
                                                         {stats.map((stat, k) => {
                                                             let feedTotal = 0;
                                                             const playerFeed = feedTotals[name];
+                                                            const boonMultiplier = boon ? Object.keys(boonTable[boon]).includes(stat) ? boonTable[boon][stat] : 1 : 1;
                                                             if (playerFeed) {
                                                                 for (const [seasonStr, seasonData] of Object.entries(playerFeed)) {
                                                                     const season = Number(seasonStr);
@@ -280,34 +531,60 @@ function TeamSummaryPage ({ setSubpage, APICalls, team, players, feed, }: { setS
                                                             const topBucket = stars !== null ? Math.max(0, stars*25+12.5) : null;
                                                             return (
                                                                 <Fragment key={stat}>
-                                                                    <div className={`${!highlights[stat] ? k%2==1 ? 'bg-theme-primary' : 'bg-theme-secondary' : 'bg-theme-score'} p-1 font-semibold`}>
+                                                                    <div className={`${!highlights[stat] ? k%2==1 ? 'bg-theme-primary' : 'bg-theme-secondary' : 'bg-theme-score'} p-1 font-semibold relative`}>
                                                                         {stat}
+                                                                        {boonMultiplier !== 1 && (
+                                                                            <span className="absolute -right-1 text-xs">ㅤ *{boonMultiplier}</span>
+                                                                        )}
                                                                     </div>
                                                                     <div className={`${!highlights[stat] ? k%2==1 ? 'bg-theme-primary' : 'bg-theme-secondary' : 'bg-theme-score'} p-1 font-semibold`}>
                                                                         {starText ? starText : '???'}
                                                                     </div>
                                                                     <div className={`${!highlights[stat] ? k%2==1 ? 'bg-theme-primary' : 'bg-theme-secondary' : 'bg-theme-score'} p-1 font-semibold`}>
                                                                         <div className="flex justify-between w-full opacity-80">
-                                                                            <div className='text-start'>{stars !== null ? `${bottomBucket}` : '???'}</div>
+                                                                            <div className='text-start'>
+                                                                                {stars !== null ? 
+                                                                                    `${bottomBucket ? bottomBucket*boonMultiplier : bottomBucket}` 
+                                                                                    : '???'
+                                                                                }
+                                                                            </div>
                                                                             <div className="absolute h-2 mt-0.7 ml-14 mx-2">–</div>
-                                                                            <div className='text-end'>{stars !== null ? `${topBucket}` : '???'}</div>
+                                                                            <div className='text-end'>
+                                                                                {stars !== null ? 
+                                                                                    `${topBucket ? topBucket*boonMultiplier : topBucket}` 
+                                                                                    : '???'
+                                                                                }
+                                                                            </div>
                                                                         </div>
                                                                     </div>
                                                                     <div className={`${!highlights[stat] ? k%2==1 ? 'bg-theme-primary' : 'bg-theme-secondary' : 'bg-theme-score'} p-1 text-center font-semibold`}>
-                                                                        {itemTotal}
+                                                                        {itemTotal*boonMultiplier}
                                                                     </div>
                                                                     <div className={`${!highlights[stat] ? k%2==1 ? 'bg-theme-primary' : 'bg-theme-secondary' : 'bg-theme-score'} p-1 text-center font-semibold`}>
-                                                                        {feedTotal}
+                                                                        {feedTotal*boonMultiplier}
                                                                     </div>
                                                                     <div className={`${!highlights[stat] ? k%2==1 ? 'bg-theme-primary' : 'bg-theme-secondary' : 'bg-theme-score'} p-1 font-semibold`}>
                                                                         <div className="flex justify-between w-full opacity-80">
-                                                                            <span className="text-start">{stars !== null ? `${bottomBucket! + itemTotal}` : '???'}</span>
+                                                                            <span className="text-start">
+                                                                                {stars !== null ? 
+                                                                                    `${(bottomBucket! + itemTotal + feedTotal)*boonMultiplier}` 
+                                                                                    : '???'
+                                                                                }
+                                                                            </span>
                                                                             <div className="absolute h-2 mt-0.7 ml-14 mx-2">–</div>
-                                                                            <span className="text-end">{stars !== null ? `${topBucket! + itemTotal}` : '???'}</span>
+                                                                            <span className="text-end">
+                                                                                {stars !== null ? 
+                                                                                    `${(topBucket! + itemTotal + feedTotal)*boonMultiplier}` 
+                                                                                    : '???'
+                                                                                }
+                                                                            </span>
                                                                         </div>                                                                    
                                                                     </div>
                                                                     <div className={`${!highlights[stat] ? k%2==1 ? 'bg-theme-primary' : 'bg-theme-secondary' : 'bg-theme-score'} p-1 text-center font-semibold`}>
-                                                                        {stars !== null ? `${stars*25+itemTotal+feedTotal}` : `???`}
+                                                                        {stars !== null ? 
+                                                                            `${(stars*25+itemTotal+feedTotal)*boonMultiplier}` 
+                                                                            : `???`
+                                                                        }
                                                                     </div>
                                                                 </Fragment>
                                                             );
