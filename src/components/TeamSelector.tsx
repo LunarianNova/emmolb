@@ -98,6 +98,13 @@ export default function TeamSelector() {
             setTeamIDs(updatedIDs);
             setTeams(updatedTeams);
             localStorage.setItem('favoriteTeamIDs', JSON.stringify(updatedIDs));
+            if (user) {
+                fetch('/nextapi/db/account/update-teams', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ teams: JSON.stringify(updatedIDs) }),
+                });
+            }
             setInput('');
         } catch (error) {
             alert('Could not validate team. Please try again later.');
@@ -110,6 +117,13 @@ export default function TeamSelector() {
         setTeamIDs(updatedIDs);
         setTeams(updatedTeams);
         localStorage.setItem('favoriteTeamIDs', JSON.stringify(updatedIDs));
+        if (user) {
+            fetch('/nextapi/db/account/update-teams', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ teams: JSON.stringify(updatedIDs) }),
+            });
+        }
 
         setSubscribedTeams(prev => {
             const newMap = { ...prev };
