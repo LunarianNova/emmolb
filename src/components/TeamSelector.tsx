@@ -19,27 +19,34 @@ export default function TeamSelector() {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const stored = localStorage.getItem('favoriteTeamIDs');
-        if (stored) {
-            const ids: string[] = JSON.parse(stored);
-            setTeamIDs(ids);
+        if (accountLoading) return;
 
-            Promise.all(ids.map(id => fetch(`/nextapi/team/${id}`).then(res => (res.ok ? res.json() : null)))).then(results => {
-                const validTeams = results.filter((team): team is NonNullable<typeof team> => team !== null).map(MapAPITeamResponse);
-                setTeams(validTeams);
-                setLoading(false);
-            }).catch(() => {
-                setLoading(false);
-            });
-        } else {
+        const local = localStorage.getItem('favoriteTeamIDs');
+        const localIDs = local ? JSON.parse(local) : [];
+
+        let merged = [...new Set([...localIDs, ...(user?.teams ? user.teams.split(',') : [])])]
+
+        Promise.all(merged.map(id => fetch(`/nextapi/team/${id}`).then(res => (res.ok ? res.json() : null)))).then(results => {
+            const validTeams = results.filter(Boolean).map(MapAPITeamResponse);
+            const validIDs = validTeams.map(team => team.id);
+            setTeams(validTeams);
+            setTeamIDs(validIDs);
+            localStorage.setItem('favoriteTeamIDs', JSON.stringify(validIDs));
+            if (user) {
+                fetch('/nextapi/db/account/update-teams', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ teams: validIDs }),
+                });
+            }
             setLoading(false);
-        }
+        });
 
         if (!notificationUnsupported() && Notification.permission === 'granted') {
             registerAndSubscribe(setSubscription);
             setNotificationsAllowed(true);
         }
-    }, []);
+    }, [accountLoading, user]);
 
     useEffect(() => {
         if (subscription && teamIDs.length > 0) {
