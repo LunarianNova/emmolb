@@ -1,5 +1,6 @@
 'use client'
 
+import { useAccount } from '@/hooks/Account'
 import Link from 'next/link'
 import React, { useState, useRef, useEffect } from 'react'
 
@@ -7,6 +8,7 @@ export function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [openDropdown, setOpenDropdown] = useState<string | null>(null)
   const [collapsed, setCollapsed] = useState<boolean>(false);
+  const { user } = useAccount();
 
   // Close dropdowns on outside click
   const navRef = useRef<HTMLDivElement>(null)
@@ -155,6 +157,12 @@ export function Navbar() {
               <div className='ml-4 space-y-1'>
                 <Link href='/teams' className='block'>Favorite Teams</Link>
                 <Link href='/options' className='block'>Options</Link>
+                <Link href={user ? '/account' : '/auth'} className='block'>{user ? 'My Account' : 'Log In/Sign Up'}</Link>
+                {user ?
+                <button className="block" onClick={async () => {await fetch('/nextapi/db/logout'); window.location.reload();}}>
+                  Log Out
+                </button>
+                : null}
               </div>
             </details>
           </div>
@@ -325,6 +333,16 @@ export function Navbar() {
                   Options
                 </button>
               </Link>
+              <Link href={user ? "/account" : '/auth'}>
+                <button className="block w-full text-left px-3 py-2 rounded link-hover transition cursor-pointer">
+                  {user ? 'Account' : 'Log in/Sign up'}
+                </button>
+              </Link>
+              {user ?
+                <button className="block w-full text-left px-3 py-2 rounded link-hover transition cursor-pointer" onClick={() => {fetch('/nextapi/db/logout'); window.location.reload();}}>
+                  Log Out
+                </button>
+                : null}
             </div>
           </div>
         </div>

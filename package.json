@@ -11,6 +11,7 @@
   "dependencies": {
     "@hello-pangea/dnd": "^18.0.1",
     "@vercel/analytics": "^1.5.0",
+    "bcrypt": "^6.0.0",
     "emoji-picker-react": "^4.13.2",
     "geist": "^1.4.2",
     "next": "^15.3.4",
@@ -25,6 +26,7 @@
   "devDependencies": {
     "@eslint/eslintrc": "^3",
     "@tailwindcss/postcss": "^4",
+    "@types/bcrypt": "^6.0.0",
     "@types/better-sqlite3": "^7.6.13",
     "@types/node": "^20",
     "@types/react": "^19",
