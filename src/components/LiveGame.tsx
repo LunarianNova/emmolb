@@ -213,10 +213,9 @@ export default function LiveGame({ awayTeamArg, homeTeamArg, initialDataArg, gam
 
     return (
         <>
-        <Navbar />
-        <main className="mt-16">
+        <main className="mt-8">
         <CopiedPopup />
-        <div className="min-h-screen bg-theme-background text-theme-text font-sans p-4 pt-20 max-w-3xl mx-auto h-full">
+        <div className="min-h-screen bg-theme-background text-theme-text font-sans p-4 max-w-3xl mx-auto h-full">
             <button onClick={() => window.location.href = `/live/${gameId}`} className="px-3 py-1 text-xs bg-theme-primary hover:opacity-80 rounded-md mb-1">
                 View in Live Viewer (BETA)
             </button>
