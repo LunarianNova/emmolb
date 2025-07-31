@@ -69,7 +69,7 @@ export function ProcessMessage(event: Event, players: string[], queue: Baserunne
     const stealsHome = /steals home/i.test(message);
     const inningEnd = event.outs === null || event.outs === undefined;
     const scoreCount = (message.match(/scores!/g) ?? []).length + (stealsHome ? 1 : 0);
-    const pitcherEjected = pitcher && message.includes(`Bench Player ${pitcher}`);
+    const pitcherEjected = pitcher && message.match(`ROBO-UMP ejected.*${pitcher} takes the mound`) !== null;
     const batterEjected = batter && message.match(`ROBO-UMP ejected.*${batter}.*for.*Bench Player`) !== null;
 
     const {scoreboard, batterStats, pitcherStats} = (() => {
