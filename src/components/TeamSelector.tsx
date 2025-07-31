@@ -22,10 +22,9 @@ export default function TeamSelector() {
         if (accountLoading) return;
 
         const local = localStorage.getItem('favoriteTeamIDs');
-        const localIDs = local ? JSON.parse(local) : [];
+        const localIDs: string[] = local ? JSON.parse(local) : [];
 
-        console.log(user?.teams);
-        let merged = [...new Set([...localIDs, ...(user?.teams ? user.teams : [])])]
+        const merged = user?.teams ? user.teams : localIDs;
 
         Promise.all(merged.map(id => fetch(`/nextapi/team/${id}`).then(res => (res.ok ? res.json() : null)))).then(results => {
             const validTeams = results.filter(Boolean).map(MapAPITeamResponse);
