@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 
 export function useAccount() {
-    const [user, setUser] = useState<{ username: string, team_id?: string, settings?: Record<any, any> } | null>(null);
+    const [user, setUser] = useState<{ username: string, team_id?: string, settings?: Record<any, any>, teams?: string } | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 

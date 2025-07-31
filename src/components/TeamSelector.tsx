@@ -5,9 +5,11 @@ import { subscribeToTeam, isSubscribed, registerAndSubscribe, notificationUnsupp
 import { MapAPITeamResponse, Team } from '@/types/Team';
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
 import Loading from './Loading';
+import { useAccount } from '@/hooks/Account';
 
 
 export default function TeamSelector() {
+    const { user, loading: accountLoading } = useAccount();
     const [input, setInput] = useState('');
     const [teamIDs, setTeamIDs] = useState<string[]>([]);
     const [teams, setTeams] = useState<Team[]>([]);

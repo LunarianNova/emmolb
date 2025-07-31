@@ -14,6 +14,12 @@ export async function GET(req: NextRequest) {
 
     const teamId = await db.get('SELECT mmolb_team_id FROM user_mmolb_links WHERE user_id = ?', session.user_id);
     const settings = await db.get('SELECT settings FROM user_settings WHERE user_id = ?', session.user_id);
+    const teams = await db.get(`SELECT teams FROM user_teams WHERE user_id = ?`, session.user_id);
 
-    return NextResponse.json({ username: user.username, team_id: teamId?.mmolb_team_id ?? null, settings: settings?.settings ? JSON.parse(settings?.settings) : null, });
+    return NextResponse.json({ 
+        username: user.username, 
+        team_id: teamId?.mmolb_team_id ?? null, 
+        settings: settings?.settings ? JSON.parse(settings?.settings) : null, 
+        teams: teams?.teams ?? null,
+    });
 }
