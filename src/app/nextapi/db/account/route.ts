@@ -20,6 +20,6 @@ export async function GET(req: NextRequest) {
         username: user.username, 
         team_id: teamId?.mmolb_team_id ?? null, 
         settings: settings?.settings ? JSON.parse(settings?.settings) : null, 
-        teams: teams?.teams ?? null,
+        teams: teams?.teams ? JSON.parse(teams.teams) : null,
     });
 }

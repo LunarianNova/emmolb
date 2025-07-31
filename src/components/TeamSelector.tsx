@@ -24,7 +24,8 @@ export default function TeamSelector() {
         const local = localStorage.getItem('favoriteTeamIDs');
         const localIDs = local ? JSON.parse(local) : [];
 
-        let merged = [...new Set([...localIDs, ...(user?.teams ? user.teams.split(',') : [])])]
+        console.log(user?.teams);
+        let merged = [...new Set([...localIDs, ...(user?.teams ? user.teams : [])])]
 
         Promise.all(merged.map(id => fetch(`/nextapi/team/${id}`).then(res => (res.ok ? res.json() : null)))).then(results => {
             const validTeams = results.filter(Boolean).map(MapAPITeamResponse);
@@ -102,7 +103,7 @@ export default function TeamSelector() {
                 fetch('/nextapi/db/account/update-teams', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ teams: JSON.stringify(updatedIDs) }),
+                    body: JSON.stringify({ teams: updatedIDs }),
                 });
             }
             setInput('');
@@ -121,7 +122,7 @@ export default function TeamSelector() {
             fetch('/nextapi/db/account/update-teams', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ teams: JSON.stringify(updatedIDs) }),
+                body: JSON.stringify({ teams: updatedIDs }),
             });
         }
 
