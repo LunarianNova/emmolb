@@ -37,7 +37,7 @@ export default function AuthPage() {
         setError(null);
         setSuccess(null);
         try {
-            const res = await fetch(createAccount ? '/nextapi/db/create-account' : '/nextapi/db/login', {
+            const res = await fetch(createAccount ? '/nextapi/db/account/create-account' : '/nextapi/db/account/login', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ username, password }),

@@ -54,7 +54,7 @@ export default function CustomLeagueSubleaguePage({ league }: CustomLeagueSublea
             const teamRes = await fetch(`/nextapi/team/${trimmedId}`);
             if (!teamRes.ok) throw new Error('Could not fetch new team data.');
 
-            const addRes = await fetch('/nextapi/db/add-team', {
+            const addRes = await fetch('/nextapi/db/leagues/add-team', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -83,7 +83,7 @@ export default function CustomLeagueSubleaguePage({ league }: CustomLeagueSublea
         setStatus('submitting');
 
         try {
-            const removeRes = await fetch('/nextapi/db/remove-team', {
+            const removeRes = await fetch('/nextapi/db/leagues/remove-team', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({

@@ -22,7 +22,7 @@ export function EditLeague({league, status, setStatus,}: {league?: any, status: 
 
         let res = {ok: false};
         if (league){
-            res = await fetch('/nextapi/db/edit-league', {
+            res = await fetch('/nextapi/db/leagues/edit-league', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -33,7 +33,7 @@ export function EditLeague({league, status, setStatus,}: {league?: any, status: 
                 }),
             });
         } else {
-            res = await fetch('/nextapi/db/create-league', {
+            res = await fetch('/nextapi/db/leagues/create-league', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({

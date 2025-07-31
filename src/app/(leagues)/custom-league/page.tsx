@@ -14,7 +14,7 @@ export default function CustomLeaguePage() {
     useEffect(() => {
         async function fetchLeagues() {
             try {
-                const res = await fetch(`/nextapi/db/get-leagues`);
+                const res = await fetch(`/nextapi/db/leagues/get-leagues`);
                 if (!res.ok) throw new Error('Failed to fetch leagues!');
                 const leagues = await res.json()
                 setLeagues(leagues.leagues);

@@ -17,7 +17,7 @@ export default function AccountPage() {
 
     useEffect(() => {
         const fetchStadium = async () => {
-            const res = await fetch(`/nextapi/db/generate-ballpark`);
+            const res = await fetch(`/nextapi/db/account/generate-ballpark`);
             const data = await res.json();
             if (data.error) {
                 setIsAuthenticated(true);
@@ -34,7 +34,7 @@ export default function AccountPage() {
 
     const checkStadium = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        const res = await fetch('/nextapi/db/check-ballpark', {
+        const res = await fetch('/nextapi/db/account/check-ballpark', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ teamId }),

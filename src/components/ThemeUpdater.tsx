@@ -38,7 +38,7 @@ export const ThemeUpdater = () => {
         if (!hasMergedFromServer.current) return;
 
         async function syncSettings() {
-            const res = await fetch('/nextapi/db/update-settings', {
+            const res = await fetch('/nextapi/db/account/update-settings', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ settings }),

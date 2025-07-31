@@ -159,7 +159,7 @@ export function Navbar() {
                 <Link href='/options' className='block'>Options</Link>
                 <Link href={user ? '/account' : '/auth'} className='block'>{user ? 'My Account' : 'Log In/Sign Up'}</Link>
                 {user ?
-                <button className="block" onClick={async () => {await fetch('/nextapi/db/logout'); window.location.reload();}}>
+                <button className="block" onClick={async () => {await fetch('/nextapi/db/account/logout'); window.location.reload();}}>
                   Log Out
                 </button>
                 : null}
@@ -339,7 +339,7 @@ export function Navbar() {
                 </button>
               </Link>
               {user ?
-                <button className="block w-full text-left px-3 py-2 rounded link-hover transition cursor-pointer" onClick={() => {fetch('/nextapi/db/logout'); window.location.reload();}}>
+                <button className="block w-full text-left px-3 py-2 rounded link-hover transition cursor-pointer" onClick={() => {fetch('/nextapi/db/account/logout'); window.location.reload();}}>
                   Log Out
                 </button>
                 : null}
