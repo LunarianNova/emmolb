@@ -172,7 +172,7 @@ export function Navbar() {
               aria-expanded={openDropdown === 'home'}
               aria-haspopup="true"
             >
-              Home
+              Watch
             </button>
             <div
               className={`absolute top-12 left-1/2 -translate-x-1/2 w-44 bg-theme-primary border border-theme-accent rounded-xl p-2 shadow-xl transition-all duration-200 ease-out transform z-50
@@ -183,7 +183,7 @@ export function Navbar() {
                 }`}
             >
               <Link href='/' className="block w-full text-left px-3 py-2 rounded link-hover transition cursor-pointer">
-                Watch
+                Home
               </Link>
               <Link href='/gl-games' className="block w-full text-left px-3 py-2 rounded link-hover transition cursor-pointer">
                 GL Games

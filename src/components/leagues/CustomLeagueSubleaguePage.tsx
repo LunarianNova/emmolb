@@ -153,7 +153,7 @@ export default function CustomLeagueSubleaguePage({ league }: CustomLeagueSublea
                 :
                 (<>
                     <LeagueHeader league={league} />
-                    <div className="flex justify-between">
+                    <div className="flex justify-between mt-2">
                         <button onClick={() => setIsEditing(prev => !prev)} className="px-4 py-2 link-hover text-theme-secondary rounded mb-4">
                             {isEditing ? 'Save Changes' : 'Edit League'}
                         </button>
