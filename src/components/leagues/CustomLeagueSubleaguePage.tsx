@@ -2,12 +2,12 @@
 import { useEffect, useState } from "react";
 import Loading from "../Loading";
 import { MapAPITeamResponse, MapTeamLite, Team } from "@/types/Team";
-import CustomLeagueHeader from "./CustomLeagueHeader";
 import { EditLeague } from "./EditCustomLeague";
 import { Time } from "@/types/Time";
 import { fetchTime } from "@/types/Api";
 import GamesRemaining, { getGamesLeft } from "./GamesRemaining";
 import { LeagueStandings } from "./LeagueStandings";
+import LeagueHeader from "./LeagueHeader";
 
 type CustomLeagueSubleaguePageProps = {
     league: any;
@@ -113,7 +113,7 @@ export default function CustomLeagueSubleaguePage({ league }: CustomLeagueSublea
                 (<EditLeague league={league} status={status} setStatus={setStatus} />)
                 :
                 (<>
-                    <CustomLeagueHeader league={league} />
+                    <LeagueHeader league={league} />
                     <button onClick={() => setIsEditing(prev => !prev)} className="px-4 py-2 link-hover text-theme-secondary rounded mb-4">
                         {isEditing ? 'Save Changes' : 'Edit League'}
                     </button>
@@ -152,7 +152,7 @@ export default function CustomLeagueSubleaguePage({ league }: CustomLeagueSublea
                 (<EditLeague league={league} status={status} setStatus={setStatus} />)
                 :
                 (<>
-                    <CustomLeagueHeader league={league} />
+                    <LeagueHeader league={league} />
                     <div className="flex justify-between">
                         <button onClick={() => setIsEditing(prev => !prev)} className="px-4 py-2 link-hover text-theme-secondary rounded mb-4">
                             {isEditing ? 'Save Changes' : 'Edit League'}

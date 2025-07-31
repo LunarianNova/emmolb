@@ -2,10 +2,8 @@
 
 import { useEffect, useState } from "react";
 import Loading from "@/components/Loading";
-import { Navbar } from "@/components/Navbar";
 import LeagueHeader from "@/components/leagues/LeagueHeader";
 import Link from "next/link";
-import { League } from "@/types/League";
 import { fetchLeague } from "@/types/Api";
 
 export default function LesserLeaguePage() {
@@ -52,7 +50,7 @@ export default function LesserLeaguePage() {
 
     return (<>
         <div className="text-2xl font-bold text-center mb-6">Lesser League Subleagues</div>
-        <div className="flex flex-col mx-auto">
+        <div className="space-y-3">
             {leagues.map((league, index) => (
                 <Link key={index} className="flex justify-center"href={`/league/${league.id}`}>
                     <LeagueHeader league={league} />

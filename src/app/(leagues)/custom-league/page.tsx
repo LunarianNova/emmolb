@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import Loading from "@/components/Loading";
 import Link from "next/link";
 import { useRouter } from 'next/navigation';
-import CustomLeagueHeader from "@/components/leagues/CustomLeagueHeader";
+import LeagueHeader from "@/components/leagues/LeagueHeader";
 
 export default function CustomLeaguePage() {
     const [loading, setLoading] = useState(true);
@@ -34,13 +34,13 @@ export default function CustomLeaguePage() {
 
     return (<>
         <div className="text-2xl font-bold text-center mb-6">Custom League Subleagues</div>
-        <div className="flex flex-col">
-            <button onClick={() => router.push('/create-league')} className="px-4 py-2 link-hover text-theme-secondary rounded mb-4 w-fit">
-                Create Subleague
-            </button>
+        <button onClick={() => router.push('/create-league')} className="px-4 py-2 link-hover text-theme-secondary rounded mb-4 w-fit">
+            Create Subleague
+        </button>
+        <div className="space-y-3">
             {leagues.map((league, index) => (
-                <Link key={index} href={`/custom-league/${league.league_id}`}>
-                    <CustomLeagueHeader league={league} />
+                <Link className="block" key={index} href={`/custom-league/${league.league_id}`}>
+                    <LeagueHeader league={league} />
                 </Link>
             ))}
         </div>
