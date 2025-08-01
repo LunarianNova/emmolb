@@ -20,43 +20,21 @@ type GameHeaderResponse = {
     homeTeam: any;
 }
 
-type MMOLBWatchPageHeaderProps = {
-    setDay: Dispatch<SetStateAction<number>>;
-    day: number;
-    season: number;
-};
-
 type GameWithId = {
     game: Game,
     gameId: string
 }
 
-export function MMOLBWatchPageHeader({ setDay, day, season, }: MMOLBWatchPageHeaderProps) {
-    return (
-        <>
-            <div className="flex justify-center items-center mb-4 gap-4">
-                <button onClick={() => setDay((d) => Math.max(1, d - 2))} className="px-2 py-1 bg-theme-primary rounded">
-                    Prev
-                </button>
-                <div>Day {day}</div>
-                <button onClick={() => setDay((d) => Math.min(300, d + 2))} className="px-2 py-1 bg-theme-primary rounded">
-                    Next
-                </button>
-            </div>
-
-            <h1 className="text-2xl font-bold text-center mb-2">
-                Season {season}, Regular Season, Day {day} Games
-            </h1>
-        </>
-    );
-}
+const SETTING_LEAGUE = 'leagueScoreboard_league';
+const SETTING_DAY = 'leagueScoreboard_day';
+const SETTING_DAYLASTSET = 'leagueScoreboard_dayLastSet';
 
 export default function LeagueScoreboard() {
     const [isLoading, setIsLoading] = useState(true);
     const [games, setGames] = useState<{ game: Game, gameId: string }[]>([]);
     const [day, setDay] = useState(0);
     const [currentDay, setCurrentDay] = useState(0);
-    const [league, setLeague] = useState('favorites');
+    const [league, setLeague] = useState(localStorage.getItem(SETTING_LEAGUE) ?? 'favorites');
     const [leagues, setLeagues] = useState<League[]>([]);
     const path = usePathname();
 
@@ -68,7 +46,20 @@ export default function LeagueScoreboard() {
 
                 const time = await fetchTime();
                 setCurrentDay(time.seasonDay);
-                setDay(time.seasonDay);
+
+                const dayLastSetSetting = localStorage.getItem(SETTING_DAYLASTSET);
+                const daySetting = localStorage.getItem(SETTING_DAY);
+                if (dayLastSetSetting && daySetting) {
+                    const dayLastSetDate = new Date(dayLastSetSetting);
+                    const hourAgo = new Date();
+                    hourAgo.setHours(hourAgo.getHours() - 2);
+                    if (dayLastSetDate > hourAgo)
+                        setDay(Number(daySetting));
+                    else
+                        setDay(time.seasonDay);
+                } else {
+                    setDay(time.seasonDay);
+                }
             } catch (err) {
                 console.error(err);
             } finally {
@@ -190,8 +181,10 @@ export default function LeagueScoreboard() {
             if (day === undefined)
                 return day;
 
-            const newDay = (league === 'favorites') ? day - 1 : day - 2;
-            return Math.max(earliestDayForLeague(), newDay);
+            const newDay = Math.max(earliestDayForLeague(), (league === 'favorites') ? day - 1 : day - 2);
+            localStorage.setItem(SETTING_DAY, String(newDay));
+            localStorage.setItem(SETTING_DAYLASTSET, String(new Date()));
+            return newDay;
         });
     }
 
@@ -200,9 +193,16 @@ export default function LeagueScoreboard() {
             if (day === undefined || currentDay === undefined)
                 return day;
 
-            const newDay = (league === 'favorites') ? day + 1 : day + 2;
-            return Math.min(latestDayForLeague(), newDay);
+            const newDay = Math.min(latestDayForLeague(), (league === 'favorites') ? day + 1 : day + 2);
+            localStorage.setItem(SETTING_DAY, String(newDay));
+            localStorage.setItem(SETTING_DAYLASTSET, String(new Date()));
+            return newDay;
         })
+    }
+
+    function updateLeague(newLeague: string) {
+        setLeague(newLeague);
+        localStorage.setItem(SETTING_LEAGUE, newLeague);
     }
 
     let dayDisplay = day;
@@ -212,11 +212,11 @@ export default function LeagueScoreboard() {
         dayDisplay = day - 1;
 
     return (
-        <div className='flex flex-row flex-nowrap gap-4 justify-center-safe max-w-screen h-16'>
+        <div className='flex flex-row flex-nowrap gap-4 justify-center-safe max-w-screen min-h-16'>
             {!isLoading && day && <>
                 <div className='grid content-center justify-items-center items-center gap-x-4 gap-y-1'>
                     <div className='row-1 col-1 text-xs font-semibold uppercase'>League</div>
-                    <select className='row-2 col-1 text-sm bg-(--theme-primary) p-1 rounded-sm' value={league} onChange={(evt) => setLeague(evt.target.value)}>
+                    <select className='row-2 col-1 text-sm bg-(--theme-primary) p-1 rounded-sm' value={league} onChange={(evt) => updateLeague(evt.target.value)}>
                         <option className='bg-(--theme-primary)' value='favorites'>❤️ Favorites</option>
                         <option className='bg-(--theme-primary)' value='greater'>🏆 Greater</option>
                         {leagues.map((l, idx) => <option key={idx} value={l.id}>{l.emoji} {l.name}</option>)}
@@ -228,9 +228,9 @@ export default function LeagueScoreboard() {
                         <div className={`${day < latestDayForLeague() ? 'cursor-pointer' : 'opacity-20'}`} onClick={nextDay}>▶</div>
                     </div>
                 </div>
-                <div className='flex flex-row flex-nowrap gap-2 overflow-x-auto'>
+                <div className='flex flex-row flex-nowrap gap-2 overflow-x-auto snap-x' style={{scrollbarColor: 'var(--theme-primary) var(--theme-background)', scrollbarWidth: 'thin'}}>
                     {games.filter(({ gameId }) => !path.includes(gameId)).map(({ game, gameId }, i) => (
-                        <Link key={gameId + 'link'} href={'/game/' + gameId}>
+                        <Link key={gameId + 'link'} href={'/game/' + gameId} className='snap-start'>
                             <LiveGameTiny key={gameId} game={game} gameId={gameId} />
                         </Link>
                     ))}
