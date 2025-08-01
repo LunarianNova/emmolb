@@ -14,7 +14,7 @@ export type LeagueStandingsProps = {
 
 export function LeagueStandings({ league, teams, cutoff, showIndex, customElement }: LeagueStandingsProps) {
     if (!league || !teams.length) return (<div className="text-white text-center mt-10">Can't find that league</div>);
-    const columnWidths = [11, 10, 10, 6];
+    const columnWidths = [14, 8, 10, 8];
 
     let cutoffIndex: number;
     if (cutoff) {
