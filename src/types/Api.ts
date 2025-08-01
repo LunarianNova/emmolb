@@ -1,11 +1,12 @@
 'use server'
 
+import { getCachedLesserLeagues, getCachedLiteTeams } from "@/lib/cache";
+import { CashewsGame } from "./FreeCashews";
 import { League } from "./League";
 import { Team, MapAPILeagueTeamResponse } from "./Team";
 import { Time } from "./Time";
 
 export async function fetchLeague(id: string): Promise<League> {
-    'use server';
     const res = await fetch(`https://mmolb.com/api/league/${id}`);
     if (!res.ok) throw new Error('Failed to load league data');
     const data = await res.json();
@@ -19,8 +20,28 @@ export async function fetchLeague(id: string): Promise<League> {
     };
 }
 
+export async function fetchTeamGames(id: string, season: number): Promise<CashewsGame[]> {
+    const apiUrl = new URL(`https://freecashe.ws/api/games`);
+    if (season) apiUrl.searchParams.set('season', String(season));
+    if (id) apiUrl.searchParams.set('team', id);
+
+    const response = await fetch(apiUrl.toString(), {
+        headers: { 'Accept': 'application/json' },
+        next: { revalidate: 0 },
+    });
+
+    if (!response.ok) throw new Error('Failed to load games');
+    const data = await response.json();
+
+    if (!Array.isArray(data.items)) throw new Error('Games response was not an array');
+    return data.items as CashewsGame[];
+}
+
+export async function fetchCachedLesserLeagues(): Promise<League[]> {
+    return await getCachedLesserLeagues();
+}
+
 export async function fetchTopTeamsFromLeague(id: string): Promise<Team[]> {
-    'use server';
     const teamsRes = await fetch(`https://mmolb.com/api/league-top-teams/${id}`);
     if (!teamsRes.ok) throw new Error('Failed to load teams');
     const json = await teamsRes.json();

@@ -5,9 +5,11 @@ import { subscribeToTeam, isSubscribed, registerAndSubscribe, notificationUnsupp
 import { MapAPITeamResponse, Team } from '@/types/Team';
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
 import Loading from './Loading';
+import { useAccount } from '@/hooks/Account';
 
 
 export default function TeamSelector() {
+    const { user, loading: accountLoading } = useAccount();
     const [input, setInput] = useState('');
     const [teamIDs, setTeamIDs] = useState<string[]>([]);
     const [teams, setTeams] = useState<Team[]>([]);
@@ -17,27 +19,34 @@ export default function TeamSelector() {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const stored = localStorage.getItem('favoriteTeamIDs');
-        if (stored) {
-            const ids: string[] = JSON.parse(stored);
-            setTeamIDs(ids);
+        if (accountLoading) return;
 
-            Promise.all(ids.map(id => fetch(`/nextapi/team/${id}`).then(res => (res.ok ? res.json() : null)))).then(results => {
-                const validTeams = results.filter((team): team is NonNullable<typeof team> => team !== null).map(MapAPITeamResponse);
-                setTeams(validTeams);
-                setLoading(false);
-            }).catch(() => {
-                setLoading(false);
-            });
-        } else {
+        const local = localStorage.getItem('favoriteTeamIDs');
+        const localIDs: string[] = local ? JSON.parse(local) : [];
+
+        const merged = user?.teams ? user.teams : localIDs;
+
+        Promise.all(merged.map(id => fetch(`/nextapi/team/${id}`).then(res => (res.ok ? res.json() : null)))).then(results => {
+            const validTeams = results.filter(Boolean).map(MapAPITeamResponse);
+            const validIDs = validTeams.map(team => team.id);
+            setTeams(validTeams);
+            setTeamIDs(validIDs);
+            localStorage.setItem('favoriteTeamIDs', JSON.stringify(validIDs));
+            if (user) {
+                fetch('/nextapi/db/account/update-teams', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ teams: validIDs }),
+                });
+            }
             setLoading(false);
-        }
+        });
 
         if (!notificationUnsupported() && Notification.permission === 'granted') {
             registerAndSubscribe(setSubscription);
             setNotificationsAllowed(true);
         }
-    }, []);
+    }, [accountLoading, user]);
 
     useEffect(() => {
         if (subscription && teamIDs.length > 0) {
@@ -89,6 +98,13 @@ export default function TeamSelector() {
             setTeamIDs(updatedIDs);
             setTeams(updatedTeams);
             localStorage.setItem('favoriteTeamIDs', JSON.stringify(updatedIDs));
+            if (user) {
+                fetch('/nextapi/db/account/update-teams', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ teams: updatedIDs }),
+                });
+            }
             setInput('');
         } catch (error) {
             alert('Could not validate team. Please try again later.');
@@ -101,6 +117,13 @@ export default function TeamSelector() {
         setTeamIDs(updatedIDs);
         setTeams(updatedTeams);
         localStorage.setItem('favoriteTeamIDs', JSON.stringify(updatedIDs));
+        if (user) {
+            fetch('/nextapi/db/account/update-teams', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ teams: updatedIDs }),
+            });
+        }
 
         setSubscribedTeams(prev => {
             const newMap = { ...prev };

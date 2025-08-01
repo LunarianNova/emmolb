@@ -2,7 +2,6 @@
 
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { Navbar } from '@/components/Navbar';
-import { GameHeaderEvent } from '@/components/GameHeader';
 import { GameStateDisplay } from '@/components/GameStateDisplay';
 import { EventBlock } from './EventBlock';
 import { CopiedPopup } from './CopiedPopup';
@@ -20,6 +19,7 @@ import { usePolling } from '@/hooks/Poll';
 import { Player } from '@/types/Player';
 import ExpandedPlayerStats from './ExpandedPlayerStats';
 import { LiveGameTiny } from './LiveGameTiny';
+import { GameHeader } from './GameHeader';
 
 type EventBlockGroup = {
     emoji?: string;
@@ -219,7 +219,7 @@ export default function LiveGame({ awayTeamArg, homeTeamArg, initialDataArg, gam
             <button onClick={() => window.location.href = `/live/${gameId}`} className="px-3 py-1 text-xs bg-theme-primary hover:opacity-80 rounded-md mb-1">
                 View in Live Viewer (BETA)
             </button>
-            <GameHeaderEvent awayTeam={awayTeam} event={lastEvent} homeTeam={homeTeam} game={data} />
+            <GameHeader awayTeam={awayTeam} event={lastEvent} homeTeam={homeTeam} game={data} />
 
             {settings.gamePage?.showExpandedScoreboard && <ExpandedScoreboard
                 gameStats={gameStats}

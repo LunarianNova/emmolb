@@ -8,7 +8,7 @@ import { useSettings } from "./Settings";
 import { FullBlobileDisplay } from "./BlobileLayout";
 import Link from "next/link";
 import { LiveGameCompact } from "./LiveGameCompact";
-import { MinifiedGameHeader } from "./GameHeader";
+import { GameHeader } from "./GameHeader";
 
 type GameHeaderApiResponse = {
     teamId: string;
@@ -116,10 +116,10 @@ export default function GLGamesPage({ season, initialDay }: {season: number, ini
                 </div>
                 <div className={`${gridView ? 'grid grid-cols-[repeat(auto-fit,minmax(20rem,1fr))] sm:grid-cols-[repeat(auto-fit,minmax(40rem,1fr))] gap-4' : 'flex flex-col gap-4'}`}>
                     {!updating && (dayGames.map((game: DayGame) => {
-                        if (game.status === 'Upcoming') return <MinifiedGameHeader key={game.game_id} game={game} />
+                        if (game.status === 'Upcoming') return <GameHeader key={game.game_id} game={game} />
                         else return (
                             <Link key={game.game_id} href={`/watch/${game.game_id}`}>
-                                <MinifiedGameHeader key={game.game_id} game={game} />
+                                <GameHeader key={game.game_id} game={game} />
                             </Link>
                         );
                     }))}  

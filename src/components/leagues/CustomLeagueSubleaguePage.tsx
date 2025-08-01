@@ -2,12 +2,12 @@
 import { useEffect, useState } from "react";
 import Loading from "../Loading";
 import { MapAPITeamResponse, MapTeamLite, Team } from "@/types/Team";
-import CustomLeagueHeader from "./CustomLeagueHeader";
 import { EditLeague } from "./EditCustomLeague";
 import { Time } from "@/types/Time";
 import { fetchTime } from "@/types/Api";
 import GamesRemaining, { getGamesLeft } from "./GamesRemaining";
 import { LeagueStandings } from "./LeagueStandings";
+import LeagueHeader from "./LeagueHeader";
 
 type CustomLeagueSubleaguePageProps = {
     league: any;
@@ -54,7 +54,7 @@ export default function CustomLeagueSubleaguePage({ league }: CustomLeagueSublea
             const teamRes = await fetch(`/nextapi/team/${trimmedId}`);
             if (!teamRes.ok) throw new Error('Could not fetch new team data.');
 
-            const addRes = await fetch('/nextapi/db/add-team', {
+            const addRes = await fetch('/nextapi/db/leagues/add-team', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -83,7 +83,7 @@ export default function CustomLeagueSubleaguePage({ league }: CustomLeagueSublea
         setStatus('submitting');
 
         try {
-            const removeRes = await fetch('/nextapi/db/remove-team', {
+            const removeRes = await fetch('/nextapi/db/leagues/remove-team', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -113,7 +113,7 @@ export default function CustomLeagueSubleaguePage({ league }: CustomLeagueSublea
                 (<EditLeague league={league} status={status} setStatus={setStatus} />)
                 :
                 (<>
-                    <CustomLeagueHeader league={league} />
+                    <LeagueHeader league={league} />
                     <button onClick={() => setIsEditing(prev => !prev)} className="px-4 py-2 link-hover text-theme-secondary rounded mb-4">
                         {isEditing ? 'Save Changes' : 'Edit League'}
                     </button>
@@ -152,8 +152,8 @@ export default function CustomLeagueSubleaguePage({ league }: CustomLeagueSublea
                 (<EditLeague league={league} status={status} setStatus={setStatus} />)
                 :
                 (<>
-                    <CustomLeagueHeader league={league} />
-                    <div className="flex justify-between">
+                    <LeagueHeader league={league} />
+                    <div className="flex justify-between mt-2">
                         <button onClick={() => setIsEditing(prev => !prev)} className="px-4 py-2 link-hover text-theme-secondary rounded mb-4">
                             {isEditing ? 'Save Changes' : 'Edit League'}
                         </button>
