@@ -80,16 +80,16 @@ export function LiveGameTiny({ gameId, game }: LiveGameTinyProps) {
             {event &&
                 <div className='flex justify-between absolute items-stretch size-full p-2'>
                     <div className='justify-self-start grid grid-rows-2 gap-x-1 gap-y-4 text-xs font-semibold items-center'>
-                        <div className='row-1 col-1 w-14 truncate' style={{ color: getContrastTextColor(game.away_team_color) || 'rgb(0,0,0)' }}>
+                        <div className='row-1 col-1 w-13 truncate' style={{ color: getContrastTextColor(game.away_team_color) || 'rgb(0,0,0)' }}>
                             <span className='text-sm text-shadow-sm/20'>{game.away_team_emoji}</span> {game?.away_team_abbreviation}
                         </div>
-                        <div className='row-2 col-1 w-14 truncate' style={{ color: getContrastTextColor(game.home_team_color) || 'rgb(0,0,0)' }}>
+                        <div className='row-2 col-1 w-13 truncate' style={{ color: getContrastTextColor(game.home_team_color) || 'rgb(0,0,0)' }}>
                             <span className='text-sm text-shadow-sm/20'>{game.home_team_emoji}</span> {game?.home_team_abbreviation}
                         </div>
-                        <div className='row-1 col-2 text-base text-center w-4 pt-0.5' style={{ color: getContrastTextColor(game.away_team_color) || 'rgb(0,0,0)' }}>
+                        <div className='row-1 col-2 text-base text-center w-5 pt-0.5' style={{ color: getContrastTextColor(game.away_team_color) || 'rgb(0,0,0)' }}>
                             {event.away_score}
                         </div>
-                        <div className='row-2 col-2 text-base text-center w-4 pt-0.5' style={{ color: getContrastTextColor(game.home_team_color) || 'rgb(0,0,0)' }}>
+                        <div className='row-2 col-2 text-base text-center w-5 pt-0.5' style={{ color: getContrastTextColor(game.home_team_color) || 'rgb(0,0,0)' }}>
                             {event.home_score}
                         </div>
                     </div>

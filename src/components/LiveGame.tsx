@@ -314,13 +314,13 @@ export function getSpecialEventColor({ isWeatherEvent, isScore, isEjection }: Sp
     if (isEjection && isScore) {
         return 'linear-gradient(to right bottom, var(--theme-score), var(--theme-ejection))';
     } else if (isWeatherEvent && isScore) {
-        return 'linear-gradient(to right bottom, var(--theme-score), var(--theme-falling_star))';
+        return 'linear-gradient(to right bottom, var(--theme-score), var(--theme-weather_event))';
     } else if (isWeatherEvent && isEjection) {
-        return 'linear-gradient(to right bottom, var(--theme-falling_star), var(--theme-ejection))';
+        return 'linear-gradient(to right bottom, var(--theme-weather_event), var(--theme-ejection))';
     } else if (isEjection) {
         return 'var(--theme-ejection)';
     } else if (isWeatherEvent) {
-        return 'var(--theme-falling_star)';
+        return 'var(--theme-weather_event)';
     } else if (isScore) {
         return 'var(--theme-score)';
     }
