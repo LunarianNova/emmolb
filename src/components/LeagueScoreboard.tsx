@@ -25,11 +25,11 @@ type MMOLBWatchPageHeaderProps = {
     season: number;
 };
 
-export function MMOLBWatchPageHeader({setDay, day, season,}: MMOLBWatchPageHeaderProps) {
+export function MMOLBWatchPageHeader({ setDay, day, season, }: MMOLBWatchPageHeaderProps) {
     return (
         <>
             <div className="flex justify-center items-center mb-4 gap-4">
-                <button onClick={() => setDay((d) => Math.max(1, d - 2))}className="px-2 py-1 bg-theme-primary rounded">
+                <button onClick={() => setDay((d) => Math.max(1, d - 2))} className="px-2 py-1 bg-theme-primary rounded">
                     Prev
                 </button>
                 <div>Day {day}</div>
@@ -37,7 +37,7 @@ export function MMOLBWatchPageHeader({setDay, day, season,}: MMOLBWatchPageHeade
                     Next
                 </button>
             </div>
-            
+
             <h1 className="text-2xl font-bold text-center mb-2">
                 Season {season}, Regular Season, Day {day} Games
             </h1>
@@ -72,13 +72,33 @@ export default function LeagueScoreboard() {
     useEffect(() => {
         async function APICalls() {
             try {
-                console.log(league);
                 if (!day) return;
-                const gamesRes = await fetch(`/nextapi/day-games/${day}?limit=10`);
-                if (!gamesRes.ok) throw new Error('Failed to load game data');
-                const gamesData = await gamesRes.json();
-                const games = gamesData.games.map((game: any): DayGame => MapDayGameAPIResponse(game)).filter((dayGame: DayGame) => !path.includes(dayGame.game_id));
-                setDayGames(games);
+                if (league === 'favorites') {
+                    const favoriteTeamIDs = JSON.parse(localStorage.getItem('favoriteTeamIDs') || '[]');
+                    const res = await fetch('/nextapi/gameheaders', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ teamIds: favoriteTeamIDs }),
+                    });
+                    if (!res.ok) throw new Error('Failed to load game headers');
+
+                    const data: GameHeaderApiResponse[] = await res.json();
+                    //setGameHeaders(data);
+                } else {
+                    let gamesRes;
+                    if (league === 'greater') {
+                        const nearestDay = day % 2 === 1 ? day : day - 1;
+                        gamesRes = await fetch(`/nextapi/day-games/${nearestDay}`);
+                    } else {
+                        const nearestDay = day % 2 === 0 ? day : day - 1;
+                        gamesRes = await fetch(`/nextapi/day-games/${nearestDay}?league=${league}&limit=8`);
+                    }
+
+                    if (!gamesRes.ok) throw new Error('Failed to load game data');
+                    const gamesData = await gamesRes.json();
+                    const games = gamesData.games.map((game: any): DayGame => MapDayGameAPIResponse(game)).filter((dayGame: DayGame) => !path.includes(dayGame.game_id));
+                    setDayGames(games);
+                }
             } catch (err) {
                 console.error(err);
             } finally {
@@ -106,8 +126,8 @@ export default function LeagueScoreboard() {
             </div>
             <div className='flex flex-row flex-nowrap gap-2 overflow-x-auto'>
                 {dayGames.map((dayGame, i) => (
-                    <Link key={i + 'link'} href={'/game/' + dayGame.game_id}>
-                        <LiveGameTiny key={i} dayGame={dayGame} />
+                    <Link key={dayGame.game_id + 'link'} href={'/game/' + dayGame.game_id}>
+                        <LiveGameTiny key={dayGame.game_id} dayGame={dayGame} />
                     </Link>
                 ))}
             </div>
