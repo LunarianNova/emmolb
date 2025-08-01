@@ -8,8 +8,10 @@ import { useSettings } from "./Settings";
 import { FullBlobileDisplay } from "./BlobileLayout";
 import Link from "next/link";
 import { LiveGameCompact } from "./LiveGameCompact";
-import { MinifiedGameHeader } from "./GameHeader";
 import { MMOLBWatchPageHeader } from "./GLGamesPage";
+import { CashewsGame } from "@/types/FreeCashews";
+import { fetchTeamGames } from "@/types/Api";
+import { GameHeader } from "./GameHeader";
 
 type GameHeaderApiResponse = {
     teamId: string;
@@ -39,6 +41,7 @@ export default function LLGamesPage({ season, initialDay, league }: LLGamesPageP
     const [teamOrder, setTeamOrder] = useState<string[]>([]);
     const [page, setPage] = useState<number>(1);
     const [gamesPerPage, setGamesPerPage] = useState<number>(20); // Unused currently
+    const [historicGames, setHistoricGames] = useState<Record<string, CashewsGame[]>>({});
     const [favoriteTeams, setFavoriteTeams] = useState<string[]>();
     const [gridView, setGridView] = useState<boolean>(false);
     const [day, setDay] = useState<number>(initialDay);
@@ -125,6 +128,15 @@ export default function LLGamesPage({ season, initialDay, league }: LLGamesPageP
                 if (!gameheadersRes.ok) throw new Error('Failed to load game headers');
                 const data: GameHeaderApiResponse[] = await gameheadersRes.json();
                 
+                // const gameEntries = await Promise.all(
+                //     data.map(async ({ teamId }) => [teamId, [...await fetchTeamGames(teamId, 4)]])
+                // );
+
+                // setHistoricGames(prev => ({
+                //     ...prev,
+                //     ...Object.fromEntries(gameEntries)
+                // }));
+
                 setGameHeaders(prev => ({
                     ...prev,
                     ...Object.fromEntries(data.map(({ teamId, gameHeader }) => [teamId, gameHeader]))
@@ -185,13 +197,13 @@ export default function LLGamesPage({ season, initialDay, league }: LLGamesPageP
                                 </Link>
                             ) : (
                                 <Link key={game.game_id} href={"/game/" + game.game_id}>
-                                    <LiveGameCompact gameId={gameHeader.gameId} homeTeam={MapAPITeamResponse(gameHeader.homeTeam)} awayTeam={MapAPITeamResponse(gameHeader.awayTeam)} game={MapAPIGameResponse(gameHeader.game)} killLinks={true} />
+                                    <LiveGameCompact gameId={gameHeader.gameId} homeTeam={MapAPITeamResponse(gameHeader.homeTeam)} awayTeam={MapAPITeamResponse(gameHeader.awayTeam)} game={MapAPIGameResponse(gameHeader.game)} killLinks={true} historicGames={historicGames?.[game.home_team_id]}/>
                                 </Link>
                             )
                         } else {
                             return (
                                 <Link key={game.game_id} href={`/watch/${game.game_id}`}>
-                                    <MinifiedGameHeader game={game} />
+                                    <GameHeader game={game} />
                                 </Link>
                             );
                         }

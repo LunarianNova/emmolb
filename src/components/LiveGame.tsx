@@ -2,7 +2,6 @@
 
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { Navbar } from '@/components/Navbar';
-import { GameHeaderEvent } from '@/components/GameHeader';
 import { GameStateDisplay } from '@/components/GameStateDisplay';
 import { EventBlock } from './EventBlock';
 import { CopiedPopup } from './CopiedPopup';
@@ -19,6 +18,7 @@ import { ExpandedScoreboard } from './ExpandedScoreboard';
 import { usePolling } from '@/hooks/Poll';
 import { Player } from '@/types/Player';
 import ExpandedPlayerStats from './ExpandedPlayerStats';
+import { GameHeader } from './GameHeader';
 
 type EventBlockGroup = {
     emoji?: string;
@@ -197,13 +197,13 @@ export default function LiveGame({ awayTeamArg, homeTeamArg, initialDataArg, gam
             if (block.isEjection && block.isScore) {
                 block.color = 'linear-gradient(to right bottom, var(--theme-score), var(--theme-ejection))';
             } else if (block.isWeatherEvent && block.isScore) {
-                block.color = 'linear-gradient(to right bottom, var(--theme-score), var(--theme-falling_star))';
+                block.color = 'linear-gradient(to right bottom, var(--theme-score), var(--theme-weather_event))';
             } else if (block.isWeatherEvent && block.isEjection) {
-                block.color = 'linear-gradient(to right bottom, var(--theme-falling_star), var(--theme-ejection))';
+                block.color = 'linear-gradient(to right bottom, var(--theme-weather_event), var(--theme-ejection))';
             } else if (block.isEjection) {
                 block.color = 'var(--theme-ejection)';
             } else if (block.isWeatherEvent) {
-                block.color = 'var(--theme-falling_star)';
+                block.color = 'var(--theme-weather_event)';
             } else if (block.isScore) {
                 block.color = 'var(--theme-score)';
             }
@@ -233,7 +233,7 @@ export default function LiveGame({ awayTeamArg, homeTeamArg, initialDataArg, gam
             <button onClick={() => window.location.href = `/live/${gameId}`} className="px-3 py-1 text-xs bg-theme-primary hover:opacity-80 rounded-md mb-1">
                 View in Live Viewer (BETA)
             </button>
-            <GameHeaderEvent awayTeam={awayTeam} event={lastEvent} homeTeam={homeTeam} game={data} />
+            <GameHeader awayTeam={awayTeam} event={lastEvent} homeTeam={homeTeam} game={data} />
 
             {settings.gamePage?.showExpandedScoreboard && <ExpandedScoreboard
                 gameStats={gameStats}

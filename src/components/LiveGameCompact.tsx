@@ -2,11 +2,12 @@
 import { useCallback, useState } from 'react';
 import { GameStateDisplay } from '@/components/GameStateDisplay';
 import LastUpdatedCounter from './LastUpdatedCounter';
-import { GameHeader, GameHeaderEvent } from './GameHeader';
+import { GameHeader } from './GameHeader';
 import { Team } from '@/types/Team';
 import { Game } from '@/types/Game';
 import { Event } from '@/types/Event';
 import { usePolling } from '@/hooks/Poll';
+import { CashewsGame } from '@/types/FreeCashews';
 
 type LiveGameCompactProps = {
     gameId: string;
@@ -14,6 +15,7 @@ type LiveGameCompactProps = {
     awayTeam: Team;
     game: Game;
     killLinks?: boolean;
+    historicGames?: CashewsGame[];
 }
 
 type GameStateDisplayCompactProps = { 
@@ -21,7 +23,7 @@ type GameStateDisplayCompactProps = {
     lastUpdated: any;
 }
 
-export function LiveGameCompact({ gameId, homeTeam, awayTeam, game, killLinks = false }: LiveGameCompactProps){
+export function LiveGameCompact({ gameId, homeTeam, awayTeam, game, killLinks = false, historicGames, }: LiveGameCompactProps){
     const [event, setEvent] = useState<Event | null>(null);
     const [hasError, setHasError] = useState(false);
     const [lastUpdated, setLastUpdated] = useState<number>(Date.now());
@@ -52,7 +54,7 @@ export function LiveGameCompact({ gameId, homeTeam, awayTeam, game, killLinks = 
     if (hasError || !event) return <GameHeader homeTeam={homeTeam} awayTeam={awayTeam} game={game} killLinks={killLinks} />;
   
     return (<>
-        <GameHeaderEvent homeTeam={homeTeam} awayTeam={awayTeam} game={game} event={event} killLinks={killLinks} />
+        <GameHeader homeTeam={homeTeam} awayTeam={awayTeam} game={game} event={event} killLinks={killLinks} historicGames={historicGames} />
         <GameStateDisplayCompact event={event} lastUpdated={lastUpdated}/>
     </>);
 }

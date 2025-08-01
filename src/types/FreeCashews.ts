@@ -1,3 +1,5 @@
+import { Event } from "./Event";
+
 export type CashewsEquipment = {
     Name?: string;
     Emoji?: string;
@@ -48,3 +50,15 @@ export type CashewsPlayer = {
 export type CashewsPlayers = {
     items: CashewsPlayer[]
 }
+
+export type CashewsGame = {
+    game_id: string,
+    season: number,
+    day?: number,
+    day_special?: string,
+    home_team_id: string,
+    away_team_id: string,
+    state: string,
+    event_count?: number,
+    last_update: Event,
+};
