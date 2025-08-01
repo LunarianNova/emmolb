@@ -60,11 +60,10 @@ export function LiveGameTiny({ dayGame }: LiveGameTinyProps) {
             }
             else if (newData.entries?.length) {
                 setEvent(newData.entries[newData.entries.length - 1]);
-                if (newData.entries[newData.entries.length - 1].event === 'GameOver') {
+                const newRecentEvents = recentEvents.concat(newData.entries).slice(-maxRecentEvents);
+                setRecentEvents(newRecentEvents);
+                if (newRecentEvents.some(e => e.event === 'GameOver' || e.event === 'Recordkeeping'))
                     setIsComplete(true);
-                } else {
-                    setRecentEvents(recentEvents.concat(newData.entries).slice(-maxRecentEvents));
-                }
             }
         },
         killCon
@@ -87,23 +86,23 @@ export function LiveGameTiny({ dayGame }: LiveGameTinyProps) {
     return (<>
         <div className='w-38 h-16 relative rounded-xl' style={{ background: specialEventColor || 'var(--theme-primary)' }}>
             <div className='grid grid-rows-2 absolute size-full'>
-                <div className='row-1 rounded-t-xl' style={{ background: `linear-gradient(120deg, #${dayGame.away_team_color} 55%, #00000000 67%)` }}></div>
-                <div className='row-2 rounded-b-xl' style={{ background: `linear-gradient(60deg, #${dayGame.home_team_color} 55%, #00000000 67%)` }}></div>
+                <div className='row-1 rounded-t-xl' style={{ background: `linear-gradient(120deg, #${dayGame.away_team_color} 55%, #00000000 65%)` }}></div>
+                <div className='row-2 rounded-b-xl' style={{ background: `linear-gradient(60deg, #${dayGame.home_team_color} 55%, #00000000 65%)` }}></div>
             </div>
             {event &&
-                <div className='flex justify-between absolute items-stretch size-full p-2 pl-1.5'>
-                    <div className='justify-self-start grid grid-rows-2 gap-x-1 gap-y-2 text-sm font-semibold'>
+                <div className='flex justify-between absolute items-stretch size-full p-2'>
+                    <div className='justify-self-start grid grid-rows-2 gap-x-1 gap-y-4 text-xs font-semibold items-center'>
                         <div className='row-1 col-1 w-14 truncate' style={{ color: getContrastTextColor(dayGame.away_team_color) || 'rgb(0,0,0)' }}>
-                            <span className='text-xs text-shadow-sm/20'>{dayGame.away_team_emoji}</span> {game?.away_team_abbreviation}
+                            <span className='text-sm text-shadow-sm/20'>{dayGame.away_team_emoji}</span> {game?.away_team_abbreviation}
                         </div>
                         <div className='row-2 col-1 w-14 truncate' style={{ color: getContrastTextColor(dayGame.home_team_color) || 'rgb(0,0,0)' }}>
-                            <span className='text-xs text-shadow-sm/20'>{dayGame.home_team_emoji}</span> {game?.home_team_abbreviation}
+                            <span className='text-sm text-shadow-sm/20'>{dayGame.home_team_emoji}</span> {game?.home_team_abbreviation}
                         </div>
-                        <div className='row-1 col-2 text-right w-4' style={{ color: getContrastTextColor(dayGame.away_team_color) || 'rgb(0,0,0)' }}>
-                            {event?.away_score}
+                        <div className='row-1 col-2 text-base text-center w-4 pt-0.5' style={{ color: getContrastTextColor(dayGame.away_team_color) || 'rgb(0,0,0)' }}>
+                            {event.away_score}
                         </div>
-                        <div className='row-2 col-2 text-right w-4' style={{ color: getContrastTextColor(dayGame.home_team_color) || 'rgb(0,0,0)' }}>
-                            {event?.home_score}
+                        <div className='row-2 col-2 text-base text-center w-4 pt-0.5' style={{ color: getContrastTextColor(dayGame.home_team_color) || 'rgb(0,0,0)' }}>
+                            {event.home_score}
                         </div>
                     </div>
                     {bases && !isComplete &&
@@ -144,10 +143,12 @@ export function LiveGameTiny({ dayGame }: LiveGameTinyProps) {
                             <div className="flex ml-1 mt-1 justify-center space-x-1">{renderCircles(event.outs, 2)}</div>
                         </div>
                     }
-                    <div className='justify-self-end grid grid-rows-3 text-xs text-center font-semibold'>
-                        <div className='row-1'>{!isComplete && event && event.inning_side === 0 && '▲'}</div>
-                        <div className='row-2'>{!isComplete && event ? event.inning : `F${(event && event.inning > 9) ? `/${event.inning}` : ''}`}</div>
-                        <div className='row-3'>{!isComplete && event && event.inning_side === 1 && '▼'}</div>
+                    <div className='justify-self-end grid grid-rows-3 text-xs text-center font-semibold uppercase'>
+                        <div className='row-1'>{!isComplete && event.inning_side === 0 && '▲'}</div>
+                        <div className='row-2'>
+                            {!isComplete ? event.inning : (event.inning > 9 ? `F/${event.inning}` : 'FINAL')}
+                        </div>
+                        <div className='row-3'>{!isComplete && event.inning_side === 1 && '▼'}</div>
                     </div>
                 </div>
             }

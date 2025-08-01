@@ -92,7 +92,7 @@ export default function LeagueScoreboard() {
         <div className='flex flex-row flex-nowrap gap-4 justify-center-safe max-w-screen'>
             <div className='grid content-center justify-items-center items-center gap-x-4 gap-y-1'>
                 <div className='row-1 col-1 text-xs font-semibold uppercase'>League</div>
-                <select className='row-2 col-1 text-sm bg-(--theme-primary) p-1' value={league} onChange={(evt) => setLeague(evt.target.value)}>
+                <select className='row-2 col-1 text-sm bg-(--theme-primary) p-1 rounded-sm' value={league} onChange={(evt) => setLeague(evt.target.value)}>
                     <option className='bg-(--theme-primary)' value='favorites'>❤️ Favorites</option>
                     <option className='bg-(--theme-primary)' value='greater'>🏆 Greater</option>
                     {leagues.map((l, idx) => <option key={idx} value={l.id}>{l.emoji} {l.name}</option>)}
