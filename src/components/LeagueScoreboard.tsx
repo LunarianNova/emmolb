@@ -54,7 +54,8 @@ export function MMOLBWatchPageHeader({ setDay, day, season, }: MMOLBWatchPageHea
 export default function LeagueScoreboard() {
     const [isLoading, setIsLoading] = useState(true);
     const [games, setGames] = useState<{ game: Game, gameId: string }[]>([]);
-    const [day, setDay] = useState<number>();
+    const [day, setDay] = useState(0);
+    const [currentDay, setCurrentDay] = useState(0);
     const [league, setLeague] = useState('favorites');
     const [leagues, setLeagues] = useState<League[]>([]);
     const path = usePathname();
@@ -66,6 +67,7 @@ export default function LeagueScoreboard() {
                 setLeagues(leaguesRes);
 
                 const time = await fetchTime();
+                setCurrentDay(time.seasonDay);
                 setDay(time.seasonDay);
             } catch (err) {
                 console.error(err);
@@ -82,20 +84,22 @@ export default function LeagueScoreboard() {
                 if (!day) return;
                 if (league === 'favorites') {
                     const favoriteTeamIDs = JSON.parse(localStorage.getItem('favoriteTeamIDs') || '[]');
-                    const res = await fetch('/nextapi/gameheaders', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ teamIds: favoriteTeamIDs }),
-                    });
-                    if (!res.ok) throw new Error('Failed to load game headers');
-
-                    const data: GameHeaderApiResponse[] = await res.json();
                     const teamIdToGame: Record<string, GameWithId> = {};
-                    for (const dataGame of data) {
-                        const game = MapAPIGameResponse(dataGame.gameHeader.game);
-                        const gameWithId = { game, gameId: dataGame.gameHeader.gameId };
-                        teamIdToGame[game.away_team_id] = gameWithId;
-                        teamIdToGame[game.home_team_id] = gameWithId;
+                    if (day === currentDay) {
+                        const res = await fetch('/nextapi/gameheaders', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ teamIds: favoriteTeamIDs }),
+                        });
+                        if (!res.ok) throw new Error('Failed to load game headers');
+
+                        const data: GameHeaderApiResponse[] = await res.json();
+                        for (const dataGame of data) {
+                            const game = MapAPIGameResponse(dataGame.gameHeader.game);
+                            const gameWithId = { game, gameId: dataGame.gameHeader.gameId };
+                            teamIdToGame[game.away_team_id] = gameWithId;
+                            teamIdToGame[game.home_team_id] = gameWithId;
+                        }
                     }
 
                     const prevGames = await Promise.all(favoriteTeamIDs.map(async (teamId: string) => {
@@ -103,7 +107,7 @@ export default function LeagueScoreboard() {
                             return null;
 
                         const scheduleRes = await fetch(`/nextapi/team-schedule/${teamId}`);
-                        if (!res.ok) return null;
+                        if (!scheduleRes.ok) return null;
                         const schedule = await scheduleRes.json();
                         const gameId = schedule?.games?.find((g: any) => g.day === day || g.day === day - 1)?.game_id;
                         if (!gameId)
@@ -161,9 +165,55 @@ export default function LeagueScoreboard() {
         APICalls();
     }, [day, league]);
 
+    function earliestDayForLeague() {
+        if (league === 'favorites' || league === 'greater') {
+            return 1;
+        } else {
+            return 2;
+        }
+    }
+
+    function latestDayForLeague() {
+        if (currentDay === undefined)
+            return 0;
+        if (league === 'favorites') {
+            return currentDay;
+        } else if (league === 'greater') {
+            return currentDay % 2 === 1 ? currentDay : currentDay - 1;
+        } else {
+            return currentDay % 2 === 0 ? currentDay : currentDay - 1;
+        }
+    }
+
+    function prevDay() {
+        setDay(day => {
+            if (day === undefined)
+                return day;
+
+            const newDay = (league === 'favorites') ? day - 1 : day - 2;
+            return Math.max(earliestDayForLeague(), newDay);
+        });
+    }
+
+    function nextDay() {
+        setDay(day => {
+            if (day === undefined || currentDay === undefined)
+                return day;
+
+            const newDay = (league === 'favorites') ? day + 1 : day + 2;
+            return Math.min(latestDayForLeague(), newDay);
+        })
+    }
+
+    let dayDisplay = day;
+    if (league === 'greater' && day % 2 === 0)
+        dayDisplay = day - 1;
+    else if (league !== 'greater' && league !== 'favorites' && day % 2 === 1)
+        dayDisplay = day - 1;
+
     return (
         <div className='flex flex-row flex-nowrap gap-4 justify-center-safe max-w-screen h-16'>
-            {!isLoading && <>
+            {!isLoading && day && <>
                 <div className='grid content-center justify-items-center items-center gap-x-4 gap-y-1'>
                     <div className='row-1 col-1 text-xs font-semibold uppercase'>League</div>
                     <select className='row-2 col-1 text-sm bg-(--theme-primary) p-1 rounded-sm' value={league} onChange={(evt) => setLeague(evt.target.value)}>
@@ -172,14 +222,14 @@ export default function LeagueScoreboard() {
                         {leagues.map((l, idx) => <option key={idx} value={l.id}>{l.emoji} {l.name}</option>)}
                     </select>
                     <div className='row-1 col-2 text-xs font-semibold uppercase'>Day</div>
-                    <div className='flex text-md gap-1'>
-                        <div>◀</div>
-                        <div>{day}</div>
-                        <div>▶</div>
+                    <div className='flex text-md gap-1 cursor-default'>
+                        <div className={`${day > earliestDayForLeague() ? 'cursor-pointer' : 'opacity-20'}`} onClick={prevDay}>◀</div>
+                        <div>{dayDisplay}</div>
+                        <div className={`${day < latestDayForLeague() ? 'cursor-pointer' : 'opacity-20'}`} onClick={nextDay}>▶</div>
                     </div>
                 </div>
                 <div className='flex flex-row flex-nowrap gap-2 overflow-x-auto'>
-                    {games.filter(({gameId}) => !path.includes(gameId)).map(({game, gameId}, i) => (
+                    {games.filter(({ gameId }) => !path.includes(gameId)).map(({ game, gameId }, i) => (
                         <Link key={gameId + 'link'} href={'/game/' + gameId}>
                             <LiveGameTiny key={gameId} game={game} gameId={gameId} />
                         </Link>
