@@ -2,7 +2,7 @@
 import Loading from "@/components/Loading";
 import { Dispatch, Fragment, SetStateAction, useEffect, useState } from "react";
 import { MapAPITeamResponse, PlaceholderTeam, Team, TeamPlayer } from "@/types/Team";
-import { MapAPIPlayerResponse, Player } from "@/types/Player";
+import { EquipmentEffect, MapAPIPlayerResponse, Player } from "@/types/Player";
 import { FeedMessage } from "@/types/FeedMessage";
 
 const battingAttrs = ['Aiming', 'Contact', 'Cunning', 'Determination', 'Discipline', 'Insight', 'Intimidation', 'Lift', 'Muscle', 'Selflessness', 'Vision', 'Wisdom'];
@@ -22,6 +22,8 @@ type OpenDropboxes = {
         [category: string]: boolean;
     };
 };
+
+const trunc = (num: number) => (Math.floor((num) * 100)/100).toString();
 
 export default function TeamAttributesPage({ id }: { id: string }) {
     const [loading, setLoading] = useState(true);
@@ -79,14 +81,138 @@ export default function TeamAttributesPage({ id }: { id: string }) {
 function TeamSummaryPage ({ setSubpage, APICalls, team, players, feed, }: { setSubpage: Dispatch<SetStateAction<string>>; APICalls: () => void; team: Team; players: Player[] | undefined; feed: FeedMessage[] }) {
     const [highlights, setHighlights] = useState<Record<string, boolean>>({});
     const [openDropboxes, setOpenDropboxes] = useState<OpenDropboxes>({}) // PlayerName: "batting: true, defense: false, etc"
+    const [boons, setBoons] = useState<Record<string, string>>({});
     
+    useEffect(() => {
+        if (!players || !team) return;
+        const newBoons: Record<string, string> = {};
+        for (const player of team.players) {
+            const statsPlayer = players.find((p: Player) => p.id === player.player_id);
+            if (!statsPlayer) continue;
+            const boon = statsPlayer.lesser_boon?.name ?? "None";
+            newBoons[player.player_id] = boon;
+        }
+        setBoons(newBoons);
+    }, [players, team]);
+
     function toggleAttr(attribute: string): void {
         const newHighlights = { ...highlights };
         newHighlights[attribute] = !highlights[attribute];
         setHighlights(newHighlights);
     }
 
+    const buildCSVRows = (teamPlayers: TeamPlayer[]) => {
+        const headers = [
+            "PlayerName",
+            "Category",
+            "Stat",
+            "Stars",
+            "StarBucketLower",
+            "StarBucketUpper",
+            "ItemTotal",
+            "AugmentTotal",
+            "TotalBucketLower",
+            "TotalBucketUpper",
+            "NominalTotal"
+        ];
+
+        const categories = {
+            Pitching: pitchingAttrs,
+            Batting: battingAttrs,
+            Defense: defenseAttrs,
+            Baserunning: runningAttrs
+        };
+
+        const rows = [];
+
+        for (const player of teamPlayers) {
+            const statsPlayer = players?.find((p: Player) => p.id === player.player_id);
+            if (!statsPlayer) continue;
+            const name = `${statsPlayer.first_name} ${statsPlayer.last_name}`;
+            const talk = statsPlayer?.talk;
+            const boon = statsPlayer?.lesser_boon?.name;
+            const playerFeed = feedTotals[name];
+            const itemTotals: Map<string, number> = new Map<string, number>();
+            const items = [statsPlayer.equipment.head, statsPlayer.equipment.body, statsPlayer.equipment.hands, statsPlayer.equipment.feet, statsPlayer.equipment.accessory];
+            items.map((item) => {
+                if (item == null || item.rarity == 'Normal') return null;
+                item.effects.map((effect: EquipmentEffect) => {
+                    const amount = Math.round(effect.value * 100);
+                    itemTotals.set(effect.attribute, amount + (itemTotals.get(effect.attribute) ?? 0));
+                })
+            })
+
+            for (const [category, stats] of Object.entries(categories)) {
+                const mappedCategory = category === 'Baserunning' ? 'base_running' : category.toLowerCase();
+                const talkData = talk?.[mappedCategory];
+                const talkDay = talkData?.day ?? 0;
+                const talkSeason = talkData?.season ?? 0;
+                const starsObj = talkData?.stars;
+
+                for (const stat of stats) {
+                    const boonMultiplier = boon ? boonTable?.[boon]?.[stat] ?? 1 : 1;
+                    const stars = starsObj?.[stat]?.length ?? null;
+
+                    const itemTotal = itemTotals.get(stat) ?? 0;
+
+                    let feedTotal = 0;
+                    if (playerFeed) {
+                        for (const [seasonStr, seasonData] of Object.entries(playerFeed)) {
+                            const season = Number(seasonStr);
+                            if (season < talkSeason) continue;
+
+                            for (const [dayStr, statMap] of Object.entries(seasonData)) {
+                                const day = Number(dayStr);
+                                if (season === talkSeason && day < talkDay) continue;
+
+                                const amount = statMap[stat];
+                                if (amount) feedTotal += amount;
+                            }
+                        }
+                    }
+
+                    const bottom = stars !== null ? stars * 25 - 12.5 : null;
+                    const top = stars !== null ? stars * 25 + 12.5 : null;
+                    const lower = bottom !== null ? bottom + itemTotal + feedTotal : null;
+                    const upper = top !== null ? top + itemTotal + feedTotal : null;
+                    const nominal = stars !== null ? stars * 25 + itemTotal + feedTotal : null;
+
+                    rows.push([
+                        name,
+                        category,
+                        stat,
+                        stars ?? "???",
+                        bottom !== null ? trunc(bottom * boonMultiplier) : "???",
+                        top !== null ? trunc(top * boonMultiplier) : "???",
+                        trunc(itemTotal * boonMultiplier),
+                        trunc(feedTotal * boonMultiplier),
+                        lower !== null ? trunc(lower * boonMultiplier) : "???",
+                        upper !== null ? trunc(upper * boonMultiplier) : "???",
+                        nominal !== null ? trunc(nominal * boonMultiplier) : "???"
+                    ]);
+                }
+            }
+        }
+
+        return [headers, ...rows];
+    };
+
+    const downloadCSV = () => {
+        const rows = buildCSVRows(team.players);
+        const csvContent = rows.map(r => r.map(v => `"${v}"`).join(",")).join("\n");
+        const blob = new Blob([csvContent], { type: "text/csv" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "player_stats.csv";
+        a.click();
+        URL.revokeObjectURL(url);
+    };
+
     const boonTable: Record<string, Record<string, number>> = {
+        "No Boon": {
+            "": 0,
+        },
         "ROBO": {
             "Accuracy": 1.5,
             "Discipline": 1.5,
@@ -377,6 +503,9 @@ function TeamSummaryPage ({ setSubpage, APICalls, team, players, feed, }: { setS
                             <button onClick={() => setHighlights({})} className="self-center px-3 py-1 text-xs bg-theme-primary hover:opacity-80 rounded-md">
                                 Reset highlights
                             </button>
+                            <button onClick={downloadCSV} className="self-center px-3 py-1 text-xs bg-theme-primary hover:opacity-80 rounded-md">
+                                Download CSV
+                            </button>
                         </div>
                         <div className='flex mt-6 gap-2 justify-start'>
                             <div className='text-sm font-semibold'>Batting:</div>
@@ -416,7 +545,7 @@ function TeamSummaryPage ({ setSubpage, APICalls, team, players, feed, }: { setS
                             const statsPlayer = players?.find((p: Player) => p.id === player.player_id);
                             if (!statsPlayer) return null;
                             const name = `${player.first_name} ${player.last_name}`;
-                            const boon = statsPlayer.lesser_boon?.name;
+                            const boon = boons ? boons?.[player.player_id] : "No Boon";
                             const items = [statsPlayer.equipment.head, statsPlayer.equipment.body, statsPlayer.equipment.hands, statsPlayer.equipment.feet, statsPlayer.equipment.accessory];
                             const itemTotals: Map<string, number> = new Map<string, number>();
                             items.map((item) => {
@@ -434,6 +563,38 @@ function TeamSummaryPage ({ setSubpage, APICalls, team, players, feed, }: { setS
                                             <div className='row-1 col-1 text-sm font-semibold self-baseline'>{player.slot}</div>
                                             <div className='row-1 col-2 text-md self-baseline'>{player.first_name}</div>
                                             <div className='row-2 col-2 text-md'>{player.last_name}</div>
+                                            <div className='row-3 col-2 text-md'>
+                                                <select className="bg-theme-primary text-theme-text px-2 py-1 rounded w-32 truncate" value={boons[player.player_id]} onChange={(e) => setBoons((prev) => ({...prev, [player.player_id]: e.target.value}))}>
+                                                    <option value="">No Boon</option>
+                                                    <option value="ROBO">ROBO</option>
+                                                    <option value="Demonic">Demonic</option>
+                                                    <option value="Angelic">Angelic</option>
+                                                    <option value="Undead">Undead</option>
+                                                    <option value="Giant">Giant</option>
+                                                    <option value="Fire Elemental">Fire Elemental</option>
+                                                    <option value="Water Elemental">Water Elemental</option>
+                                                    <option value="Air Elemental">Air Elemental</option>
+                                                    <option value="Earth Elemental">Earth Elemental</option>
+                                                    <option value="Draconic">Draconic</option>
+                                                    <option value="Fae">Fae</option>
+                                                    <option value="One With All">One With All</option>
+                                                    <option value="Archer's Mark">Archer's Mark</option>
+                                                    <option value="Geometry Expert">Geometry Expert</option>
+                                                    <option value="Scooter">Scooter</option>
+                                                    <option value="The Light">The Light</option>
+                                                    <option value="Tenacious Badger">Tenacious Badger</option>
+                                                    <option value="Stormrider">Stormrider</option>
+                                                    <option value="Insectoid">Insectoid</option>
+                                                    <option value="Clean">Clean</option>
+                                                    <option value="Shiny">Shiny</option>
+                                                    <option value="Psychic">Psychic</option>
+                                                    <option value="UFO">UFO</option>
+                                                    <option value="Spectral">Spectral</option>
+                                                    <option value="Amphibian">Amphibian</option>
+                                                    <option value="Mer">Mer</option>
+                                                    <option value="Calculated">Calculated</option>
+                                                </select>
+                                            </div>
                                         </div>
                                     </div>
                                     <div key={`stats-${i}`} className={`row-[${baseRow + 2}] col-[2/8] grid grid-cols-5 gap-2`}>
@@ -499,7 +660,7 @@ function TeamSummaryPage ({ setSubpage, APICalls, team, players, feed, }: { setS
                                                         {stats.map((stat, k) => {
                                                             let feedTotal = 0;
                                                             const playerFeed = feedTotals[name];
-                                                            const boonMultiplier = boon ? Object.keys(boonTable[boon]).includes(stat) ? boonTable[boon][stat] : 1 : 1;
+                                                            const boonMultiplier = boonTable?.[boon] ? Object.keys(boonTable[boon]).includes(stat) ? boonTable[boon][stat] : 1 : 1;
                                                             if (playerFeed) {
                                                                 for (const [seasonStr, seasonData] of Object.entries(playerFeed)) {
                                                                     const season = Number(seasonStr);
@@ -544,37 +705,37 @@ function TeamSummaryPage ({ setSubpage, APICalls, team, players, feed, }: { setS
                                                                         <div className="flex justify-between w-full opacity-80">
                                                                             <div className='text-start'>
                                                                                 {stars !== null ? 
-                                                                                    `${bottomBucket ? bottomBucket*boonMultiplier : bottomBucket}` 
+                                                                                    `${bottomBucket ? trunc(bottomBucket*boonMultiplier) : (bottomBucket)}` 
                                                                                     : '???'
                                                                                 }
                                                                             </div>
                                                                             <div className="absolute h-2 mt-0.7 ml-14 mx-2">–</div>
                                                                             <div className='text-end'>
                                                                                 {stars !== null ? 
-                                                                                    `${topBucket ? topBucket*boonMultiplier : topBucket}` 
+                                                                                    `${topBucket ? trunc(topBucket*boonMultiplier) : (topBucket)}` 
                                                                                     : '???'
                                                                                 }
                                                                             </div>
                                                                         </div>
                                                                     </div>
                                                                     <div className={`${!highlights[stat] ? k%2==1 ? 'bg-theme-primary' : 'bg-theme-secondary' : 'bg-theme-score'} p-1 text-center font-semibold`}>
-                                                                        {itemTotal*boonMultiplier}
+                                                                        {trunc(itemTotal*boonMultiplier)}
                                                                     </div>
                                                                     <div className={`${!highlights[stat] ? k%2==1 ? 'bg-theme-primary' : 'bg-theme-secondary' : 'bg-theme-score'} p-1 text-center font-semibold`}>
-                                                                        {feedTotal*boonMultiplier}
+                                                                        {trunc(feedTotal*boonMultiplier)}
                                                                     </div>
                                                                     <div className={`${!highlights[stat] ? k%2==1 ? 'bg-theme-primary' : 'bg-theme-secondary' : 'bg-theme-score'} p-1 font-semibold`}>
                                                                         <div className="flex justify-between w-full opacity-80">
                                                                             <span className="text-start">
                                                                                 {stars !== null ? 
-                                                                                    `${(bottomBucket! + itemTotal + feedTotal)*boonMultiplier}` 
+                                                                                    `${trunc((bottomBucket! + itemTotal + feedTotal)*boonMultiplier)}` 
                                                                                     : '???'
                                                                                 }
                                                                             </span>
                                                                             <div className="absolute h-2 mt-0.7 ml-14 mx-2">–</div>
                                                                             <span className="text-end">
                                                                                 {stars !== null ? 
-                                                                                    `${(topBucket! + itemTotal + feedTotal)*boonMultiplier}` 
+                                                                                    `${trunc((topBucket! + itemTotal + feedTotal)*boonMultiplier)}` 
                                                                                     : '???'
                                                                                 }
                                                                             </span>
@@ -582,7 +743,7 @@ function TeamSummaryPage ({ setSubpage, APICalls, team, players, feed, }: { setS
                                                                     </div>
                                                                     <div className={`${!highlights[stat] ? k%2==1 ? 'bg-theme-primary' : 'bg-theme-secondary' : 'bg-theme-score'} p-1 text-center font-semibold`}>
                                                                         {stars !== null ? 
-                                                                            `${(stars*25+itemTotal+feedTotal)*boonMultiplier}` 
+                                                                            `${trunc((stars*25+itemTotal+feedTotal)*boonMultiplier)}` 
                                                                             : `???`
                                                                         }
                                                                     </div>

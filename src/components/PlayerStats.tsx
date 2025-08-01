@@ -34,6 +34,13 @@ export default function PlayerStats({ player, category }: PlayerStatsProps) {
             </div>
         );
     }
+    if (player === undefined) {
+        return (
+            <div className="bg-theme-primary py-2 px-4 rounded-xl mt-1 h-full">
+                <div className="text-lg font-bold p-4 text-center">Stats on benched players aren't currently supported</div>
+            </div>
+        );
+    }
     const toggle = (label: string) => {setActiveTooltip((prev) => (prev === label ? null : label))};
     const stats = 'team_id' in player ? player.stats[player.team_id] : player.stats;
 
