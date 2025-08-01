@@ -1,11 +1,10 @@
 'use client'
 import { useCallback, useState } from 'react';
-import { Game, MapAPIGameResponse } from '@/types/Game';
+import { Game } from '@/types/Game';
 import { Event } from '@/types/Event';
 import { usePolling } from '@/hooks/Poll';
 import { getContrastTextColor } from '@/helpers/ColorHelper';
 import { getSpecialEventColor, getSpecialEventType } from './LiveGame';
-import { DayGame } from '@/types/DayGame';
 
 const maxRecentEvents = 6;
 

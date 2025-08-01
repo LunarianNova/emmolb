@@ -1,11 +1,11 @@
 'use client'
 import { DayGame, MapDayGameAPIResponse } from "@/types/DayGame";
-import { Dispatch, SetStateAction, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { LiveGameTiny } from "./LiveGameTiny";
-import { fetchLeague, fetchTime } from "@/types/Api";
+import { fetchCachedLesserLeagues, fetchTime } from "@/types/Api";
 import { usePathname } from "next/navigation";
-import { League, lesserLeagueIds } from "@/types/League";
+import { League } from "@/types/League";
 import { Game, MapAPIGameResponse } from "@/types/Game";
 
 type GameHeaderApiResponse = {
@@ -41,8 +41,7 @@ export default function LeagueScoreboard() {
     useEffect(() => {
         async function APICalls() {
             try {
-                const leaguesRes = await Promise.all(lesserLeagueIds.map(id => fetchLeague(id)));
-                setLeagues(leaguesRes);
+                setLeagues(await fetchCachedLesserLeagues());
 
                 const time = await fetchTime();
                 setCurrentDay(time.seasonDay);
@@ -124,7 +123,7 @@ export default function LeagueScoreboard() {
                             gameIds.add(gameWithId.gameId);
                         }
                     }
-                    setGames(uniqueGames);
+                    setGames(uniqueGames.slice(0, 8));
                 } else {
                     let dayGamesRes;
                     if (league === 'greater') {
