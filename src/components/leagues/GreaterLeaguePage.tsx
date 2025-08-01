@@ -54,7 +54,7 @@ export default function Page() {
                             league={league}
                             teams={teams}
                             cutoff={{ winDiff: wildcardWinDiff, gamesLeft: gamesLeft[1], text: 'PLAYOFF' }}
-                            showIndex={true} />
+                            showIndex={false} />
                     </div>
                 })}
             </div>
