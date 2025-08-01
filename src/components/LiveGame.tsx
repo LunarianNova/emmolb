@@ -18,6 +18,7 @@ import { ExpandedScoreboard } from './ExpandedScoreboard';
 import { usePolling } from '@/hooks/Poll';
 import { Player } from '@/types/Player';
 import ExpandedPlayerStats from './ExpandedPlayerStats';
+import { LiveGameTiny } from './LiveGameTiny';
 import { GameHeader } from './GameHeader';
 
 type EventBlockGroup = {
@@ -158,9 +159,7 @@ export default function LiveGame({ awayTeamArg, homeTeamArg, initialDataArg, gam
             const meta = getBlockMetadata(event.message);
             const eventMessage = getEventMessageObject(event);
 
-            const isWeatherEvent = /falling star|geomagnetic storms intensify/i.test(event.message);
-            const isScore = /scores!|homers on a|grand slam|steals home/i.test(event.message);
-            const isEjection = /ROBO-UMP ejected/i.test(event.message);
+            const { isWeatherEvent, isScore, isEjection } = getSpecialEventType(event);
             const inning = event.inning && (meta?.title != 'Game Info' && meta?.title != 'ROBO-UMP') ? (event.inning_side === 0 ? '▲ ' : '▼ ') + event.inning : undefined;
 
             if (meta) {
@@ -194,19 +193,7 @@ export default function LiveGame({ awayTeamArg, homeTeamArg, initialDataArg, gam
 
         // Post-process to assign gradient class
         for (const block of blocks) {
-            if (block.isEjection && block.isScore) {
-                block.color = 'linear-gradient(to right bottom, var(--theme-score), var(--theme-ejection))';
-            } else if (block.isWeatherEvent && block.isScore) {
-                block.color = 'linear-gradient(to right bottom, var(--theme-score), var(--theme-weather_event))';
-            } else if (block.isWeatherEvent && block.isEjection) {
-                block.color = 'linear-gradient(to right bottom, var(--theme-weather_event), var(--theme-ejection))';
-            } else if (block.isEjection) {
-                block.color = 'var(--theme-ejection)';
-            } else if (block.isWeatherEvent) {
-                block.color = 'var(--theme-weather_event)';
-            } else if (block.isScore) {
-                block.color = 'var(--theme-score)';
-            }
+            block.color = getSpecialEventColor({isWeatherEvent: block.isWeatherEvent, isScore: block.isScore, isEjection: block.isEjection});
         }
 
         return blocks;
@@ -226,10 +213,9 @@ export default function LiveGame({ awayTeamArg, homeTeamArg, initialDataArg, gam
 
     return (
         <>
-        <Navbar />
-        <main className="mt-16">
+        <main className="mt-8">
         <CopiedPopup />
-        <div className="min-h-screen bg-theme-background text-theme-text font-sans p-4 pt-20 max-w-3xl mx-auto h-full">
+        <div className="min-h-screen bg-theme-background text-theme-text font-sans p-4 max-w-3xl mx-auto h-full">
             <button onClick={() => window.location.href = `/live/${gameId}`} className="px-3 py-1 text-xs bg-theme-primary hover:opacity-80 rounded-md mb-1">
                 View in Live Viewer (BETA)
             </button>
@@ -311,3 +297,32 @@ export default function LiveGame({ awayTeamArg, homeTeamArg, initialDataArg, gam
     );
 }
 
+export type SpecialEventType = {
+    isWeatherEvent?: boolean;
+    isScore?: boolean;
+    isEjection?: boolean;
+}
+
+export function getSpecialEventType(event: Event): SpecialEventType {
+    const isWeatherEvent = /falling star|geomagnetic storms intensify/i.test(event.message);
+    const isScore = /scores!|homers on a|grand slam|steals home/i.test(event.message);
+    const isEjection = /ROBO-UMP ejected/i.test(event.message);
+    return { isWeatherEvent, isScore, isEjection };
+}
+
+export function getSpecialEventColor({ isWeatherEvent, isScore, isEjection }: SpecialEventType): string {
+    if (isEjection && isScore) {
+        return 'linear-gradient(to right bottom, var(--theme-score), var(--theme-ejection))';
+    } else if (isWeatherEvent && isScore) {
+        return 'linear-gradient(to right bottom, var(--theme-score), var(--theme-weather_event))';
+    } else if (isWeatherEvent && isEjection) {
+        return 'linear-gradient(to right bottom, var(--theme-weather_event), var(--theme-ejection))';
+    } else if (isEjection) {
+        return 'var(--theme-ejection)';
+    } else if (isWeatherEvent) {
+        return 'var(--theme-weather_event)';
+    } else if (isScore) {
+        return 'var(--theme-score)';
+    }
+    return '';
+}

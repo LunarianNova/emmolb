@@ -6,4 +6,3 @@ export type League = {
     teams: string[];
     id: string;
 }
-
