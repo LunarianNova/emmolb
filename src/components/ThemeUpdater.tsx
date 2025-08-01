@@ -8,19 +8,18 @@ import { useAccount } from '@/hooks/Account';
 export const ThemeUpdater = () => {
     const { settings, ready, updateSetting } = useSettings();
     const { user, loading } = useAccount();
-    const hasSynced = useRef<boolean>(false);
     const hasMergedFromServer = useRef<boolean>(false);
 
+    const settingsDependency = JSON.stringify(settings);
+
     useEffect(() => {
-        if (loading) return;
-        if (!user) return;
-        if (hasMergedFromServer.current) return;
+        if (loading || !user || hasMergedFromServer.current) return;
 
         if (user.settings && Object.keys(user.settings).length > 0) 
             Object.entries(user.settings).forEach(([k, v]) => updateSetting(k, v));
 
         hasMergedFromServer.current = true;
-    }, [loading, user]);
+    }, [loading, user, updateSetting]);
 
     useEffect(() => {
         if (!ready || !settings.theme) return;
@@ -33,20 +32,23 @@ export const ThemeUpdater = () => {
     }, [settings.theme, ready]);
 
     useEffect(() => {
-        if (!user || !ready) return;
-        if (hasSynced.current) return;
-        if (!hasMergedFromServer.current) return;
+        if (!user || !ready || !hasMergedFromServer.current) return;
 
-        async function syncSettings() {
-            const res = await fetch('/nextapi/db/account/update-settings', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ settings }),
-            });
-            if (res.ok) hasSynced.current = true;
-        }
-        syncSettings();
-    }, [settings.gamePage, settings.homePage, settings.teamPage, settings.theme, user, ready])
+        const handler = setTimeout(() => { // Debounce
+            async function syncSettings() {
+                await fetch('/nextapi/db/account/update-settings', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ settings }),
+                });
+            }
+            syncSettings();
+        }, 500);
+
+        return () => {
+            clearTimeout(handler);
+        };
+    }, [settingsDependency, user, ready])
 
     return null;
 };

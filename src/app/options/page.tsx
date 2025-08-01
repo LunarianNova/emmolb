@@ -71,6 +71,7 @@ export default function OptionsPage() {
                         <Checkbox settings={settings} settingKey={'gamePage.useTeamColoredHeaders'} label="Change Event Log Headers to Match Team Colors" onChange={updateSetting} />
                         <Checkbox settings={settings} settingKey={'gamePage.showBaserunners'} label="Display Who Is on Base" onChange={updateSetting} />
                         <Checkbox settings={settings} settingKey={'gamePage.showExpandedScoreboard'} label="Show Expanded Scoreboard" onChange={updateSetting} />
+                        <Checkbox settings={settings} settingKey={'gamePage.showAwayScoreboard'} label="Show Away Scoreboard" onChange={updateSetting} />
                     </div>
                 </div>
             </div>

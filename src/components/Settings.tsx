@@ -21,6 +21,7 @@ export type Settings = {
         showStats: boolean;
         modifyEvents: boolean;
         showExpandedScoreboard: boolean;
+        showAwayScoreboard: boolean;
     }
     teamPage?: {
         showLiveGames: boolean;
@@ -62,6 +63,7 @@ const defaultSettings: Settings = {
         showStats: true,
         modifyEvents: true,
         showExpandedScoreboard: true,
+        showAwayScoreboard: true,
     },
     teamPage: {
         showLiveGames: true,

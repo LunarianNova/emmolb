@@ -25,7 +25,6 @@ type GameStateDisplayCompactProps = {
 
 export function LiveGameCompact({ gameId, homeTeam, awayTeam, game, killLinks = false, historicGames, }: LiveGameCompactProps){
     const [event, setEvent] = useState<Event | null>(null);
-    const [hasError, setHasError] = useState(false);
     const [lastUpdated, setLastUpdated] = useState<number>(Date.now());
 
     const pollFn = useCallback(async () => {
@@ -51,7 +50,7 @@ export function LiveGameCompact({ gameId, homeTeam, awayTeam, game, killLinks = 
         killCon
     });
 
-    if (hasError || !event) return <GameHeader homeTeam={homeTeam} awayTeam={awayTeam} game={game} killLinks={killLinks} />;
+    if (!event) return <GameHeader homeTeam={homeTeam} awayTeam={awayTeam} game={game} killLinks={killLinks} />;
   
     return (<>
         <GameHeader homeTeam={homeTeam} awayTeam={awayTeam} game={game} event={event} killLinks={killLinks} historicGames={historicGames} />
@@ -60,7 +59,7 @@ export function LiveGameCompact({ gameId, homeTeam, awayTeam, game, killLinks = 
 }
 
 export function GameStateDisplayCompact({ event, lastUpdated }: GameStateDisplayCompactProps) {
-    const background = (event.message.includes('scores!') || event.message.includes('homers')) ? 'bg-theme-score' : event.message.includes('star') ? 'bg-theme-star' : 'bg-theme-secondary';
+    const background = (event.message.includes('scores!') || event.message.includes('homers')) ? 'bg-theme-score' : event.message.includes('star') ? 'bg-theme-weather' : 'bg-theme-secondary';
 
     return (
         <div className={`${background} p-4 rounded-lg shadow-lg border border-theme-accent mb-16`}>

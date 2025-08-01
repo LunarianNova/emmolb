@@ -21,11 +21,10 @@ type GameHeaderProps = {
 export function GameHeader({ homeTeam, awayTeam, game, historicGames, event, killLinks = false }: GameHeaderProps) {
     const router = useRouter();
     const isFullGame = 'event_log' in game;
-    const lastEvent = event ?
-                        event :
+    const lastEvent = event ? event :
                         isFullGame ? 
-                            game.event_log[game.event_log.length - 1] : 
-                            null;
+                            game.event_log[game.event_log.length - 1] 
+                            : null;
     const stadium = isFullGame ? game.event_log[0].message.split("@ ")[1] : null;
 
     historicGames = historicGames?.filter((g: CashewsGame) => [g.away_team_id, g.home_team_id].includes(game.home_team_id) && [g.away_team_id, g.home_team_id].includes(game.away_team_id));
