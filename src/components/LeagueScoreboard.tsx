@@ -3,8 +3,9 @@ import { DayGame, MapDayGameAPIResponse } from "@/types/DayGame";
 import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import Link from "next/link";
 import { LiveGameTiny } from "./LiveGameTiny";
-import { fetchTime } from "@/types/Api";
+import { fetchLeague, fetchTime } from "@/types/Api";
 import { usePathname } from "next/navigation";
+import { League, lesserLeagueIds } from "@/types/League";
 
 type GameHeaderApiResponse = {
     teamId: string;
@@ -47,6 +48,8 @@ export function MMOLBWatchPageHeader({setDay, day, season,}: MMOLBWatchPageHeade
 export default function LeagueScoreboard() {
     const [dayGames, setDayGames] = useState<DayGame[]>([]);
     const [day, setDay] = useState<number>();
+    const [league, setLeague] = useState('favorites');
+    const [leagues, setLeagues] = useState<League[]>([]);
     const path = usePathname();
 
     useEffect(() => {
@@ -54,6 +57,9 @@ export default function LeagueScoreboard() {
             try {
                 const time = await fetchTime();
                 setDay(time.seasonDay);
+
+                const leaguesRes = await Promise.all(lesserLeagueIds.map(id => fetchLeague(id)));
+                setLeagues(leaguesRes);
             } catch (err) {
                 console.error(err);
             } finally {
@@ -66,6 +72,7 @@ export default function LeagueScoreboard() {
     useEffect(() => {
         async function APICalls() {
             try {
+                console.log(league);
                 if (!day) return;
                 const gamesRes = await fetch(`/nextapi/day-games/${day}?limit=10`);
                 if (!gamesRes.ok) throw new Error('Failed to load game data');
@@ -79,15 +86,31 @@ export default function LeagueScoreboard() {
         }
 
         APICalls();
-    }, [day]);
+    }, [day, league]);
 
     return (
-        <div className='flex flex-row flex-nowrap gap-4 justify-center'>
-            {dayGames.map((dayGame, i) => (
-                <Link key={i + 'link'} href={'/game/' + dayGame.game_id}>
-                    <LiveGameTiny key={i} dayGame={dayGame} />
-                </Link>
-            ))}
+        <div className='flex flex-row flex-nowrap gap-4 justify-center-safe max-w-screen'>
+            <div className='grid content-center justify-items-center items-center gap-x-4 gap-y-1'>
+                <div className='row-1 col-1 text-xs font-semibold uppercase'>League</div>
+                <select className='row-2 col-1 text-sm bg-(--theme-primary) p-1' value={league} onChange={(evt) => setLeague(evt.target.value)}>
+                    <option className='bg-(--theme-primary)' value='favorites'>❤️ Favorites</option>
+                    <option className='bg-(--theme-primary)' value='greater'>🏆 Greater</option>
+                    {leagues.map((l, idx) => <option key={idx} value={l.id}>{l.emoji} {l.name}</option>)}
+                </select>
+                <div className='row-1 col-2 text-xs font-semibold uppercase'>Day</div>
+                <div className='flex text-md gap-1'>
+                    <div>◀</div>
+                    <div>{day}</div>
+                    <div>▶</div>
+                </div>
+            </div>
+            <div className='flex flex-row flex-nowrap gap-2 overflow-x-auto'>
+                {dayGames.map((dayGame, i) => (
+                    <Link key={i + 'link'} href={'/game/' + dayGame.game_id}>
+                        <LiveGameTiny key={i} dayGame={dayGame} />
+                    </Link>
+                ))}
+            </div>
         </div>
     );
 }

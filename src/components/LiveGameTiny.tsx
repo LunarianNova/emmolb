@@ -1,12 +1,13 @@
 'use client'
 import { useCallback, useState } from 'react';
-import { Team } from '@/types/Team';
 import { Game, MapAPIGameResponse } from '@/types/Game';
 import { Event } from '@/types/Event';
 import { usePolling } from '@/hooks/Poll';
 import { getContrastTextColor } from '@/helpers/ColorHelper';
 import { getSpecialEventColor, getSpecialEventType } from './LiveGame';
 import { DayGame } from '@/types/DayGame';
+
+const maxRecentEvents = 6;
 
 type LiveGameTinyProps = {
     dayGame: DayGame;
@@ -29,6 +30,7 @@ export function LiveGameTiny({ dayGame }: LiveGameTinyProps) {
     const [event, setEvent] = useState<Event | null>();
     const [game, setGame] = useState<Game>();
     const [isComplete, setIsComplete] = useState(dayGame.status === 'Final');
+    const [recentEvents, setRecentEvents] = useState<Event[]>([]);
 
     const pollFn = useCallback(async () => {
         const res = await fetch(event
@@ -36,25 +38,33 @@ export function LiveGameTiny({ dayGame }: LiveGameTinyProps) {
             : `/nextapi/gameheader/${dayGame.game_id}`);
         if (!res.ok) throw new Error("Failed to fetch events")
         return res.json();
-    }, [dayGame]);
+    }, [dayGame, event]);
 
     const killCon = useCallback(() => {
-        return event?.event === 'Recordkeeping';
+        return event?.event === 'GameOver';
     }, [event]);
 
     usePolling({
-        interval: 6000,
+        interval: 15000,
         pollFn,
         onData: (newData) => {
             if (newData.game?.EventLog) {
                 const newGame = MapAPIGameResponse(newData.game);
                 setGame(newGame);
                 setEvent(newGame.event_log[newGame.event_log.length - 1]);
+                if (newGame.state === 'Complete') {
+                    setIsComplete(true);
+                } else {
+                    setRecentEvents(newGame.event_log.slice(-maxRecentEvents));
+                }
             }
             else if (newData.entries?.length) {
                 setEvent(newData.entries[newData.entries.length - 1]);
-                if (newData.entries[newData.entries.length - 1].event === 'Recordkeeping')
+                if (newData.entries[newData.entries.length - 1].event === 'GameOver') {
                     setIsComplete(true);
+                } else {
+                    setRecentEvents(recentEvents.concat(newData.entries).slice(-maxRecentEvents));
+                }
             }
         },
         killCon
@@ -66,28 +76,34 @@ export function LiveGameTiny({ dayGame }: LiveGameTinyProps) {
         third: event.on_3b,
     }
 
-    const specialEventColor = event && getSpecialEventColor(getSpecialEventType(event));
+    const specialEventColor = (!isComplete && recentEvents.length > 0)
+        ? getSpecialEventColor(recentEvents.map(getSpecialEventType).reduce((prev, current) => ({
+            isWeatherEvent: prev.isWeatherEvent || current.isWeatherEvent,
+            isScore: prev.isScore || current.isScore,
+            isEjection: prev.isEjection || current.isEjection,
+        }), {}))
+        : undefined;
 
     return (<>
-        <div className='w-36 h-16 relative rounded-xl' style={{ background: specialEventColor || 'var(--theme-primary)' }}>
+        <div className='w-38 h-16 relative rounded-xl' style={{ background: specialEventColor || 'var(--theme-primary)' }}>
             <div className='grid grid-rows-2 absolute size-full'>
                 <div className='row-1 rounded-t-xl' style={{ background: `linear-gradient(120deg, #${dayGame.away_team_color} 55%, #00000000 67%)` }}></div>
                 <div className='row-2 rounded-b-xl' style={{ background: `linear-gradient(60deg, #${dayGame.home_team_color} 55%, #00000000 67%)` }}></div>
             </div>
             {event &&
-                <div className='flex justify-between absolute items-stretch size-full p-2'>
-                    <div className='justify-self-start grid grid-rows-2 gap-y-2 text-sm font-semibold'>
-                        <div className='row-1 col-1 w-14' style={{ color: getContrastTextColor(dayGame.away_team_color) || 'rgb(0,0,0)' }}>
+                <div className='flex justify-between absolute items-stretch size-full p-2 pl-1.5'>
+                    <div className='justify-self-start grid grid-rows-2 gap-x-1 gap-y-2 text-sm font-semibold'>
+                        <div className='row-1 col-1 w-14 truncate' style={{ color: getContrastTextColor(dayGame.away_team_color) || 'rgb(0,0,0)' }}>
                             <span className='text-xs text-shadow-sm/20'>{dayGame.away_team_emoji}</span> {game?.away_team_abbreviation}
                         </div>
-                        <div className='row-2 col-1 w-14' style={{ color: getContrastTextColor(dayGame.home_team_color) || 'rgb(0,0,0)' }}>
+                        <div className='row-2 col-1 w-14 truncate' style={{ color: getContrastTextColor(dayGame.home_team_color) || 'rgb(0,0,0)' }}>
                             <span className='text-xs text-shadow-sm/20'>{dayGame.home_team_emoji}</span> {game?.home_team_abbreviation}
                         </div>
                         <div className='row-1 col-2 text-right w-4' style={{ color: getContrastTextColor(dayGame.away_team_color) || 'rgb(0,0,0)' }}>
-                            {dayGame.away_team_runs}
+                            {event?.away_score}
                         </div>
                         <div className='row-2 col-2 text-right w-4' style={{ color: getContrastTextColor(dayGame.home_team_color) || 'rgb(0,0,0)' }}>
-                            {dayGame.home_team_runs}
+                            {event?.home_score}
                         </div>
                     </div>
                     {bases && !isComplete &&
