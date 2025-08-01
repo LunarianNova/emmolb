@@ -1,5 +1,6 @@
 'use server'
 
+import { getCachedLesserLeagues, getCachedLiteTeams } from "@/lib/cache";
 import { CashewsGame } from "./FreeCashews";
 import { League } from "./League";
 import { Team, MapAPILeagueTeamResponse } from "./Team";
@@ -34,6 +35,10 @@ export async function fetchTeamGames(id: string, season: number): Promise<Cashew
 
     if (!Array.isArray(data.items)) throw new Error('Games response was not an array');
     return data.items as CashewsGame[];
+}
+
+export async function fetchCachedLesserLeagues(): Promise<League[]> {
+    return await getCachedLesserLeagues();
 }
 
 export async function fetchTopTeamsFromLeague(id: string): Promise<Team[]> {

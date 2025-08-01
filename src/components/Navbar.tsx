@@ -7,7 +7,6 @@ import React, { useState, useRef, useEffect } from 'react'
 export function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [openDropdown, setOpenDropdown] = useState<string | null>(null)
-  const [collapsed, setCollapsed] = useState<boolean>(false);
   const { user } = useAccount();
 
   // Close dropdowns on outside click
