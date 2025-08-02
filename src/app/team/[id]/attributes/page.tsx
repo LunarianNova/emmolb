@@ -1,4 +1,4 @@
-import TeamAttributesPage from "@/components/TeamAttributesPage";
+import TeamAttributesPage from "@/components/teamattributes/TeamAttributesPage";
 
 interface PageProps {
     params: Promise<{ id: string }>;
