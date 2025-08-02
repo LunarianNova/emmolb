@@ -95,7 +95,7 @@ export default function LiveGame({ awayTeamArg, homeTeamArg, initialDataArg, gam
     }, [lastEvent]);
 
     const pollFn = useCallback(async () => {
-        const after = (eventLog.length+1).toString();
+        const after = eventLog.length > 0 ? eventLog[eventLog.length - 1].index  + 1: 0;
         const res = await fetch(`/nextapi/game/${gameId}/live?after=${after}`);
         if (!res.ok) throw new Error("Failed to fetch events");
         return res.json();
